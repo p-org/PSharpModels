@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyActor", "MyActor\MyActor.csproj", "{8C115AD2-F21A-42C9-B8D2-3BFF2531FD7C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyActor.Interfaces", "MyActor.Interfaces\MyActor.Interfaces.csproj", "{C9172B7B-3190-4906-90C6-7AD8C520DF67}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyActorClient", "MyActorClient\MyActorClient.csproj", "{649CC6DD-A04C-47C8-8BAC-9DFB920DF271}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8C115AD2-F21A-42C9-B8D2-3BFF2531FD7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C115AD2-F21A-42C9-B8D2-3BFF2531FD7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C115AD2-F21A-42C9-B8D2-3BFF2531FD7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C115AD2-F21A-42C9-B8D2-3BFF2531FD7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9172B7B-3190-4906-90C6-7AD8C520DF67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9172B7B-3190-4906-90C6-7AD8C520DF67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9172B7B-3190-4906-90C6-7AD8C520DF67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9172B7B-3190-4906-90C6-7AD8C520DF67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{649CC6DD-A04C-47C8-8BAC-9DFB920DF271}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{649CC6DD-A04C-47C8-8BAC-9DFB920DF271}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{649CC6DD-A04C-47C8-8BAC-9DFB920DF271}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{649CC6DD-A04C-47C8-8BAC-9DFB920DF271}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
