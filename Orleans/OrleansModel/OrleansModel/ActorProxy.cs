@@ -30,6 +30,5 @@ namespace Microsoft.ServiceFabric.Actors
             IdMap.Add(actorId, res);
             return res;
         }
-
     }
 }

@@ -61,6 +61,15 @@
     <Compile Include="ActorExtensions.cs" />
     <Compile Include="ActorId.cs" />
     <Compile Include="ActorMachine.cs" />
+    <Compile Include="Grains\IAddressable.cs" />
+    <Compile Include="Grains\IGrain.cs" />
+    <Compile Include="Grains\IGrainWithIntegerKey.cs" />
+    <Compile Include="Grains\IGrainWithStringKey.cs" />
+    <Compile Include="Grains\IGrainWithGuidCompoundKey.cs" />
+    <Compile Include="Grains\IGrainWithIntegerCompoundKey.cs" />
+    <Compile Include="Grains\IGrainWithGuidKey.cs" />
+    <Compile Include="Grains\IGrainFactory.cs" />
+    <Compile Include="Grains\GrainClient.cs" />
     <Compile Include="ActorProxy.cs" />
     <Compile Include="ActorStateManager.cs" />
     <Compile Include="ConditionalValue.cs" />
