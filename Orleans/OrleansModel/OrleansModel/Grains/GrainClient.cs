@@ -28,24 +28,29 @@ namespace Orleans
     {
         public static IGrainFactory GrainFactory { get; }
 
-        //private static readonly ProxyContainer proxies = new ProxyContainer();
+        /// <summary>
+        /// The P# runtime.
+        /// </summary>
+        private static PSharpRuntime Runtime;
 
-        //private static PSharpRuntime runtime = null;
+        /// <summary>
+        /// The proxy factory.
+        /// </summary>
+        private static readonly ProxyFactory<IGrain> ProxyFactory;
 
-        //private static Dictionary<ActorId, Object> IdMap = new Dictionary<ActorId, object>();
+        /// <summary>
+        /// Map from ids to grains.
+        /// </summary>
+        internal static Dictionary<IGrain, Object> IdMap;
 
-        //public static TActorInterface Create<TActorInterface>(ActorId actorId, string applicationName = null, string serviceName = null) where TActorInterface : IActor
-        //{
-        //    if (IdMap.ContainsKey(actorId))
-        //        return (TActorInterface)IdMap[actorId];
-
-        //    if (runtime == null)
-        //        runtime = PSharpRuntime.Create();
-
-        //    Type proxyType = proxies.GetProxyType(typeof(TActorInterface), actorId);
-        //    var res = (TActorInterface)Activator.CreateInstance(proxyType, runtime);
-        //    IdMap.Add(actorId, res);
-        //    return res;
-        //}
+        /// <summary>
+        /// Static constructor.
+        /// </summary>
+        static GrainClient()
+        {
+            GrainClient.Runtime = null;
+            GrainClient.ProxyFactory = new ProxyFactory<IGrain>();
+            GrainClient.IdMap = new Dictionary<IGrain, object>();
+        }
     }
 }

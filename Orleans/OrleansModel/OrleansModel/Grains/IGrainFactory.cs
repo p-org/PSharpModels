@@ -34,6 +34,5 @@ namespace Orleans
         TGrainInterface GetGrain<TGrainInterface>(long primaryKey, string keyExtension,
             string grainClassNamePrefix = null)
             where TGrainInterface : IGrainWithIntegerCompoundKey;
-
     }
 }

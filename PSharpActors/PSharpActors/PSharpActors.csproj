@@ -7,8 +7,8 @@
     <ProjectGuid>{70882438-7657-444C-84E6-E2FAED2AD307}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Orleans</RootNamespace>
-    <AssemblyName>OrleansModel</AssemblyName>
+    <RootNamespace>Microsoft.PSharp.Actors</RootNamespace>
+    <AssemblyName>Microsoft.PSharp.Actors</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Binaries\</OutputPath>
+    <OutputPath>..\Binaries\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -25,62 +25,40 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\Binaries\</OutputPath>
+    <OutputPath>..\Binaries\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis">
-      <HintPath>..\..\..\PSharp\Binaries\Microsoft.CodeAnalysis.dll</HintPath>
+      <HintPath>..\..\PSharp\Binaries\Microsoft.CodeAnalysis.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis.CSharp">
-      <HintPath>..\..\..\PSharp\Binaries\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+      <HintPath>..\..\PSharp\Binaries\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
-      <HintPath>..\..\..\PSharp\Binaries\Microsoft.CodeAnalysis.CSharp.Workspaces.dll</HintPath>
+      <HintPath>..\..\PSharp\Binaries\Microsoft.CodeAnalysis.CSharp.Workspaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis.Workspaces">
-      <HintPath>..\..\..\PSharp\Binaries\Microsoft.CodeAnalysis.Workspaces.dll</HintPath>
+      <HintPath>..\..\PSharp\Binaries\Microsoft.CodeAnalysis.Workspaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.PSharp">
-      <HintPath>..\..\..\PSharp\Binaries\Microsoft.PSharp.dll</HintPath>
+      <HintPath>..\..\PSharp\Binaries\Microsoft.PSharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.PSharp.LanguageServices">
-      <HintPath>..\..\..\PSharp\Binaries\Microsoft.PSharp.LanguageServices.dll</HintPath>
+      <HintPath>..\..\PSharp\Binaries\Microsoft.PSharp.LanguageServices.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections.Immutable, Version=1.1.37.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\PSharp\Binaries\System.Collections.Immutable.dll</HintPath>
+      <HintPath>..\..\PSharp\Binaries\System.Collections.Immutable.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Actor.cs" />
-    <Compile Include="ActorBase.cs" />
-    <Compile Include="ActorExtensions.cs" />
-    <Compile Include="ActorId.cs" />
-    <Compile Include="ActorMachine.cs" />
-    <Compile Include="Grains\IAddressable.cs" />
-    <Compile Include="Grains\IGrain.cs" />
-    <Compile Include="Grains\GrainFactory.cs" />
-    <Compile Include="Grains\IGrainWithIntegerKey.cs" />
-    <Compile Include="Grains\IGrainWithStringKey.cs" />
-    <Compile Include="Grains\IGrainWithGuidCompoundKey.cs" />
-    <Compile Include="Grains\IGrainWithIntegerCompoundKey.cs" />
-    <Compile Include="Grains\IGrainWithGuidKey.cs" />
-    <Compile Include="Grains\IGrainFactory.cs" />
-    <Compile Include="Grains\GrainClient.cs" />
-    <Compile Include="ActorProxy.cs" />
-    <Compile Include="ActorStateManager.cs" />
-    <Compile Include="ConditionalValue.cs" />
-    <Compile Include="DummyTasks.cs" />
-    <Compile Include="IActor.cs" />
-    <Compile Include="IActorProxy.cs" />
-    <Compile Include="IActorStateManager.cs" />
+    <Compile Include="Bridge\DummyTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Bridge\ProxyFactory.cs" />
-    <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
