@@ -1,66 +1,86 @@
-﻿using System;
+﻿//-----------------------------------------------------------------------
+// <copyright file="ProxyFactory.cs">
+//      Copyright (c) Microsoft Corporation. All rights reserved.
+// 
+//      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//      EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+//      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+//      IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+//      CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+//      TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+//      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// </copyright>
+//-----------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.ExceptionServices;
-using System.Text;
-using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 using Microsoft.PSharp;
-using Microsoft.PSharp.LanguageServices;
 using Microsoft.PSharp.LanguageServices.Compilation;
-using Microsoft.ServiceFabric.Actors;
 
-namespace ActorModel
+namespace Microsoft.PSharp.Actors.Bridge
 {
-    public class ProxyContainer
+    /// <summary>
+    /// Factory of proxies.
+    /// </summary>
+    internal class ProxyFactory<ProxyId>
     {
-        private readonly Dictionary<Type, Type> proxyTypes;
-        private AssemblyName aName;
-        private AssemblyBuilder ab;
-        private ModuleBuilder mb;
-        private readonly object mutex;
+        /// <summary>
+        /// The proxy types.
+        /// </summary>
+        private readonly Dictionary<Type, Type> ProxyTypes;
 
-        public ProxyContainer()
+        /// <summary>
+        /// The factory lock.
+        /// </summary>
+        private readonly object Lock;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public ProxyFactory()
         {
-            proxyTypes = new Dictionary<Type, Type>();
-            mutex = new object();
+            this.ProxyTypes = new Dictionary<Type, Type>();
+            this.Lock = new object();
         }
 
         /// <summary>
-        /// For debugging.
+        /// Get the proxy type.
         /// </summary>
-        public void SaveModule()
+        /// <param name="interfaceType">Type</param>
+        /// <param name="actorId">ActorId</param>
+        /// <returns>Type</returns>
+        public Type GetProxyType(Type interfaceType, ProxyId actorId)
         {
-            lock (mutex)
-            {
-                ab.Save(aName.Name + ".dll");
-            }
-        }
-
-        public Type GetProxyType(Type interfaceType, ActorId actorId)
-        {
-            lock (mutex)
+            lock (this.Lock)
             {
                 Type res;
-                proxyTypes.TryGetValue(interfaceType, out res);
+                this.ProxyTypes.TryGetValue(interfaceType, out res);
+
                 if (res == null)
                 {
                     res = CreateProxyType(interfaceType, actorId);
-                    proxyTypes.Add(interfaceType, res);
+                    this.ProxyTypes.Add(interfaceType, res);
                 }
+
                 return res;
             }
         }
 
-        private static Type CreateProxyType(Type interfaceType, ActorId actorId)
+        /// <summary>
+        /// Create a new proxy type.
+        /// </summary>
+        /// <param name="interfaceType">Type</param>
+        /// <param name="actorId">ActorId</param>
+        /// <returns>Type</returns>
+        private Type CreateProxyType(Type interfaceType, ProxyId actorId)
         {
             if (!interfaceType.IsInterface)
             {
@@ -69,7 +89,7 @@ namespace ActorModel
 
             var references = new HashSet<MetadataReference>
             {
-                MetadataReference.CreateFromFile(typeof(ActorId).Assembly.Location)
+                MetadataReference.CreateFromFile(typeof(ProxyId).Assembly.Location)
             };
 
             string assemblyPath = Assembly.GetEntryAssembly().Location + "\\..\\..\\..\\..";
@@ -105,8 +125,7 @@ namespace ActorModel
             var actorType = types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).Single();
             references.Add(MetadataReference.CreateFromFile(actorType.Assembly.Location));
 
-            SyntaxTree syntaxTree = ProxyContainer.CreateProxySyntaxTree(
-                interfaceType, actorType);
+            SyntaxTree syntaxTree = this.CreateProxySyntaxTree(interfaceType, actorType);
             //Console.WriteLine(syntaxTree);
 
             var context = CompilationContext.Create().LoadSolution(syntaxTree.ToString(), references, "cs");
@@ -137,20 +156,8 @@ namespace ActorModel
                 Console.WriteLine(ex);
                 Environment.Exit(Environment.ExitCode);
             }
-            // Done
+
             return proxyType;
-        }
-
-        private static void LoadArguments(
-            Type[] paramTypes,
-            ILGenerator ilGen)
-        {
-            for (int i = 0; i < paramTypes.Length; ++i)
-            {
-                ilGen.Ldarg(i + 1);
-            }
-            // [ params ... ]
-
         }
 
         /// <summary>
@@ -159,9 +166,9 @@ namespace ActorModel
         /// <param name="interfaceType">Actor interface type</param>
         /// <param name="actorType">Actor type</param>
         /// <returns>SyntaxTree</returns>
-        private static SyntaxTree CreateProxySyntaxTree(Type interfaceType, Type actorType)
+        private SyntaxTree CreateProxySyntaxTree(Type interfaceType, Type actorType)
         {
-            ClassDeclarationSyntax proxyDecl = ProxyContainer.CreateProxyClassDeclaration(
+            ClassDeclarationSyntax proxyDecl = this.CreateProxyClassDeclaration(
                 interfaceType, actorType);
 
             NamespaceDeclarationSyntax namespaceDecl = SyntaxFactory.NamespaceDeclaration(
@@ -193,19 +200,19 @@ namespace ActorModel
         /// <param name="interfaceType">Actor interface type</param>
         /// <param name="actorType">Actor type</param>
         /// <returns>ClassDeclarationSyntax</returns>
-        private static ClassDeclarationSyntax CreateProxyClassDeclaration(Type interfaceType, Type actorType)
+        private ClassDeclarationSyntax CreateProxyClassDeclaration(Type interfaceType, Type actorType)
         {
             ClassDeclarationSyntax classDecl = SyntaxFactory.ClassDeclaration(interfaceType.Name + "_PSharpProxy")
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
 
-            FieldDeclarationSyntax target = ProxyContainer.CreateProxyField(
+            FieldDeclarationSyntax target = this.CreateProxyField(
                 interfaceType, "Target");
-            FieldDeclarationSyntax id = ProxyContainer.CreateProxyField(
+            FieldDeclarationSyntax id = this.CreateProxyField(
                 typeof(MachineId), "Id");
-            FieldDeclarationSyntax runtime = ProxyContainer.CreateProxyField(
+            FieldDeclarationSyntax runtime = this.CreateProxyField(
                 typeof(PSharpRuntime), "Runtime");
 
-            ConstructorDeclarationSyntax constructor = ProxyContainer.CreateProxyConstructor(
+            ConstructorDeclarationSyntax constructor = this.CreateProxyConstructor(
                 interfaceType, actorType);
 
             var baseTypes = new HashSet<BaseTypeSyntax>();
@@ -215,7 +222,7 @@ namespace ActorModel
                 baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(type.FullName)));
                 foreach (var method in type.GetMethods())
                 {
-                    methodDecls.Add(ProxyContainer.CreateProxyMethod(method, interfaceType));
+                    methodDecls.Add(this.CreateProxyMethod(method, interfaceType));
                 }
             }
 
@@ -238,7 +245,7 @@ namespace ActorModel
         /// <param name="interfaceType">Actor interface type</param>
         /// <param name="actorType">Actor type</param>
         /// <returns>ConstructorDeclarationSyntax</returns>
-        private static ConstructorDeclarationSyntax CreateProxyConstructor(Type interfaceType, Type actorType)
+        private ConstructorDeclarationSyntax CreateProxyConstructor(Type interfaceType, Type actorType)
         {
             ConstructorDeclarationSyntax constructor = SyntaxFactory.ConstructorDeclaration(
                 interfaceType.Name + "_PSharpProxy")
@@ -308,10 +315,10 @@ namespace ActorModel
                             SyntaxFactory.IdentifierName("Target")))
                     }));
 
-            LocalDeclarationStatementSyntax eventDecl = ProxyContainer
-                .CreateEventDeclaration(eventType, eventName, arguments);
+            LocalDeclarationStatementSyntax eventDecl = this.CreateEventDeclaration(
+                eventType, eventName, arguments);
 
-            ExpressionStatementSyntax sendExpr = ProxyContainer.CreateSendEventExpression("Id", eventName);
+            ExpressionStatementSyntax sendExpr = this.CreateSendEventExpression("Id", eventName);
 
             BlockSyntax body = SyntaxFactory.Block(targetConstruction, runtimeAssignment,
                 machineTypeDecl, createMachine, eventDecl, sendExpr);
@@ -326,10 +333,10 @@ namespace ActorModel
         /// <param name="type">Type</param>
         /// <param name="identifier">Identifier</param>
         /// <returns></returns>
-        private static FieldDeclarationSyntax CreateProxyField(Type type, string identifier)
+        private FieldDeclarationSyntax CreateProxyField(Type type, string identifier)
         {
             FieldDeclarationSyntax fieldDecl = SyntaxFactory.FieldDeclaration(SyntaxFactory.VariableDeclaration(
-                ProxyContainer.GetTypeSyntax(type),
+                this.GetTypeSyntax(type),
                 SyntaxFactory.SingletonSeparatedList(SyntaxFactory.VariableDeclarator(identifier))))
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PrivateKeyword)));
             return fieldDecl;
@@ -341,7 +348,7 @@ namespace ActorModel
         /// <param name="method">MethodInfo</param>
         /// <param name="interfaceType">Actor interface type</param>
         /// <returns>MethodDeclarationSyntax</returns>
-        private static MethodDeclarationSyntax CreateProxyMethod(MethodInfo method, Type interfaceType)
+        private MethodDeclarationSyntax CreateProxyMethod(MethodInfo method, Type interfaceType)
         {
             List<ParameterSyntax> parameters = new List<ParameterSyntax>();
             List<ExpressionSyntax> payloadArguments = new List<ExpressionSyntax>();
@@ -350,14 +357,14 @@ namespace ActorModel
                 parameters.Add(SyntaxFactory.Parameter(
                     SyntaxFactory.List<AttributeListSyntax>(),
                     SyntaxFactory.TokenList(),
-                    ProxyContainer.GetTypeSyntax(parameter.ParameterType),
+                    this.GetTypeSyntax(parameter.ParameterType),
                     SyntaxFactory.Identifier(parameter.Name),
                     null));
                 payloadArguments.Add(SyntaxFactory.IdentifierName(parameter.Name));
             }
 
             MethodDeclarationSyntax methodDecl = SyntaxFactory.MethodDeclaration(
-                ProxyContainer.GetTypeSyntax(method.ReturnType),
+                this.GetTypeSyntax(method.ReturnType),
                 method.Name)
                 .WithParameterList(SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList(parameters)));
 
@@ -395,24 +402,24 @@ namespace ActorModel
                         SyntaxFactory.Argument(SyntaxFactory.IdentifierName("payload"))
                     }));
 
-            LocalDeclarationStatementSyntax eventDecl = ProxyContainer
-                .CreateEventDeclaration(eventType, eventName, arguments);
+            LocalDeclarationStatementSyntax eventDecl = this.CreateEventDeclaration(
+                eventType, eventName, arguments);
 
-            ExpressionStatementSyntax sendExpr = ProxyContainer.CreateSendEventExpression("Id", eventName);
+            ExpressionStatementSyntax sendExpr = this.CreateSendEventExpression("Id", eventName);
 
             ReturnStatementSyntax returnStmt = null;
             if (method.ReturnType.GetGenericArguments().Count() > 0)
             {
                 Type genericType = method.ReturnType.GetGenericArguments().First();
-                returnStmt = ProxyContainer.CreateReturnExpression(method.ReturnType, genericType,
+                returnStmt = this.CreateReturnExpression(method.ReturnType, genericType,
                     SyntaxFactory.Block(SyntaxFactory.ReturnStatement(
                         SyntaxFactory.DefaultExpression(
-                            ProxyContainer.GetTypeSyntax(genericType)))));
+                            this.GetTypeSyntax(genericType)))));
             }
             else
             {
                 var returnType = method.ReturnType.GetGenericArguments().First();
-                returnStmt = ProxyContainer.CreateReturnExpression(method.ReturnType, null,
+                returnStmt = this.CreateReturnExpression(method.ReturnType, null,
                     SyntaxFactory.Block());
             }
 
@@ -431,7 +438,7 @@ namespace ActorModel
         /// <param name="eventName">Name of the event</param>
         /// <param name="arguments">Arguments</param>
         /// <returns>LocalDeclarationStatementSyntax</returns>
-        private static LocalDeclarationStatementSyntax CreateEventDeclaration(
+        private LocalDeclarationStatementSyntax CreateEventDeclaration(
             string eventType, string eventName, ArgumentListSyntax arguments)
         {
             LocalDeclarationStatementSyntax eventDecl = SyntaxFactory.LocalDeclarationStatement(
@@ -455,7 +462,7 @@ namespace ActorModel
         /// <param name="target">Target</param>
         /// <param name="eventName">Event name</param>
         /// <returns>ExpressionStatementSyntax</returns>
-        private static ExpressionStatementSyntax CreateSendEventExpression(
+        private ExpressionStatementSyntax CreateSendEventExpression(
             string target, string eventName)
         {
             ExpressionStatementSyntax sendExpr = SyntaxFactory.ExpressionStatement(
@@ -483,7 +490,7 @@ namespace ActorModel
         /// <param name="genericType">Generic type</param>
         /// <param name="eventName">Body</param>
         /// <returns>ReturnStatementSyntax</returns>
-        private static ReturnStatementSyntax CreateReturnExpression(Type returnType, Type genericType, BlockSyntax body)
+        private ReturnStatementSyntax CreateReturnExpression(Type returnType, Type genericType, BlockSyntax body)
         {
             List<TypeSyntax> genericTypes = new List<TypeSyntax>();
             if (genericType != null)
@@ -510,7 +517,7 @@ namespace ActorModel
         /// </summary>
         /// <param name="type">Type</param>
         /// <returns>TypeSyntax</returns>
-        private static TypeSyntax GetTypeSyntax(Type type)
+        private TypeSyntax GetTypeSyntax(Type type)
         {
             TypeSyntax syntax = null;
 

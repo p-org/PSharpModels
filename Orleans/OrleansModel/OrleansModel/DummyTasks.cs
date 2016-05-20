@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace ActorModel
+namespace OrleansModel
 {
     public class DummyTask : Task
     {

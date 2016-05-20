@@ -1,4 +1,4 @@
-﻿using ActorModel;
+﻿using OrleansModel;
 using Microsoft.ServiceFabric.Actors.Client;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using System;
@@ -30,6 +30,5 @@ namespace Microsoft.ServiceFabric.Actors
             IdMap.Add(actorId, res);
             return res;
         }
-
     }
 }

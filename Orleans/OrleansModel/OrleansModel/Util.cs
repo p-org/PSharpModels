@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 
-namespace ActorModel
+namespace OrleansModel
 {
     public static class Util
     {
