@@ -17,10 +17,10 @@ namespace Example
             this.obj = new MyHuman();
             rt = runtime;
             rt = PSharpRuntime.Create();
-            Type mt = typeof(ActorModel.ActorMachine);
+            Type mt = typeof(ServiceFabricModel.ActorMachine);
             id = rt.CreateMachine(mt);
             ActorId aid = new ActorId(5);
-            ActorModel.ActorMachine.InitEvent iev = new ActorModel.ActorMachine.InitEvent(obj);
+            ServiceFabricModel.ActorMachine.InitEvent iev = new ServiceFabricModel.ActorMachine.InitEvent(obj);
             rt.SendEvent(id, iev);           
         }
 
@@ -30,7 +30,7 @@ namespace Example
             object[] parameters = new object[] { a, b, s };
 
 
-            ActorModel.ActorMachine.ActorEvent ev = new ActorModel.ActorMachine.ActorEvent(typeof(IHuman), "Eat", obj, parameters);
+            ServiceFabricModel.ActorMachine.ActorEvent ev = new ServiceFabricModel.ActorMachine.ActorEvent(typeof(IHuman), "Eat", obj, parameters);
             rt.SendEvent(id, ev);
 
             return new Task<int>(() => { return default(int); });

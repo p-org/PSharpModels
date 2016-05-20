@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Dummy.System.Threading.Tasks;
+using System.Threading.Tasks;
 using Microsoft.PSharp;
 
 namespace Actor1
@@ -27,7 +27,7 @@ namespace Actor1
         public int GetResult(Task<int> t)
         {
             //return t.Result;
-            return (int)((ActorModel.ActorMachine)this.refMachine).GetResult();
+            return (int)((ServiceFabricModel.ActorMachine)this.refMachine).GetResult();
         }
     }
 }

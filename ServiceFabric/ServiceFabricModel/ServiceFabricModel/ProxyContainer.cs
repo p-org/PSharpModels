@@ -102,8 +102,13 @@ namespace ServiceFabricModel
                 }
             }
 
-            var actorType = types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).Single();
+            var actorType = types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).First();
             references.Add(MetadataReference.CreateFromFile(actorType.Assembly.Location));
+
+            foreach(var referencedAssembly in actorType.Assembly.GetReferencedAssemblies())
+            {
+                references.Add(MetadataReference.CreateFromFile(Assembly.Load(referencedAssembly).Location));
+            }
 
             SyntaxTree syntaxTree = ProxyContainer.CreateProxySyntaxTree(
                 interfaceType, actorType);
@@ -165,7 +170,7 @@ namespace ServiceFabricModel
                 interfaceType, actorType);
 
             NamespaceDeclarationSyntax namespaceDecl = SyntaxFactory.NamespaceDeclaration(
-                SyntaxFactory.IdentifierName(interfaceType.Namespace));
+                SyntaxFactory.IdentifierName(actorType.Namespace + "_PSharpProxy"));
 
             namespaceDecl = namespaceDecl.WithUsings(SyntaxFactory.List(
                 new List<UsingDirectiveSyntax>
@@ -401,7 +406,15 @@ namespace ServiceFabricModel
             ExpressionStatementSyntax sendExpr = ProxyContainer.CreateSendEventExpression("Id", eventName);
 
             ReturnStatementSyntax returnStmt = null;
-            if (method.ReturnType.GetGenericArguments().Count() > 0)
+
+            //TODO: Fix this (return type of GetResult)
+            if (method.Name.StartsWith("GetResult"))
+            {
+                returnStmt = SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(GetTypeSyntax(method.ReturnType)));
+            }
+            //end TODO
+
+            else if (method.ReturnType.GetGenericArguments().Count() > 0)
             {
                 Type genericType = method.ReturnType.GetGenericArguments().First();
                 returnStmt = ProxyContainer.CreateReturnExpression(method.ReturnType, genericType,
@@ -411,7 +424,6 @@ namespace ServiceFabricModel
             }
             else
             {
-                var returnType = method.ReturnType.GetGenericArguments().First();
                 returnStmt = ProxyContainer.CreateReturnExpression(method.ReturnType, null,
                     SyntaxFactory.Block());
             }
@@ -486,12 +498,12 @@ namespace ServiceFabricModel
         private static ReturnStatementSyntax CreateReturnExpression(Type returnType, Type genericType, BlockSyntax body)
         {
             List<TypeSyntax> genericTypes = new List<TypeSyntax>();
+            ReturnStatementSyntax returnStmt = null;
+
             if (genericType != null)
             {
                 genericTypes.Add(SyntaxFactory.IdentifierName(genericType.FullName));
-            }
-
-            ReturnStatementSyntax returnStmt = SyntaxFactory.ReturnStatement(
+                returnStmt = SyntaxFactory.ReturnStatement(
                 SyntaxFactory.ObjectCreationExpression(
                     SyntaxFactory.GenericName(SyntaxFactory.Identifier(typeof(DummyTask).FullName),
                     SyntaxFactory.TypeArgumentList(
@@ -502,6 +514,12 @@ namespace ServiceFabricModel
                         {
                             SyntaxFactory.Argument(SyntaxFactory.ParenthesizedLambdaExpression(body))
                         }))));
+            }
+
+            else
+                returnStmt = SyntaxFactory.ReturnStatement(SyntaxFactory.ObjectCreationExpression(
+                    SyntaxFactory.IdentifierName(typeof(DummyTask).FullName))
+                    .WithArgumentList(SyntaxFactory.ArgumentList()));
             return returnStmt;
         }
 

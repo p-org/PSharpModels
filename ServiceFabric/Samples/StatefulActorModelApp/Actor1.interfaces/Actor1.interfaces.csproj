@@ -31,8 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ActorModel">
-      <HintPath>..\..\ActorModel\ActorModel\bin\Debug\ActorModel.dll</HintPath>
+    <Reference Include="ServiceFabricModel">
+      <HintPath>..\..\..\Binaries\ServiceFabricModel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

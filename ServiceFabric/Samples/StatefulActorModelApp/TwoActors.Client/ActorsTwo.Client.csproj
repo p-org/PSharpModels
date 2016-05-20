@@ -34,8 +34,11 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ActorModel">
-      <HintPath>..\..\ActorModel\ActorModel\bin\Debug\ActorModel.dll</HintPath>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
+      <HintPath>..\..\..\Binaries\Microsoft.CodeAnalysis.CSharp.Workspaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceFabricModel">
+      <HintPath>..\..\..\Binaries\ServiceFabricModel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -54,6 +57,14 @@
     <ProjectReference Include="..\Actor1.interfaces\Actor1.interfaces.csproj">
       <Project>{6f8dba8a-6b08-4c88-9d32-dc40aaee44a4}</Project>
       <Name>Actor1.interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Actor1\Actor1.csproj">
+      <Project>{5a42352b-20df-4a81-b8dd-cc03c7750ab0}</Project>
+      <Name>Actor1</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Actor2\Actor2.csproj">
+      <Project>{8e23bc4c-77bc-4f3d-ae48-94bafeb5d56e}</Project>
+      <Name>Actor2</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,4 +1,4 @@
-﻿using ActorModel;
+﻿using ServiceFabricModel;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using System;
@@ -35,7 +35,7 @@ namespace Example
         public int GetResult(Task<int> t)
         {
             //return t.Result;
-            return (int)((ActorModel.ActorMachine)this.refMachine).GetResult();
+            return (int)((ServiceFabricModel.ActorMachine)this.refMachine).GetResult();
         }
     }
 }
