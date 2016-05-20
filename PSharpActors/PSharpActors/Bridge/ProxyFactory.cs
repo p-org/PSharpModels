@@ -30,7 +30,7 @@ namespace Microsoft.PSharp.Actors.Bridge
     /// <summary>
     /// Factory of proxies.
     /// </summary>
-    public class ProxyFactory<ProxyId>
+    public class ProxyFactory
     {
         /// <summary>
         /// The proxy types.
@@ -89,12 +89,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             {
                 throw new InvalidOperationException();
             }
-
-            //var references = new HashSet<MetadataReference>
-            //{
-            //    MetadataReference.CreateFromFile(typeof(ProxyId).Assembly.Location)
-            //};
-
+            
             string assemblyPath = Assembly.GetEntryAssembly().Location + "\\..\\..\\..\\..";
             List<Assembly> allAssemblies = new List<Assembly>();
             foreach (string dll in Directory.GetFiles(assemblyPath, "*.exe", SearchOption.AllDirectories))
