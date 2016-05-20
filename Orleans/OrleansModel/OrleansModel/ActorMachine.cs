@@ -1,4 +1,4 @@
-﻿using ActorModel;
+﻿using OrleansModel;
 using Microsoft.PSharp;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace ActorModel
+namespace OrleansModel
 {
     public class ActorMachine : Machine
     {

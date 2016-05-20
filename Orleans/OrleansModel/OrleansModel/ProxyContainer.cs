@@ -18,7 +18,7 @@ using Microsoft.PSharp.LanguageServices;
 using Microsoft.PSharp.LanguageServices.Compilation;
 using Microsoft.ServiceFabric.Actors;
 
-namespace ActorModel
+namespace OrleansModel
 {
     public class ProxyContainer
     {

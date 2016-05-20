@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ActorModel;
+using OrleansModel;
 using Microsoft.ServiceFabric.Data;
 
 namespace Microsoft.ServiceFabric.Actors.Runtime
