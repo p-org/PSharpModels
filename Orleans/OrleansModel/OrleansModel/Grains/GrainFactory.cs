@@ -13,6 +13,9 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Linq;
+
+using OrleansModel;
 
 namespace Orleans
 {
@@ -21,53 +24,63 @@ namespace Orleans
     /// </summary>
     internal class GrainFactory : IGrainFactory
     {
-        TGrainInterface IGrainFactory.GetGrain<TGrainInterface>(Guid primaryKey,
+        public TGrainInterface GetGrain<TGrainInterface>(Guid primaryKey,
             string grainClassNamePrefix = null)
             where TGrainInterface : IGrainWithGuidKey
         {
-
+            return this.GetOrCreateGrain<TGrainInterface>(primaryKey);
         }
 
-        TGrainInterface IGrainFactory.GetGrain<TGrainInterface>(long primaryKey,
+        public TGrainInterface GetGrain<TGrainInterface>(long primaryKey,
             string grainClassNamePrefix = null)
             where TGrainInterface : IGrainWithIntegerKey
         {
-            if (GrainClient.IdMap.ContainsKey())
+            Guid key = GrainId.CreateGuid(primaryKey);
+            return this.GetOrCreateGrain<TGrainInterface>(key);
         }
 
-        public static TActorInterface Create<TActorInterface>(ActorId actorId, string applicationName = null, string serviceName = null) where TActorInterface : IActor
-        {
-            if (IdMap.ContainsKey(actorId))
-                return (TActorInterface)IdMap[actorId];
-
-            if (runtime == null)
-                runtime = PSharpRuntime.Create();
-
-            Type proxyType = proxies.GetProxyType(typeof(TActorInterface), actorId);
-            var res = (TActorInterface)Activator.CreateInstance(proxyType, runtime);
-            IdMap.Add(actorId, res);
-            return res;
-        }
-
-        TGrainInterface IGrainFactory.GetGrain<TGrainInterface>(string primaryKey,
+        public TGrainInterface GetGrain<TGrainInterface>(string primaryKey,
             string grainClassNamePrefix = null)
             where TGrainInterface : IGrainWithStringKey
         {
-
+            Guid key = GrainId.CreateGuid(primaryKey);
+            return this.GetOrCreateGrain<TGrainInterface>(key);
         }
 
-        TGrainInterface IGrainFactory.GetGrain<TGrainInterface>(Guid primaryKey, string keyExtension,
+        public TGrainInterface GetGrain<TGrainInterface>(Guid primaryKey, string keyExtension,
             string grainClassNamePrefix = null)
             where TGrainInterface : IGrainWithGuidCompoundKey
         {
-
+            return this.GetOrCreateGrain<TGrainInterface>(primaryKey);
         }
 
-        TGrainInterface IGrainFactory.GetGrain<TGrainInterface>(long primaryKey, string keyExtension,
+        public TGrainInterface GetGrain<TGrainInterface>(long primaryKey, string keyExtension,
             string grainClassNamePrefix = null)
             where TGrainInterface : IGrainWithIntegerCompoundKey
         {
+            Guid key = GrainId.CreateGuid(primaryKey);
+            return this.GetOrCreateGrain<TGrainInterface>(key);
+        }
 
+        /// <summary>
+        /// Gets or creates a grain.
+        /// </summary>
+        /// <typeparam name="TGrainInterface">TGrainInterface</typeparam>
+        /// <param name="primaryKey">PrimaryKey</param>
+        /// <returns>TGrainInterface</returns>
+        private TGrainInterface GetOrCreateGrain<TGrainInterface>(Guid primaryKey)
+        {
+            var id = GrainClient.GrainIds.SingleOrDefault(val => val.PrimaryKey.Equals(primaryKey));
+            if (id != null)
+            {
+                return (TGrainInterface)id.Grain;
+            }
+
+            Type proxyType = GrainClient.ProxyFactory.GetProxyType(typeof(TGrainInterface), typeof(GrainId));
+            var grain = (TGrainInterface)Activator.CreateInstance(proxyType, GrainClient.Runtime);
+
+            GrainId newId = new GrainId(primaryKey, (IGrain)grain);
+            return grain;
         }
     }
 }

@@ -12,10 +12,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 
 using Microsoft.PSharp;
+using Microsoft.PSharp.Actors.Bridge;
 
 using OrleansModel;
 
@@ -31,26 +31,26 @@ namespace Orleans
         /// <summary>
         /// The P# runtime.
         /// </summary>
-        private static PSharpRuntime Runtime;
+        internal static PSharpRuntime Runtime;
 
         /// <summary>
         /// The proxy factory.
         /// </summary>
-        private static readonly ProxyFactory<IGrain> ProxyFactory;
+        internal static readonly ProxyFactory ProxyFactory;
 
         /// <summary>
-        /// Map from ids to grains.
+        /// Set of grain ids.
         /// </summary>
-        internal static Dictionary<IGrain, Object> IdMap;
+        internal static ISet<GrainId> GrainIds;
 
         /// <summary>
         /// Static constructor.
         /// </summary>
         static GrainClient()
         {
-            GrainClient.Runtime = null;
-            GrainClient.ProxyFactory = new ProxyFactory<IGrain>();
-            GrainClient.IdMap = new Dictionary<IGrain, object>();
+            GrainClient.Runtime = PSharpRuntime.Create();
+            GrainClient.ProxyFactory = new ProxyFactory(new HashSet<string> { });
+            GrainClient.GrainIds = new HashSet<GrainId>();
         }
     }
 }
