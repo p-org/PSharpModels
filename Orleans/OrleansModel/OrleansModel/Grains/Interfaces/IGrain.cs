@@ -17,7 +17,7 @@ using Orleans.Runtime;
 namespace Orleans
 {
     /// <summary>
-    /// Marker interface for grains.
+    /// Marker interface for grains
     /// </summary>
     public interface IGrain : IAddressable
     {
