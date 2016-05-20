@@ -1,17 +1,17 @@
-﻿using Microsoft.PSharp;
-using Microsoft.ServiceFabric.Actors.Runtime;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace ServiceFabricModel
+using Microsoft.PSharp;
+
+namespace Microsoft.PSharp.Actors
 {
-    public class ActorMachine : Machine
+    public abstract class ActorMachine : Machine
     {
         #region fields
-        Machine refMachine;
+        protected Machine RefMachine;
         #endregion
 
         #region events
@@ -66,31 +66,14 @@ namespace ServiceFabricModel
         #region actions
         void assignRef()
         {
-            refMachine = this;
+            this.RefMachine = this;
         }
 
         private void OnInitEvent()
         {
             try
             {
-                var e = this.ReceivedEvent as InitEvent;
-                ConstructorInfo sm = typeof(ActorStateManager).GetConstructors().Single();
-                var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
-                PropertyInfo prop = e.classInstance.GetType().GetProperty("StateManager", BindingFlags.Public | BindingFlags.Instance);
-                if (null != prop && prop.CanWrite)
-                {
-                    prop.SetValue(e.classInstance, stateManager, null);
-                }
-
-                PropertyInfo rProp = e.classInstance.GetType().GetProperty("refMachine", BindingFlags.Public | BindingFlags.Instance);
-                if (null != rProp && rProp.CanWrite)
-                {
-                    Console.WriteLine("setting ref value: " + refMachine);
-                    rProp.SetValue(e.classInstance, refMachine, null);
-                }
-
-                MethodInfo mo = typeof(ActorBase).GetMethod("OnActivateAsync", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                mo.Invoke(e.classInstance, new object[] { });
+                this.Initialize();
             }
             catch(Exception ex)
             {
@@ -98,6 +81,8 @@ namespace ServiceFabricModel
                 Environment.Exit(Environment.ExitCode);
             }            
         }
+
+        protected abstract void Initialize();
 
         private void OnActorEvent()
         {

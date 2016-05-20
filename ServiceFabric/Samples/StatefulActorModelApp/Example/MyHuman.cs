@@ -35,7 +35,7 @@ namespace Example
         public int GetResult(Task<int> t)
         {
             //return t.Result;
-            return (int)((ServiceFabricModel.ActorMachine)this.refMachine).GetResult();
+            return (int)((ServiceFabricModel.FabricActorMachine)this.refMachine).GetResult();
         }
     }
 }

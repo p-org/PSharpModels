@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ServiceFabricModel;
+
+using Microsoft.PSharp.Actors.Bridge;
 
 namespace Microsoft.ServiceFabric.Actors.Runtime
 {

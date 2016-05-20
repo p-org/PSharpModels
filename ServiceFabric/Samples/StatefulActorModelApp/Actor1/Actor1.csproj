@@ -37,7 +37,11 @@
     <Reference Include="Microsoft.PSharp">
       <HintPath>..\..\..\Binaries\Microsoft.PSharp.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceFabricModel">
+    <Reference Include="Microsoft.PSharp.Actors">
+      <HintPath>..\..\..\..\PSharpActors\Binaries\Microsoft.PSharp.Actors.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceFabricModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Binaries\ServiceFabricModel.dll</HintPath>
     </Reference>
     <Reference Include="System" />

@@ -66,17 +66,21 @@
     <Compile Include="ActorBase.cs" />
     <Compile Include="ActorExtensions.cs" />
     <Compile Include="ActorId.cs" />
-    <Compile Include="ActorMachine.cs" />
+    <Compile Include="FabricActorMachine.cs" />
     <Compile Include="ActorProxy.cs" />
     <Compile Include="ActorStateManager.cs" />
     <Compile Include="ConditionalValue.cs" />
-    <Compile Include="DummyTasks.cs" />
     <Compile Include="IActor.cs" />
     <Compile Include="IActorProxy.cs" />
     <Compile Include="IActorStateManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ProxyContainer.cs" />
     <Compile Include="Util.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\PSharpActors\PSharpActors\PSharpActors.csproj">
+      <Project>{444da357-5911-45d5-9645-3c555a39efd1}</Project>
+      <Name>PSharpActors</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

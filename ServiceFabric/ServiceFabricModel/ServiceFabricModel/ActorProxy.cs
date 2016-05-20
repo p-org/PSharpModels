@@ -5,17 +5,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 using Microsoft.PSharp;
+using Microsoft.PSharp.Actors.Bridge;
 
 namespace Microsoft.ServiceFabric.Actors
 {
     public class ActorProxy
     {
-        private static readonly ProxyContainer proxies = new ProxyContainer();
+        private static PSharpRuntime runtime;
+        private static readonly ProxyFactory<ActorId> ProxyFactory;
+        private static Dictionary<ActorId, Object> IdMap;
 
-        private static PSharpRuntime runtime = null;
-
-        private static Dictionary<ActorId, Object> IdMap = new Dictionary<ActorId, object>();
+        static ActorProxy()
+        {
+            ProxyFactory = new ProxyFactory<ActorId>(new HashSet<string> { "Microsoft.ServiceFabric.Actors" });
+            runtime = null;
+            IdMap = new Dictionary<ActorId, object>();
+    }
 
         public static TActorInterface Create<TActorInterface>(ActorId actorId, string applicationName = null, string serviceName = null) where TActorInterface : IActor
         {
@@ -25,7 +32,7 @@ namespace Microsoft.ServiceFabric.Actors
             if (runtime == null)
                 runtime = PSharpRuntime.Create();
 
-            Type proxyType = proxies.GetProxyType(typeof(TActorInterface), actorId);
+            Type proxyType = ProxyFactory.GetProxyType(typeof(TActorInterface), typeof(FabricActorMachine));
             var res = (TActorInterface)Activator.CreateInstance(proxyType, runtime);
             IdMap.Add(actorId, res);
             return res;

@@ -37,6 +37,10 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
       <HintPath>..\..\..\Binaries\Microsoft.CodeAnalysis.CSharp.Workspaces.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.PSharp.Actors, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\PSharpActors\Binaries\Microsoft.PSharp.Actors.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceFabricModel">
       <HintPath>..\..\..\Binaries\ServiceFabricModel.dll</HintPath>
     </Reference>

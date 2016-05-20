@@ -30,7 +30,7 @@ namespace Microsoft.PSharp.Actors.Bridge
     /// <summary>
     /// Factory of proxies.
     /// </summary>
-    internal class ProxyFactory<ProxyId>
+    public class ProxyFactory<ProxyId>
     {
         /// <summary>
         /// The proxy types.
@@ -42,22 +42,25 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// </summary>
         private readonly object Lock;
 
+        private readonly ISet<string> RequiredNamespaces;
+
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ProxyFactory()
+        public ProxyFactory(ISet<string> requiredNamespaces)
         {
             this.ProxyTypes = new Dictionary<Type, Type>();
             this.Lock = new object();
+            this.RequiredNamespaces = requiredNamespaces;
         }
 
         /// <summary>
         /// Get the proxy type.
         /// </summary>
         /// <param name="interfaceType">Type</param>
-        /// <param name="actorId">ActorId</param>
+        /// <param name="actorMachineType">Actor machine type</param>
         /// <returns>Type</returns>
-        public Type GetProxyType(Type interfaceType, ProxyId actorId)
+        public Type GetProxyType(Type interfaceType, Type actorMachineType)
         {
             lock (this.Lock)
             {
@@ -66,7 +69,7 @@ namespace Microsoft.PSharp.Actors.Bridge
 
                 if (res == null)
                 {
-                    res = CreateProxyType(interfaceType, actorId);
+                    res = CreateProxyType(interfaceType, actorMachineType);
                     this.ProxyTypes.Add(interfaceType, res);
                 }
 
@@ -78,19 +81,19 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// Create a new proxy type.
         /// </summary>
         /// <param name="interfaceType">Type</param>
-        /// <param name="actorId">ActorId</param>
+        /// <param name="actorMachineType">Actor machine type</param>
         /// <returns>Type</returns>
-        private Type CreateProxyType(Type interfaceType, ProxyId actorId)
+        private Type CreateProxyType(Type interfaceType, Type actorMachineType)
         {
             if (!interfaceType.IsInterface)
             {
                 throw new InvalidOperationException();
             }
 
-            var references = new HashSet<MetadataReference>
-            {
-                MetadataReference.CreateFromFile(typeof(ProxyId).Assembly.Location)
-            };
+            //var references = new HashSet<MetadataReference>
+            //{
+            //    MetadataReference.CreateFromFile(typeof(ProxyId).Assembly.Location)
+            //};
 
             string assemblyPath = Assembly.GetEntryAssembly().Location + "\\..\\..\\..\\..";
             List<Assembly> allAssemblies = new List<Assembly>();
@@ -122,11 +125,18 @@ namespace Microsoft.PSharp.Actors.Bridge
                 }
             }
 
-            var actorType = types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).Single();
-            references.Add(MetadataReference.CreateFromFile(actorType.Assembly.Location));
+            var actorType = types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).First();
 
-            SyntaxTree syntaxTree = this.CreateProxySyntaxTree(interfaceType, actorType);
-            //Console.WriteLine(syntaxTree);
+            var references = new HashSet<MetadataReference>();
+            references.Add(MetadataReference.CreateFromFile(actorType.Assembly.Location));
+            references.Add(MetadataReference.CreateFromFile(typeof(ActorMachine).Assembly.Location));
+            foreach (var referencedAssembly in actorType.Assembly.GetReferencedAssemblies())
+            {
+                references.Add(MetadataReference.CreateFromFile(Assembly.Load(referencedAssembly).Location));
+            }
+
+            SyntaxTree syntaxTree = this.CreateProxySyntaxTree(interfaceType, actorType, actorMachineType);
+            Console.WriteLine(syntaxTree);
 
             var context = CompilationContext.Create().LoadSolution(syntaxTree.ToString(), references, "cs");
             var compilation = context.GetSolution().Projects.First().GetCompilationAsync().Result;
@@ -165,25 +175,30 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// </summary>
         /// <param name="interfaceType">Actor interface type</param>
         /// <param name="actorType">Actor type</param>
+        /// <param name="actorMachineType">Actor machine type</param>
         /// <returns>SyntaxTree</returns>
-        private SyntaxTree CreateProxySyntaxTree(Type interfaceType, Type actorType)
+        private SyntaxTree CreateProxySyntaxTree(Type interfaceType, Type actorType, Type actorMachineType)
         {
             ClassDeclarationSyntax proxyDecl = this.CreateProxyClassDeclaration(
-                interfaceType, actorType);
+                interfaceType, actorType, actorMachineType);
 
             NamespaceDeclarationSyntax namespaceDecl = SyntaxFactory.NamespaceDeclaration(
-                SyntaxFactory.IdentifierName(interfaceType.Namespace));
+                SyntaxFactory.IdentifierName(actorType.Namespace + "_PSharpProxy"));
 
-            namespaceDecl = namespaceDecl.WithUsings(SyntaxFactory.List(
-                new List<UsingDirectiveSyntax>
+            var usingDirectives = new List<UsingDirectiveSyntax>
                 {
                     SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("System")),
                     SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("System.Threading.Tasks")),
-                    SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.PSharp")),
-                    SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.ServiceFabric.Actors"))
-                }));
+                    SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.PSharp"))
+                };
 
-            namespaceDecl = namespaceDecl.WithMembers(SyntaxFactory.List(
+            foreach (var requiredNamespace in this.RequiredNamespaces)
+            {
+                usingDirectives.Add(SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName(requiredNamespace)));
+            }
+
+            namespaceDecl = namespaceDecl.WithUsings(SyntaxFactory.List(usingDirectives))
+                .WithMembers(SyntaxFactory.List(
                 new List<MemberDeclarationSyntax>
                 {
                     proxyDecl
@@ -199,8 +214,9 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// </summary>
         /// <param name="interfaceType">Actor interface type</param>
         /// <param name="actorType">Actor type</param>
+        /// <param name="actorMachineType">Actor machine type</param>
         /// <returns>ClassDeclarationSyntax</returns>
-        private ClassDeclarationSyntax CreateProxyClassDeclaration(Type interfaceType, Type actorType)
+        private ClassDeclarationSyntax CreateProxyClassDeclaration(Type interfaceType, Type actorType, Type actorMachineType)
         {
             ClassDeclarationSyntax classDecl = SyntaxFactory.ClassDeclaration(interfaceType.Name + "_PSharpProxy")
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
@@ -213,7 +229,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                 typeof(PSharpRuntime), "Runtime");
 
             ConstructorDeclarationSyntax constructor = this.CreateProxyConstructor(
-                interfaceType, actorType);
+                interfaceType, actorType, actorMachineType);
 
             var baseTypes = new HashSet<BaseTypeSyntax>();
             var methodDecls = new List<MethodDeclarationSyntax>();
@@ -222,7 +238,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                 baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(type.FullName)));
                 foreach (var method in type.GetMethods())
                 {
-                    methodDecls.Add(this.CreateProxyMethod(method, interfaceType));
+                    methodDecls.Add(this.CreateProxyMethod(method, interfaceType, actorMachineType));
                 }
             }
 
@@ -244,8 +260,9 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// </summary>
         /// <param name="interfaceType">Actor interface type</param>
         /// <param name="actorType">Actor type</param>
+        /// <param name="actorMachineType">Actor machine type</param>
         /// <returns>ConstructorDeclarationSyntax</returns>
-        private ConstructorDeclarationSyntax CreateProxyConstructor(Type interfaceType, Type actorType)
+        private ConstructorDeclarationSyntax CreateProxyConstructor(Type interfaceType, Type actorType, Type actorMachineType)
         {
             ConstructorDeclarationSyntax constructor = SyntaxFactory.ConstructorDeclaration(
                 interfaceType.Name + "_PSharpProxy")
@@ -283,7 +300,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                             SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("machineType"),
                             null,
                             SyntaxFactory.EqualsValueClause(SyntaxFactory.TypeOfExpression(
-                                SyntaxFactory.IdentifierName(typeof(ActorMachine).FullName))))
+                                SyntaxFactory.IdentifierName(actorMachineType.FullName))))
                         })));
 
             ExpressionStatementSyntax createMachine = SyntaxFactory.ExpressionStatement(
@@ -302,7 +319,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                                 SyntaxFactory.Argument(SyntaxFactory.IdentifierName("machineType"))
                             })))));
 
-            string eventType = typeof(ActorMachine).FullName + "." + typeof(ActorMachine.InitEvent).Name;
+            string eventType = actorMachineType.FullName + "." + typeof(ActorMachine.InitEvent).Name;
             string eventName = "initEvent";
 
             ArgumentListSyntax arguments = SyntaxFactory.ArgumentList(
@@ -347,8 +364,9 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// </summary>
         /// <param name="method">MethodInfo</param>
         /// <param name="interfaceType">Actor interface type</param>
+        /// <param name="actorMachineType">Actor machine type</param>
         /// <returns>MethodDeclarationSyntax</returns>
-        private MethodDeclarationSyntax CreateProxyMethod(MethodInfo method, Type interfaceType)
+        private MethodDeclarationSyntax CreateProxyMethod(MethodInfo method, Type interfaceType, Type actorMachineType)
         {
             List<ParameterSyntax> parameters = new List<ParameterSyntax>();
             List<ExpressionSyntax> payloadArguments = new List<ExpressionSyntax>();
@@ -383,7 +401,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                                     SyntaxFactory.SeparatedList(payloadArguments)))))
                         })));
 
-            string eventType = typeof(ActorMachine).FullName + "." + typeof(ActorMachine.ActorEvent).Name;
+            string eventType = actorMachineType.FullName + "." + typeof(ActorMachine.ActorEvent).Name;
             string eventName = "actorEvent";
 
             ArgumentListSyntax arguments = SyntaxFactory.ArgumentList(
@@ -408,7 +426,15 @@ namespace Microsoft.PSharp.Actors.Bridge
             ExpressionStatementSyntax sendExpr = this.CreateSendEventExpression("Id", eventName);
 
             ReturnStatementSyntax returnStmt = null;
-            if (method.ReturnType.GetGenericArguments().Count() > 0)
+
+            //TODO: Fix this (return type of GetResult)
+            if (method.Name.StartsWith("GetResult"))
+            {
+                returnStmt = SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(GetTypeSyntax(method.ReturnType)));
+            }
+            //end TODO
+
+            else if (method.ReturnType.GetGenericArguments().Count() > 0)
             {
                 Type genericType = method.ReturnType.GetGenericArguments().First();
                 returnStmt = this.CreateReturnExpression(method.ReturnType, genericType,
@@ -418,9 +444,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
             else
             {
-                var returnType = method.ReturnType.GetGenericArguments().First();
-                returnStmt = this.CreateReturnExpression(method.ReturnType, null,
-                    SyntaxFactory.Block());
+                returnStmt = this.CreateReturnExpression(method.ReturnType, null, SyntaxFactory.Block());
             }
 
             BlockSyntax body = SyntaxFactory.Block(payloadDecl, eventDecl,
@@ -493,12 +517,12 @@ namespace Microsoft.PSharp.Actors.Bridge
         private ReturnStatementSyntax CreateReturnExpression(Type returnType, Type genericType, BlockSyntax body)
         {
             List<TypeSyntax> genericTypes = new List<TypeSyntax>();
+            ReturnStatementSyntax returnStmt = null;
+
             if (genericType != null)
             {
                 genericTypes.Add(SyntaxFactory.IdentifierName(genericType.FullName));
-            }
-
-            ReturnStatementSyntax returnStmt = SyntaxFactory.ReturnStatement(
+                returnStmt = SyntaxFactory.ReturnStatement(
                 SyntaxFactory.ObjectCreationExpression(
                     SyntaxFactory.GenericName(SyntaxFactory.Identifier(typeof(DummyTask).FullName),
                     SyntaxFactory.TypeArgumentList(
@@ -507,8 +531,16 @@ namespace Microsoft.PSharp.Actors.Bridge
                     SyntaxFactory.SeparatedList(
                         new List<ArgumentSyntax>
                         {
-                            SyntaxFactory.Argument(SyntaxFactory.ParenthesizedLambdaExpression(body))
+                                    SyntaxFactory.Argument(SyntaxFactory.ParenthesizedLambdaExpression(body))
                         }))));
+            }
+            else
+            {
+                returnStmt = SyntaxFactory.ReturnStatement(SyntaxFactory.ObjectCreationExpression(
+                    SyntaxFactory.IdentifierName(typeof(DummyTask).FullName))
+                    .WithArgumentList(SyntaxFactory.ArgumentList()));
+            }
+
             return returnStmt;
         }
 
