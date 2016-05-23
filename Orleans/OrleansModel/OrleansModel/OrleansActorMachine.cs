@@ -13,36 +13,42 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Linq;
 using System.Reflection;
 
 using Microsoft.PSharp.Actors;
-using Microsoft.ServiceFabric.Actors.Runtime;
 
-namespace ServiceFabricModel
+namespace OrleansModel
 {
-    public class OrleansActorMachine : ActorMachine
+    /// <summary>
+    /// An Orleans P# actor machine.
+    /// </summary>
+    internal class OrleansActorMachine : ActorMachine
     {
         protected override void Initialize()
         {
             var e = this.ReceivedEvent as InitEvent;
-            ConstructorInfo sm = typeof(ActorStateManager).GetConstructors().Single();
-            var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
-            PropertyInfo prop = e.ClassInstance.GetType().GetProperty("StateManager", BindingFlags.Public | BindingFlags.Instance);
-            if (null != prop && prop.CanWrite)
-            {
-                prop.SetValue(e.ClassInstance, stateManager, null);
-            }
 
-            PropertyInfo rProp = e.ClassInstance.GetType().GetProperty("RefMachine", BindingFlags.Public | BindingFlags.Instance);
-            if (null != rProp && rProp.CanWrite)
-            {
-                Console.WriteLine("setting ref value: " + base.RefMachine);
-                rProp.SetValue(e.ClassInstance, base.RefMachine, null);
-            }
+            Console.WriteLine("Received: " + e.GetType());
 
-            MethodInfo mo = typeof(ActorBase).GetMethod("OnActivateAsync", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            mo.Invoke(e.ClassInstance, new object[] { });
+            //var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
+            //PropertyInfo prop = e.ClassInstance.GetType().GetProperty(
+            //    "StateManager", BindingFlags.Public | BindingFlags.Instance);
+            //if (null != prop && prop.CanWrite)
+            //{
+            //    prop.SetValue(e.ClassInstance, stateManager, null);
+            //}
+
+            //PropertyInfo rProp = e.ClassInstance.GetType().GetProperty(
+            //    "RefMachine", BindingFlags.Public | BindingFlags.Instance);
+            //if (null != rProp && rProp.CanWrite)
+            //{
+            //    Console.WriteLine("setting ref value: " + base.RefMachine);
+            //    rProp.SetValue(e.ClassInstance, base.RefMachine, null);
+            //}
+
+            //MethodInfo mo = typeof(ActorBase).GetMethod("OnActivateAsync",
+            //    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            //mo.Invoke(e.ClassInstance, new object[] { });
         }
     }
 }

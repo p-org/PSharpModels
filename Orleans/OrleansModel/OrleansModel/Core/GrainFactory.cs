@@ -76,8 +76,12 @@ namespace Orleans
                 return (TGrainInterface)id.Grain;
             }
 
-            Type proxyType = GrainClient.ProxyFactory.GetProxyType(typeof(TGrainInterface), typeof(GrainId));
-            var grain = (TGrainInterface)Activator.CreateInstance(proxyType, GrainClient.Runtime);
+            Console.WriteLine("Creating grain: " + typeof(TGrainInterface));
+
+            Type proxyType = GrainClient.ProxyFactory.GetProxyType(
+                typeof(TGrainInterface), typeof(OrleansActorMachine));
+            var grain = (TGrainInterface)Activator.CreateInstance(
+                proxyType, GrainClient.Runtime);
 
             GrainId newId = new GrainId(primaryKey, (IGrain)grain);
             return grain;
