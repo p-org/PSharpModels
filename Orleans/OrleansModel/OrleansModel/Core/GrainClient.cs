@@ -14,7 +14,6 @@
 
 using System.Collections.Generic;
 
-using Microsoft.PSharp;
 using Microsoft.PSharp.Actors.Bridge;
 
 using Orleans.Runtime.Configuration;
@@ -33,9 +32,9 @@ namespace Orleans
         public static IGrainFactory GrainFactory { get; }
 
         /// <summary>
-        /// The P# runtime.
+        /// The Orleans grain runtime.
         /// </summary>
-        internal static PSharpRuntime Runtime;
+        internal static GrainRuntime Runtime;
 
         /// <summary>
         /// The proxy factory.
@@ -62,7 +61,7 @@ namespace Orleans
         static GrainClient()
         {
             GrainClient.GrainFactory = new GrainFactory();
-            GrainClient.Runtime = PSharpRuntime.Create();
+            GrainClient.Runtime = new GrainRuntime(GrainClient.GrainFactory);
             GrainClient.ProxyFactory = new ProxyFactory(new HashSet<string> { });
             GrainClient.GrainIds = new HashSet<GrainId>();
         }
@@ -79,7 +78,7 @@ namespace Orleans
         /// <param name="config">ClientConfiguration</param>
         public static void Initialize(ClientConfiguration config)
         {
-            GrainClient.Runtime.Assert(config != null,
+            GrainClient.Runtime.PSharpRuntime.Assert(config != null,
                 "ClientConfiguration object is null.");
             GrainClient.Configuration = config;
         }

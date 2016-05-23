@@ -78,57 +78,6 @@ namespace Microsoft.PSharp.Actors.Bridge
         }
 
         /// <summary>
-        /// Returns all assemblies from the specified
-        /// assembly path and extension.
-        /// </summary>
-        /// <param name="assemblyPath">Path</param>
-        /// <param name="extension">Extension</param>
-        /// <returns>Assemblies</returns>
-        private List<Assembly> GetAllAssemblies(string assemblyPath, string extension)
-        {
-            List<Assembly> allAssemblies = new List<Assembly>();
-            foreach (string dll in Directory.GetFiles(assemblyPath, "*." + extension,
-                SearchOption.AllDirectories))
-            {
-                try
-                {
-                    if (dll.Contains("\\obj\\"))
-                        continue;
-                    Assembly asm = Assembly.LoadFrom(dll);
-                    allAssemblies.Add(asm);
-                }
-                catch
-                {
-                    continue;
-                }
-            }
-
-            return allAssemblies;
-        }
-
-        private Type GetActorType(Type interfaceType, string assemblyPath)
-        {
-            List<Assembly> allAssemblies = new List<Assembly>();
-            allAssemblies.AddRange(this.GetAllAssemblies(assemblyPath, "exe"));
-            allAssemblies.AddRange(this.GetAllAssemblies(assemblyPath, "dll"));
-            
-            var types = new List<Type>();
-            foreach (var asm in allAssemblies)
-            {
-                try
-                {
-                    types.AddRange(asm.GetTypes());
-                }
-                catch
-                {
-                    continue;
-                }
-            }
-
-            return types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).First();
-        }
-
-        /// <summary>
         /// Create a new proxy type.
         /// </summary>
         /// <param name="interfaceType">Type</param>
@@ -188,6 +137,35 @@ namespace Microsoft.PSharp.Actors.Bridge
         }
 
         /// <summary>
+        /// Gets the actor type from the specified
+        /// interface and assembly path.
+        /// </summary>
+        /// <param name="interfaceType">Type</param>
+        /// <param name="assemblyPath">Path</param>
+        /// <returns>Type</returns>
+        private Type GetActorType(Type interfaceType, string assemblyPath)
+        {
+            List<Assembly> allAssemblies = new List<Assembly>();
+            allAssemblies.AddRange(this.GetAllAssemblies(assemblyPath, "exe"));
+            allAssemblies.AddRange(this.GetAllAssemblies(assemblyPath, "dll"));
+
+            var types = new List<Type>();
+            foreach (var asm in allAssemblies)
+            {
+                try
+                {
+                    types.AddRange(asm.GetTypes());
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+
+            return types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).First();
+        }
+
+        /// <summary>
         /// Creates the proxy syntax tree
         /// </summary>
         /// <param name="interfaceType">Actor interface type</param>
@@ -233,7 +211,8 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// <param name="actorType">Actor type</param>
         /// <param name="actorMachineType">Actor machine type</param>
         /// <returns>ClassDeclarationSyntax</returns>
-        private ClassDeclarationSyntax CreateProxyClassDeclaration(Type interfaceType, Type actorType, Type actorMachineType)
+        private ClassDeclarationSyntax CreateProxyClassDeclaration(Type interfaceType,
+            Type actorType, Type actorMachineType)
         {
             ClassDeclarationSyntax classDecl = SyntaxFactory.ClassDeclaration(interfaceType.Name + "_PSharpProxy")
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
@@ -279,7 +258,8 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// <param name="actorType">Actor type</param>
         /// <param name="actorMachineType">Actor machine type</param>
         /// <returns>ConstructorDeclarationSyntax</returns>
-        private ConstructorDeclarationSyntax CreateProxyConstructor(Type interfaceType, Type actorType, Type actorMachineType)
+        private ConstructorDeclarationSyntax CreateProxyConstructor(Type interfaceType,
+            Type actorType, Type actorMachineType)
         {
             ConstructorDeclarationSyntax constructor = SyntaxFactory.ConstructorDeclaration(
                 interfaceType.Name + "_PSharpProxy")
@@ -383,7 +363,8 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// <param name="interfaceType">Actor interface type</param>
         /// <param name="actorMachineType">Actor machine type</param>
         /// <returns>MethodDeclarationSyntax</returns>
-        private MethodDeclarationSyntax CreateProxyMethod(MethodInfo method, Type interfaceType, Type actorMachineType)
+        private MethodDeclarationSyntax CreateProxyMethod(MethodInfo method,
+            Type interfaceType, Type actorMachineType)
         {
             List<ParameterSyntax> parameters = new List<ParameterSyntax>();
             List<ExpressionSyntax> payloadArguments = new List<ExpressionSyntax>();
@@ -549,7 +530,8 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// <param name="genericType">Generic type</param>
         /// <param name="eventName">Body</param>
         /// <returns>ReturnStatementSyntax</returns>
-        private ReturnStatementSyntax CreateReturnExpression(Type returnType, Type genericType, BlockSyntax body)
+        private ReturnStatementSyntax CreateReturnExpression(Type returnType,
+            Type genericType, BlockSyntax body)
         {
             List<TypeSyntax> genericTypes = new List<TypeSyntax>();
             ReturnStatementSyntax returnStmt = null;
@@ -577,6 +559,37 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
 
             return returnStmt;
+        }
+
+        #region helper methods
+
+        /// <summary>
+        /// Returns all assemblies from the specified
+        /// assembly path and extension.
+        /// </summary>
+        /// <param name="assemblyPath">Path</param>
+        /// <param name="extension">Extension</param>
+        /// <returns>Assemblies</returns>
+        private List<Assembly> GetAllAssemblies(string assemblyPath, string extension)
+        {
+            List<Assembly> allAssemblies = new List<Assembly>();
+            foreach (string dll in Directory.GetFiles(assemblyPath, "*." + extension,
+                SearchOption.AllDirectories))
+            {
+                try
+                {
+                    if (dll.Contains("\\obj\\"))
+                        continue;
+                    Assembly asm = Assembly.LoadFrom(dll);
+                    allAssemblies.Add(asm);
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+
+            return allAssemblies;
         }
 
         /// <summary>
@@ -611,5 +624,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             
             return syntax;
         }
+
+        #endregion
     }
 }

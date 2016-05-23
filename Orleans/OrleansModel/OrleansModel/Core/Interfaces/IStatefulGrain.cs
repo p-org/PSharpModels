@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="IStorageProvider.cs">
+// <copyright file="IStatefulGrain.cs">
 //      Copyright (c) Microsoft Corporation. All rights reserved.
 // 
 //      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -12,19 +12,24 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Threading.Tasks;
+using Orleans.Core;
 
-using Orleans.Providers;
-
-namespace Orleans.Storage
+namespace Orleans
 {
     /// <summary>
-    /// Interface to be implemented for a storage
-    /// provider able to read and write Orleans
-    /// grain state data.
+    /// Interface for a stateful grain.
     /// </summary>
-    public interface IStorageProvider : IProvider
+    internal interface IStatefulGrain
     {
+        /// <summary>
+        /// The state of this grain.
+        /// </summary>
+        IGrainState GrainState { get; }
 
+        /// <summary>
+        /// Sets the storage for this grain.
+        /// </summary>
+        /// <param name="storage">IStorage</param>
+        void SetStorage(IStorage storage);
     }
 }

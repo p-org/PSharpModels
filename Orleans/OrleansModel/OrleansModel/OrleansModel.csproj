@@ -56,17 +56,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Actor.cs" />
-    <Compile Include="ActorBase.cs" />
-    <Compile Include="ActorExtensions.cs" />
-    <Compile Include="ActorId.cs" />
     <Compile Include="Configuration\ClusterConfiguration.cs" />
     <Compile Include="Core\Grain.cs" />
-    <Compile Include="OrleansActorMachine.cs" />
+    <Compile Include="Model\GrainState.cs" />
+    <Compile Include="Core\Interfaces\IGrainIdentity.cs" />
+    <Compile Include="Core\Interfaces\IGrainState.cs" />
+    <Compile Include="Core\Interfaces\IStorage.cs" />
+    <Compile Include="Core\Interfaces\IStatefulGrain.cs" />
+    <Compile Include="Model\InMemoryStorage.cs" />
+    <Compile Include="Model\OrleansActorMachine.cs" />
     <Compile Include="Core\Interfaces\IAddressable.cs" />
-    <Compile Include="Core\GrainId.cs" />
+    <Compile Include="Model\GrainId.cs" />
     <Compile Include="Core\Interfaces\IGrain.cs" />
-    <Compile Include="Core\GrainFactory.cs" />
+    <Compile Include="Model\GrainFactory.cs" />
     <Compile Include="Core\Interfaces\IGrainWithIntegerKey.cs" />
     <Compile Include="Core\Interfaces\IGrainWithStringKey.cs" />
     <Compile Include="Core\Interfaces\IGrainWithGuidCompoundKey.cs" />
@@ -74,13 +76,11 @@
     <Compile Include="Core\Interfaces\IGrainWithGuidKey.cs" />
     <Compile Include="Core\Interfaces\IGrainFactory.cs" />
     <Compile Include="Core\GrainClient.cs" />
-    <Compile Include="ActorStateManager.cs" />
-    <Compile Include="ConditionalValue.cs" />
-    <Compile Include="IActor.cs" />
-    <Compile Include="IActorStateManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Configuration\ClientConfiguration.cs" />
     <Compile Include="Providers\IProvider.cs" />
+    <Compile Include="Model\GrainRuntime.cs" />
+    <Compile Include="Runtime\IGrainRuntime.cs" />
     <Compile Include="Runtime\Silo.cs" />
     <Compile Include="Runtime\SiloHost.cs" />
     <Compile Include="Storage\MemoryStorage.cs" />
