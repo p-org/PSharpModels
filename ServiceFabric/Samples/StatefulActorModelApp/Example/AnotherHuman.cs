@@ -8,16 +8,12 @@ using System.Threading.Tasks;
 
 namespace Example
 {
-    public class AnotherHuman : Actor<HumanState>, IAnotherHuman
+    public class AnotherHuman : Actor, IAnotherHuman
     {
         protected override Task OnActivateAsync()
         {
             Console.WriteLine("Setting state Play");
-            if (this.State == null)
-            {
-                this.State = new HumanState();
-                this.State.name = "asdf";
-            }
+            this.StateManager.AddStateAsync<HumanState>("asdf", new HumanState());
             return Task.FromResult(true);
         }
 

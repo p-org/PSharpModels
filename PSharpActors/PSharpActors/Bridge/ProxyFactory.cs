@@ -29,7 +29,7 @@ namespace Microsoft.PSharp.Actors.Bridge
     /// <summary>
     /// Factory of proxies.
     /// </summary>
-    public class ProxyFactory
+    public class ProxyFactory<TActor>
     {
         /// <summary>
         /// The proxy types.
@@ -229,9 +229,6 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             var baseTypes = new HashSet<BaseTypeSyntax>();
             var methodDecls = new List<MethodDeclarationSyntax>();
-
-            Console.WriteLine("getting interfaces of: " + actorType);
-
             foreach (var type in actorType.GetInterfaces())
             {
                 baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(type.FullName)));
@@ -392,15 +389,21 @@ namespace Microsoft.PSharp.Actors.Bridge
             {
                 Console.WriteLine("Creating proxy method for GetResult");
                 LocalDeclarationStatementSyntax localStmtMachine = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
-                    SyntaxFactory.IdentifierName("ServiceFabricModel.FabricActorMachine"), SyntaxFactory.SeparatedList(
+                    SyntaxFactory.IdentifierName(typeof(ActorMachine).FullName), SyntaxFactory.SeparatedList(
                         new List<VariableDeclaratorSyntax>
                         {
                             SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("machine"),
                             null,
                             SyntaxFactory.EqualsValueClause(
-                                SyntaxFactory.CastExpression(SyntaxFactory.IdentifierName("ServiceFabricModel.FabricActorMachine"), 
-                                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, 
-                                SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName("RefMachine")))))
+                                SyntaxFactory.CastExpression(SyntaxFactory.IdentifierName(typeof(ActorMachine).FullName), 
+                                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                SyntaxFactory.ParenthesizedExpression(SyntaxFactory.CastExpression(
+                                    SyntaxFactory.IdentifierName(typeof(TActor).FullName),
+                                    SyntaxFactory.MemberAccessExpression(
+                                        SyntaxKind.SimpleMemberAccessExpression,
+                                        SyntaxFactory.ThisExpression(),
+                                        SyntaxFactory.IdentifierName("Target")))),
+                                SyntaxFactory.IdentifierName("RefMachine")))))
                         })));
 
                 LocalDeclarationStatementSyntax localStmtResult = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
@@ -422,7 +425,8 @@ namespace Microsoft.PSharp.Actors.Bridge
 
                 ReturnStatementSyntax returnStmtGetResult = SyntaxFactory.ReturnStatement(SyntaxFactory.CastExpression(
                     this.GetTypeSyntax(method.ReturnType), SyntaxFactory.IdentifierName("oResult")));
-                                BlockSyntax bodyGetResult = SyntaxFactory.Block(localStmtMachine, localStmtResult, returnStmtGetResult);
+
+                BlockSyntax bodyGetResult = SyntaxFactory.Block(localStmtMachine, localStmtResult, returnStmtGetResult);
                 methodDecl = methodDecl.WithBody(bodyGetResult).WithModifiers(
                     SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
 

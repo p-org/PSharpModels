@@ -88,17 +88,11 @@ namespace Microsoft.PSharp.Actors
 
         #region fields
 
-        /// <summary>
-        /// Reference machine.
-        /// </summary>
-        protected Machine RefMachine;
-
         #endregion
 
         #region states
 
         [Start]
-        [OnEntry(nameof(InitOnEntry))]
         [OnEventDoAction(typeof(InitEvent), nameof(OnInitEvent))]
         [OnEventDoAction(typeof(ActorEvent), nameof(OnActorEvent))]
         private class Init : MachineState { }
@@ -106,14 +100,6 @@ namespace Microsoft.PSharp.Actors
         #endregion
 
         #region actions
-
-        /// <summary>
-        /// Initializes the actor machine.
-        /// </summary>
-        void InitOnEntry()
-        {
-            this.RefMachine = this;
-        }
 
         private void OnInitEvent()
         {

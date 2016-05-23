@@ -1,12 +1,14 @@
 ﻿using Microsoft.PSharp;
+using Microsoft.PSharp.Actors;
 using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Runtime;
 using System;
 using System.Threading.Tasks;
 
 namespace Example
 {
   
-    public class HumanProxy //: IHuman
+    public class HumanProxy //: Actor, IHuman
     {
         IHuman obj;
         MachineId id;
@@ -19,7 +21,7 @@ namespace Example
             rt = PSharpRuntime.Create();
             Type mt = typeof(ServiceFabricModel.FabricActorMachine);
             id = rt.CreateMachine(mt);
-            ActorId aid = new ActorId(5);
+
             ServiceFabricModel.FabricActorMachine.InitEvent iev = new ServiceFabricModel.FabricActorMachine.InitEvent(obj);
             rt.SendEvent(id, iev);           
         }
@@ -41,6 +43,19 @@ namespace Example
                     break;
             }
             */
-        }       
+        }
+
+        //public int GetResult(Task<int> t)
+        //{
+        //    ActorMachine machine = (ActorMachine)((Actor)obj).RefMachine;
+
+
+
+        //    //ServiceFabricModel.FabricActorMachine machine = (ServiceFabricModel.FabricActorMachine)this.RefMachine;
+        //    Console.WriteLine(" this.RefMachine " + this.RefMachine);
+        //    Console.WriteLine(" machine " + machine);
+        //    object oResult = machine.GetResult(t);
+        //    return (int)oResult;
+        //}
     }
 }

@@ -23,10 +23,14 @@ namespace ServiceFabricModel
             }
 
             PropertyInfo rProp = e.ClassInstance.GetType().GetProperty("RefMachine", BindingFlags.Public | BindingFlags.Instance);
+            Console.WriteLine("-------- " + rProp.CanWrite);
             if (null != rProp && rProp.CanWrite)
             {
-                Console.WriteLine("setting ref value: " + base.RefMachine);
-                rProp.SetValue(e.ClassInstance, base.RefMachine, null);
+                Console.WriteLine("setting ref value: " + this);
+                rProp.SetValue(e.ClassInstance, this, null);
+                var o = rProp.GetValue(e.ClassInstance);
+                Console.WriteLine("TEST: " + (FabricActorMachine)o);
+                Console.WriteLine("TEST: " + o == null);
             }
 
             MethodInfo mo = typeof(ActorBase).GetMethod("OnActivateAsync", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
