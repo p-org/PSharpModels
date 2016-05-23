@@ -61,6 +61,7 @@ namespace Orleans
         /// </summary>
         static GrainClient()
         {
+            GrainClient.GrainFactory = new GrainFactory();
             GrainClient.Runtime = PSharpRuntime.Create();
             GrainClient.ProxyFactory = new ProxyFactory(new HashSet<string> { });
             GrainClient.GrainIds = new HashSet<GrainId>();

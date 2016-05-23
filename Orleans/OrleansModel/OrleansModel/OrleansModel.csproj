@@ -61,6 +61,7 @@
     <Compile Include="ActorExtensions.cs" />
     <Compile Include="ActorId.cs" />
     <Compile Include="Configuration\ClusterConfiguration.cs" />
+    <Compile Include="Core\Grain.cs" />
     <Compile Include="OrleansActorMachine.cs" />
     <Compile Include="Core\Interfaces\IAddressable.cs" />
     <Compile Include="Core\GrainId.cs" />

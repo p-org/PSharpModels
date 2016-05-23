@@ -1,65 +1,117 @@
-﻿using System;
+﻿//-----------------------------------------------------------------------
+// <copyright file="ActorMachine.cs">
+//      Copyright (c) Microsoft Corporation. All rights reserved.
+// 
+//      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//      EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+//      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+//      IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+//      CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+//      TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+//      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// </copyright>
+//-----------------------------------------------------------------------
+
+using System;
 using System.Reflection;
 
 namespace Microsoft.PSharp.Actors
 {
+    /// <summary>
+    /// A P# actor machine.
+    /// </summary>
     public abstract class ActorMachine : Machine
     {
-        #region fields
-        protected Machine RefMachine;
-        #endregion
-
         #region events
-        public class ActorEvent : Event
-        {
-            public Type methodClass;
-            public string methodName;
-            public object classInstance;
-            public object[] parameters;
-            public object result;
 
-            public ActorEvent(Type methodClass, string methodName, object classInstance, object[] parameters)
-            {
-                this.methodClass = methodClass;
-                this.methodName = methodName;
-                this.classInstance = classInstance;
-                this.parameters = parameters;
-            }
-        }
-
+        /// <summary>
+        /// The actor initialization event.
+        /// </summary>
         public class InitEvent : Event
         {
-            public object classInstance;
+            public object ClassInstance;
+
+            /// <summary>
+            /// Constructor.
+            /// </summary>
+            /// <param name="classInstance">ClassInstance</param>
             public InitEvent(object classInstance)
             {
-                this.classInstance = classInstance;
+                this.ClassInstance = classInstance;
             }
         }
 
+        /// <summary>
+        /// The actor invocation event.
+        /// </summary>
+        public class ActorEvent : Event
+        {
+            public Type MethodClass;
+            public string MethodName;
+            public object ClassInstance;
+            public object[] Parameters;
+            public object Result;
+
+            /// <summary>
+            /// Constructor.
+            /// </summary>
+            /// <param name="methodClass">MethodClass</param>
+            /// <param name="methodName">MethodName</param>
+            /// <param name="classInstance">ClassInstance</param>
+            /// <param name="parameters">Parameters</param>
+            public ActorEvent(Type methodClass, string methodName, object classInstance, object[] parameters)
+            {
+                this.MethodClass = methodClass;
+                this.MethodName = methodName;
+                this.ClassInstance = classInstance;
+                this.Parameters = parameters;
+            }
+        }
+
+        /// <summary>
+        /// The actor return event.
+        /// </summary>
         public class ReturnEvent : Event
         {
             public object Result;
 
+            /// <summary>
+            /// Constructor.
+            /// </summary>
+            /// <param name="Result">Result</param>
             public ReturnEvent(object Result)
             {
                 this.Result = Result;
             }
         }
+
         #endregion
 
         #region fields
+
+        /// <summary>
+        /// Reference machine.
+        /// </summary>
+        protected Machine RefMachine;
+
         #endregion
 
         #region states
+
         [Start]
-        [OnEntry(nameof(assignRef))]
+        [OnEntry(nameof(InitOnEntry))]
         [OnEventDoAction(typeof(InitEvent), nameof(OnInitEvent))]
         [OnEventDoAction(typeof(ActorEvent), nameof(OnActorEvent))]
         private class Init : MachineState { }
+
         #endregion
 
         #region actions
-        void assignRef()
+
+        /// <summary>
+        /// Initializes the actor machine.
+        /// </summary>
+        void InitOnEntry()
         {
             this.RefMachine = this;
         }
@@ -82,10 +134,10 @@ namespace Microsoft.PSharp.Actors
         private void OnActorEvent()
         {
             var e = (this.ReceivedEvent as ActorEvent);
-            MethodInfo mi = e.methodClass.GetMethod(e.methodName);
+            MethodInfo mi = e.MethodClass.GetMethod(e.MethodName);
             try
             {
-                e.result = mi.Invoke(e.classInstance, e.parameters);
+                e.Result = mi.Invoke(e.ClassInstance, e.Parameters);
             }
             catch(Exception ex)
             {
@@ -99,6 +151,7 @@ namespace Microsoft.PSharp.Actors
             //Receive(typeof(ReturnEvent));
             return 6;
         }
+
         #endregion
     }
 }
