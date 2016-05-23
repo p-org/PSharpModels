@@ -386,7 +386,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                             SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("machine"),
                             null,
                             SyntaxFactory.EqualsValueClause(
-                                SyntaxFactory.CastExpression(SyntaxFactory.IdentifierName("FabricActorMachine"), SyntaxFactory.IdentifierName("refMachine"))))
+                                SyntaxFactory.CastExpression(SyntaxFactory.IdentifierName("FabricActorMachine"), SyntaxFactory.IdentifierName("RefMachine"))))
                         })));
 
                 LocalDeclarationStatementSyntax localStmtResult = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(

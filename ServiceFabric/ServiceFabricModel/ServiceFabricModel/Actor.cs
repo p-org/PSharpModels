@@ -30,7 +30,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
 
         }
 
-        public Machine refMachine { get; set;  }
+        public Machine RefMachine { get; set;  }
 
         //
         // Summary:
