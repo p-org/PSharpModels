@@ -250,6 +250,9 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             var baseTypes = new HashSet<BaseTypeSyntax>();
             var methodDecls = new List<MethodDeclarationSyntax>();
+
+            Console.WriteLine("getting interfaces of: " + actorType);
+
             foreach (var type in actorType.GetInterfaces())
             {
                 baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(type.FullName)));
@@ -398,35 +401,53 @@ namespace Microsoft.PSharp.Actors.Bridge
                 payloadArguments.Add(SyntaxFactory.IdentifierName(parameter.Name));
             }
 
-            ////TODO: Fix this (return type of GetResult)
-            //if (method.Name.StartsWith("GetResult"))
-            //{
-            //    //returnStmt = SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(GetTypeSyntax(method.ReturnType)));
-            //    LocalDeclarationStatementSyntax localStmtMachine = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
-            //        SyntaxFactory.IdentifierName("FabricActorMachine"), SyntaxFactory.SeparatedList(
-            //            new List<VariableDeclaratorSyntax>
-            //            {
-            //                SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("machine"),
-            //                null,
-            //                SyntaxFactory.EqualsValueClause(
-            //                    SyntaxFactory.CastExpression(SyntaxFactory.IdentifierName("FabricActorMachine"), SyntaxFactory.IdentifierName("RefMachine"))))
-            //            })));
-
-            //    LocalDeclarationStatementSyntax localStmtResult = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
-            //        SyntaxFactory.IdentifierName("object"), SyntaxFactory.SeparatedList(
-            //            new List<VariableDeclaratorSyntax>
-            //            {
-            //                SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("oResult"),
-            //                null,
-            //                SyntaxFactory.EqualsValueClause(SyntaxFactory.InvocationExpression(SyntaxFactory.InvocationExpression())))
-            //            })));
-            //}
-            ////end TODO
-
             MethodDeclarationSyntax methodDecl = SyntaxFactory.MethodDeclaration(
                 this.GetTypeSyntax(method.ReturnType),
                 method.Name)
                 .WithParameterList(SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList(parameters)));
+
+            ////TODO: Fix this (return type of GetResult)
+            if (method.Name.StartsWith("GetResult"))
+            {
+                Console.WriteLine("Creating proxy method for GetResult");
+                LocalDeclarationStatementSyntax localStmtMachine = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
+                    SyntaxFactory.IdentifierName("ServiceFabricModel.FabricActorMachine"), SyntaxFactory.SeparatedList(
+                        new List<VariableDeclaratorSyntax>
+                        {
+                            SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("machine"),
+                            null,
+                            SyntaxFactory.EqualsValueClause(
+                                SyntaxFactory.CastExpression(SyntaxFactory.IdentifierName("ServiceFabricModel.FabricActorMachine"), 
+                                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, 
+                                SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName("RefMachine")))))
+                        })));
+
+                LocalDeclarationStatementSyntax localStmtResult = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
+                    SyntaxFactory.IdentifierName("object"), SyntaxFactory.SeparatedList(
+                        new List<VariableDeclaratorSyntax>
+                        {
+                            SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("oResult"),
+                            null,
+                            SyntaxFactory.EqualsValueClause(SyntaxFactory.InvocationExpression(
+                                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                SyntaxFactory.IdentifierName("machine"), SyntaxFactory.IdentifierName("GetResult")),
+                                SyntaxFactory.ArgumentList(
+                                    SyntaxFactory.SeparatedList(
+                                        new List<ArgumentSyntax>
+                                        {
+                                            SyntaxFactory.Argument(payloadArguments[0])
+                                        })))))
+                        })));
+
+                ReturnStatementSyntax returnStmtGetResult = SyntaxFactory.ReturnStatement(SyntaxFactory.CastExpression(
+                    this.GetTypeSyntax(method.ReturnType), SyntaxFactory.IdentifierName("oResult")));
+                                BlockSyntax bodyGetResult = SyntaxFactory.Block(localStmtMachine, localStmtResult, returnStmtGetResult);
+                methodDecl = methodDecl.WithBody(bodyGetResult).WithModifiers(
+                    SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
+
+                return methodDecl;
+            }
+            //end TODO
 
             LocalDeclarationStatementSyntax payloadDecl = SyntaxFactory.LocalDeclarationStatement(
                 SyntaxFactory.VariableDeclaration(

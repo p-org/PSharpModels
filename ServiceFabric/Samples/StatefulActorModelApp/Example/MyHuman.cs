@@ -41,7 +41,7 @@ namespace Example
         
         public int GetResult(Task<int> t)
         {
-            FabricActorMachine machine = (FabricActorMachine)refMachine;
+            ServiceFabricModel.FabricActorMachine machine = (ServiceFabricModel.FabricActorMachine)this.RefMachine;
             object oResult = machine.GetResult(t);
             return (int)oResult;
         }
