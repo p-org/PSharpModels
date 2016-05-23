@@ -28,14 +28,23 @@ namespace Example
             var obj = ActorProxy.Create<IAnotherHuman>(ActorId.NewId(), " ");
             Task<int> p = obj.Play(1000, 6, "gotit");
             Task<int> q = obj.Play(999, 8, "asdf");
-
+            //Console.WriteLine(GetResult(p));
             return Task.FromResult(x + 7);
         }
 
+        /*
         public int GetResult(Task<int> t)
         {
-            //return t.Result;
-            return (int)((ServiceFabricModel.FabricActorMachine)this.refMachine).GetResult();
+            return t.Result;
         }
+        */
+        
+        public int GetResult(Task<int> t)
+        {
+            FabricActorMachine machine = (FabricActorMachine)refMachine;
+            object oResult = machine.GetResult(t);
+            return (int)oResult;
+        }
+        
     }
 }

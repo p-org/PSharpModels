@@ -25,23 +25,23 @@ namespace Microsoft.PSharp.Actors.Bridge
 
         }
 
-        public static DummyTask<TResult> FromResult<TResult>(Func<TResult> function) 
+        public static Task<TResult> FromResult<TResult>(Func<TResult> function) 
         {
-            return new DummyTask<TResult>(function);
+            return new Task<TResult>(function);
         }
     }
 
-    public class DummyTask<T> : Task<T>
+    public class Task<T> : System.Threading.Tasks.Task<T>
     {
         private new T Result;
 
-        public DummyTask()
+        public Task()
             : base(() => { return default(T); })
         {
 
         }
 
-        public DummyTask(Func<T> function)
+        public Task(Func<T> function)
             : base(function)
         {
             this.Result = function();

@@ -27,7 +27,7 @@ namespace Actor1
         public int GetResult(Task<int> t)
         {
             //return t.Result;
-            return (int)((ServiceFabricModel.FabricActorMachine)this.refMachine).GetResult();
+            return (int)((ServiceFabricModel.FabricActorMachine)this.refMachine).GetResult(t);
         }
     }
 }

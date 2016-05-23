@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 
 using Microsoft.PSharp;
+using System.Threading.Tasks;
 
 namespace Microsoft.PSharp.Actors
 {
@@ -43,11 +44,13 @@ namespace Microsoft.PSharp.Actors
 
         public class ReturnEvent : Event
         {
+            public Task<int> returnForTask;
             public object Result;
 
-            public ReturnEvent(object Result)
+            public ReturnEvent(object Result, Task<int> returnForTask)
             {
                 this.Result = Result;
+                this.returnForTask = returnForTask;
             }
         }
         #endregion
@@ -99,10 +102,10 @@ namespace Microsoft.PSharp.Actors
             }
         }
         
-        public object GetResult()
+        public object GetResult(Task<int> t)
         {
-            //Receive(typeof(ReturnEvent));
-            return 6;
+            this.Receive(typeof(ReturnEvent), retEvent => ((ReturnEvent)retEvent).returnForTask.Id == t.Id);
+            return (int)((this.ReceivedEvent as ReturnEvent).Result);
         }
         #endregion
     }

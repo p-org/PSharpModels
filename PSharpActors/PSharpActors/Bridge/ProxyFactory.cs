@@ -376,6 +376,31 @@ namespace Microsoft.PSharp.Actors.Bridge
                 payloadArguments.Add(SyntaxFactory.IdentifierName(parameter.Name));
             }
 
+            //TODO: Fix this (return type of GetResult)
+            if (method.Name.StartsWith("GetResult"))
+            {
+                //returnStmt = SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(GetTypeSyntax(method.ReturnType)));
+                LocalDeclarationStatementSyntax localStmtMachine = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
+                    SyntaxFactory.IdentifierName("FabricActorMachine"), SyntaxFactory.SeparatedList(
+                        new List<VariableDeclaratorSyntax>
+                        {
+                            SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("machine"),
+                            null,
+                            SyntaxFactory.EqualsValueClause(
+                                SyntaxFactory.CastExpression(SyntaxFactory.IdentifierName("FabricActorMachine"), SyntaxFactory.IdentifierName("refMachine"))))
+                        })));
+
+                LocalDeclarationStatementSyntax localStmtResult = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
+                    SyntaxFactory.IdentifierName("object"), SyntaxFactory.SeparatedList(
+                        new List<VariableDeclaratorSyntax>
+                        {
+                            SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("oResult"),
+                            null,
+                            SyntaxFactory.EqualsValueClause(SyntaxFactory.InvocationExpression(SyntaxFactory.InvocationExpression())))
+                        })));
+            }
+            //end TODO
+
             MethodDeclarationSyntax methodDecl = SyntaxFactory.MethodDeclaration(
                 this.GetTypeSyntax(method.ReturnType),
                 method.Name)
@@ -422,14 +447,7 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             ReturnStatementSyntax returnStmt = null;
 
-            //TODO: Fix this (return type of GetResult)
-            if (method.Name.StartsWith("GetResult"))
-            {
-                returnStmt = SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(GetTypeSyntax(method.ReturnType)));
-            }
-            //end TODO
-
-            else if (method.ReturnType.GetGenericArguments().Count() > 0)
+            if (method.ReturnType.GetGenericArguments().Count() > 0)
             {
                 Type genericType = method.ReturnType.GetGenericArguments().First();
                 returnStmt = this.CreateReturnExpression(method.ReturnType, genericType,
