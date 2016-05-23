@@ -13,24 +13,42 @@
 //-----------------------------------------------------------------------
 
 using System;
+
 using Orleans;
+using Orleans.Core;
 
 namespace OrleansModel
 {
     /// <summary>
     /// Class implementing the id of a grain.
     /// </summary>
-    internal class GrainId
+    internal class GrainId : IGrainIdentity
     {
+        #region fields
+
         /// <summary>
         /// The primary key.
         /// </summary>
-        internal readonly Guid PrimaryKey;
+        public Guid PrimaryKey { get; private set; }
+
+        /// <summary>
+        /// The primary long key.
+        /// </summary>
+        public long PrimaryKeyLong { get; private set; }
+
+        /// <summary>
+        /// The primary string key.
+        /// </summary>
+        public string PrimaryKeyString { get; private set; }
 
         /// <summary>
         /// The grain.
         /// </summary>
         internal readonly IGrain Grain;
+
+        #endregion
+
+        #region methods
 
         /// <summary>
         /// Constructor.
@@ -96,5 +114,7 @@ namespace OrleansModel
         {
             return this.PrimaryKey.GetHashCode();
         }
+
+        #endregion
     }
 }

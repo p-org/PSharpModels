@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="IStorageProvider.cs">
+// <copyright file="IGrainIdentity.cs">
 //      Copyright (c) Microsoft Corporation. All rights reserved.
 // 
 //      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -12,19 +12,19 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Threading.Tasks;
+using System;
 
-using Orleans.Providers;
-
-namespace Orleans.Storage
+namespace Orleans.Core
 {
     /// <summary>
-    /// Interface to be implemented for a storage
-    /// provider able to read and write Orleans
-    /// grain state data.
+    /// Interface of a grain identity.
     /// </summary>
-    public interface IStorageProvider : IProvider
+    public interface IGrainIdentity
     {
+        Guid PrimaryKey { get; }
 
+        long PrimaryKeyLong { get; }
+
+        string PrimaryKeyString { get; }
     }
 }

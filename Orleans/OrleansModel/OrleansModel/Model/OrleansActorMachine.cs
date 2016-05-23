@@ -17,6 +17,8 @@ using System.Reflection;
 
 using Microsoft.PSharp.Actors;
 
+using Orleans;
+
 namespace OrleansModel
 {
     /// <summary>
@@ -28,25 +30,22 @@ namespace OrleansModel
         {
             var e = this.ReceivedEvent as InitEvent;
 
-            Console.WriteLine("Received: " + e.GetType());
+            //var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
+            //PropertyInfo prop = e.ClassInstance.GetType().GetProperty(
+            //    "StateManager", BindingFlags.Public | BindingFlags.Instance);
+            //if (null != prop && prop.CanWrite)
+            //{
+            //    prop.SetValue(e.ClassInstance, stateManager, null);
+            //}
 
-            var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
-            PropertyInfo prop = e.ClassInstance.GetType().GetProperty(
-                "StateManager", BindingFlags.Public | BindingFlags.Instance);
-            if (null != prop && prop.CanWrite)
-            {
-                prop.SetValue(e.ClassInstance, stateManager, null);
-            }
-
-            PropertyInfo rProp = e.ClassInstance.GetType().GetProperty(
+            PropertyInfo refMachine = e.ClassInstance.GetType().GetProperty(
                 "RefMachine", BindingFlags.Public | BindingFlags.Instance);
-            if (null != rProp && rProp.CanWrite)
+            if (null != refMachine && refMachine.CanWrite)
             {
-                Console.WriteLine("setting ref value: " + base.RefMachine);
-                rProp.SetValue(e.ClassInstance, base.RefMachine, null);
+                refMachine.SetValue(e.ClassInstance, base.RefMachine, null);
             }
 
-            MethodInfo mo = typeof(ActorBase).GetMethod("OnActivateAsync",
+            MethodInfo mo = typeof(Grain).GetMethod("OnActivateAsync",
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             mo.Invoke(e.ClassInstance, new object[] { });
         }

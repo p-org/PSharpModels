@@ -13,13 +13,13 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
-using OrleansModel;
-using System.IO;
+using Orleans;
 
-namespace Orleans
+namespace OrleansModel
 {
     /// <summary>
     /// Model implementation of a grain factory.
@@ -83,7 +83,7 @@ namespace Orleans
                 typeof(TGrainInterface), typeof(OrleansActorMachine), assemblyPath);
 
             var grain = (TGrainInterface)Activator.CreateInstance(
-                proxyType, GrainClient.Runtime);
+                proxyType, GrainClient.Runtime.PSharpRuntime);
 
             GrainId newId = new GrainId(primaryKey, (IGrain)grain);
             return grain;

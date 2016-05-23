@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="IStorageProvider.cs">
+// <copyright file="IGrainRuntime.cs">
 //      Copyright (c) Microsoft Corporation. All rights reserved.
 // 
 //      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -12,19 +12,23 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Threading.Tasks;
+using System;
 
-using Orleans.Providers;
-
-namespace Orleans.Storage
+namespace Orleans.Runtime
 {
     /// <summary>
-    /// Interface to be implemented for a storage
-    /// provider able to read and write Orleans
-    /// grain state data.
+    /// Interface of the Orleans grain runtime.
     /// </summary>
-    public interface IStorageProvider : IProvider
+    public interface IGrainRuntime
     {
+        /// <summary>
+        /// The grain factory.
+        /// </summary>
+        IGrainFactory GrainFactory { get; }
 
+        /// <summary>
+        /// The service provider.
+        /// </summary>
+        IServiceProvider ServiceProvider { get; }
     }
 }
