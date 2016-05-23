@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="GrainId.cs">
+// <copyright file="MemoryStorage.cs">
 //      Copyright (c) Microsoft Corporation. All rights reserved.
 // 
 //      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -12,13 +12,19 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OrleansModel
+namespace Orleans.Storage
 {
     /// <summary>
-    /// Class implementing the id of a grain.
+    /// Simple in-memory grain implementation
+    /// of a storage provider.
     /// </summary>
-    internal class GrainId
+    public class MemoryStorage : IStorageProvider
     {
+        internal const int NumStorageGrainsDefaultValue = 10;
 
+        /// <summary>
+        /// Name of the provider.
+        /// </summary>
+        public string Name { get; private set; }
     }
 }

@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="IGrain.cs">
+// <copyright file="Silo.cs">
 //      Copyright (c) Microsoft Corporation. All rights reserved.
 // 
 //      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -12,15 +12,21 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using Orleans.Runtime;
-
-namespace Orleans
+namespace Orleans.Runtime
 {
     /// <summary>
-    /// Marker interface for grains.
+    /// Orleans silo.
     /// </summary>
-    public interface IGrain : IAddressable
+    public class Silo
     {
-
+        /// <summary>
+        /// The silo type.
+        /// </summary>
+        public enum SiloType
+        {
+            None = 0,
+            Primary,
+            Secondary,
+        }
     }
 }

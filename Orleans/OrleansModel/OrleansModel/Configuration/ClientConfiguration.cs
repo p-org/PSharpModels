@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="GrainClient.cs">
+// <copyright file="ClientConfiguration.cs">
 //      Copyright (c) Microsoft Corporation. All rights reserved.
 // 
 //      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -12,45 +12,47 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-
-using Microsoft.PSharp;
-
-using OrleansModel;
-
-namespace Orleans
+namespace Orleans.Runtime.Configuration
 {
     /// <summary>
-    /// Client runtime for connecting to the Orleans system.
+    /// Orleans client configuration parameters.
     /// </summary>
-    public static class GrainClient
+    public class ClientConfiguration
     {
-        public static IGrainFactory GrainFactory { get; }
+        #region fields
 
         /// <summary>
-        /// The P# runtime.
+        /// The client name.
         /// </summary>
-        private static PSharpRuntime Runtime;
+        public static string ClientName;
 
-        /// <summary>
-        /// The proxy factory.
-        /// </summary>
-        private static readonly ProxyFactory<IGrain> ProxyFactory;
+        #endregion
 
-        /// <summary>
-        /// Map from ids to grains.
-        /// </summary>
-        internal static Dictionary<IGrain, Object> IdMap;
+        #region constructors
 
         /// <summary>
         /// Static constructor.
         /// </summary>
-        static GrainClient()
+        static ClientConfiguration()
         {
-            GrainClient.Runtime = null;
-            GrainClient.ProxyFactory = new ProxyFactory<IGrain>();
-            GrainClient.IdMap = new Dictionary<IGrain, object>();
+            ClientConfiguration.ClientName = "Client";
         }
+
+        #endregion
+
+        #region methods
+
+        /// <summary>
+        /// Returns a ClientConfiguration object for
+        /// connecting to a local silo.
+        /// </summary>
+        /// <param name="gatewayPort">GatewayPort</param>
+        /// <returns>ClientConfiguration</returns>
+        public static ClientConfiguration LocalhostSilo(int gatewayPort = 40000)
+        {
+            return new ClientConfiguration();
+        }
+
+        #endregion
     }
 }

@@ -60,28 +60,40 @@
     <Compile Include="ActorBase.cs" />
     <Compile Include="ActorExtensions.cs" />
     <Compile Include="ActorId.cs" />
-    <Compile Include="ActorMachine.cs" />
-    <Compile Include="Grains\IAddressable.cs" />
-    <Compile Include="Grains\GrainId.cs" />
-    <Compile Include="Grains\IGrain.cs" />
-    <Compile Include="Grains\GrainFactory.cs" />
-    <Compile Include="Grains\IGrainWithIntegerKey.cs" />
-    <Compile Include="Grains\IGrainWithStringKey.cs" />
-    <Compile Include="Grains\IGrainWithGuidCompoundKey.cs" />
-    <Compile Include="Grains\IGrainWithIntegerCompoundKey.cs" />
-    <Compile Include="Grains\IGrainWithGuidKey.cs" />
-    <Compile Include="Grains\IGrainFactory.cs" />
-    <Compile Include="Grains\GrainClient.cs" />
-    <Compile Include="ActorProxy.cs" />
+    <Compile Include="Configuration\ClusterConfiguration.cs" />
+    <Compile Include="Core\Grain.cs" />
+    <Compile Include="OrleansActorMachine.cs" />
+    <Compile Include="Core\Interfaces\IAddressable.cs" />
+    <Compile Include="Core\GrainId.cs" />
+    <Compile Include="Core\Interfaces\IGrain.cs" />
+    <Compile Include="Core\GrainFactory.cs" />
+    <Compile Include="Core\Interfaces\IGrainWithIntegerKey.cs" />
+    <Compile Include="Core\Interfaces\IGrainWithStringKey.cs" />
+    <Compile Include="Core\Interfaces\IGrainWithGuidCompoundKey.cs" />
+    <Compile Include="Core\Interfaces\IGrainWithIntegerCompoundKey.cs" />
+    <Compile Include="Core\Interfaces\IGrainWithGuidKey.cs" />
+    <Compile Include="Core\Interfaces\IGrainFactory.cs" />
+    <Compile Include="Core\GrainClient.cs" />
     <Compile Include="ActorStateManager.cs" />
     <Compile Include="ConditionalValue.cs" />
     <Compile Include="IActor.cs" />
     <Compile Include="IActorProxy.cs" />
     <Compile Include="IActorStateManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Configuration\ClientConfiguration.cs" />
+    <Compile Include="Providers\IProvider.cs" />
+    <Compile Include="Runtime\Silo.cs" />
+    <Compile Include="Runtime\SiloHost.cs" />
+    <Compile Include="Storage\MemoryStorage.cs" />
+    <Compile Include="Storage\IStorageProvider.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\PSharpActors\PSharpActors\PSharpActors.csproj">
+      <Project>{444da357-5911-45d5-9645-3c555a39efd1}</Project>
+      <Name>PSharpActors</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
