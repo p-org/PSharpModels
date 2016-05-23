@@ -1,10 +1,7 @@
 ﻿using ServiceFabricModel;
-using Microsoft.ServiceFabric.Actors.Client;
-using Microsoft.ServiceFabric.Actors.Runtime;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Reflection;
 
 using Microsoft.PSharp;
 using Microsoft.PSharp.Actors.Bridge;
@@ -24,7 +21,8 @@ namespace Microsoft.ServiceFabric.Actors
             IdMap = new Dictionary<ActorId, object>();
     }
 
-        public static TActorInterface Create<TActorInterface>(ActorId actorId, string applicationName = null, string serviceName = null) where TActorInterface : IActor
+        public static TActorInterface Create<TActorInterface>(ActorId actorId, string applicationName = null,
+            string serviceName = null) where TActorInterface : IActor
         {
             if (IdMap.ContainsKey(actorId))
                 return (TActorInterface)IdMap[actorId];
@@ -32,11 +30,13 @@ namespace Microsoft.ServiceFabric.Actors
             if (runtime == null)
                 runtime = PSharpRuntime.Create();
 
-            Type proxyType = ProxyFactory.GetProxyType(typeof(TActorInterface), typeof(FabricActorMachine));
+            string assemblyPath = Assembly.GetEntryAssembly().Location + "\\..\\..\\..\\..";
+
+            Type proxyType = ProxyFactory.GetProxyType(typeof(TActorInterface),
+                typeof(FabricActorMachine), assemblyPath);
             var res = (TActorInterface)Activator.CreateInstance(proxyType, runtime);
             IdMap.Add(actorId, res);
             return res;
         }
-
     }
 }

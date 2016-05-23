@@ -14,8 +14,10 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 
 using OrleansModel;
+using System.IO;
 
 namespace Orleans
 {
@@ -75,11 +77,11 @@ namespace Orleans
             {
                 return (TGrainInterface)id.Grain;
             }
-
-            Console.WriteLine("Creating grain: " + typeof(TGrainInterface));
-
+            
+            string assemblyPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             Type proxyType = GrainClient.ProxyFactory.GetProxyType(
-                typeof(TGrainInterface), typeof(OrleansActorMachine));
+                typeof(TGrainInterface), typeof(OrleansActorMachine), assemblyPath);
+
             var grain = (TGrainInterface)Activator.CreateInstance(
                 proxyType, GrainClient.Runtime);
 

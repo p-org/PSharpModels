@@ -58,8 +58,9 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// </summary>
         /// <param name="interfaceType">Type</param>
         /// <param name="actorMachineType">Actor machine type</param>
+        /// <param name="assemblyPath">Assembly path</param>
         /// <returns>Type</returns>
-        public Type GetProxyType(Type interfaceType, Type actorMachineType)
+        public Type GetProxyType(Type interfaceType, Type actorMachineType, string assemblyPath)
         {
             lock (this.Lock)
             {
@@ -68,7 +69,7 @@ namespace Microsoft.PSharp.Actors.Bridge
 
                 if (res == null)
                 {
-                    res = CreateProxyType(interfaceType, actorMachineType);
+                    res = CreateProxyType(interfaceType, actorMachineType, assemblyPath);
                     this.ProxyTypes.Add(interfaceType, res);
                 }
 
@@ -77,21 +78,17 @@ namespace Microsoft.PSharp.Actors.Bridge
         }
 
         /// <summary>
-        /// Create a new proxy type.
+        /// Returns all assemblies from the specified
+        /// assembly path and extension.
         /// </summary>
-        /// <param name="interfaceType">Type</param>
-        /// <param name="actorMachineType">Actor machine type</param>
-        /// <returns>Type</returns>
-        private Type CreateProxyType(Type interfaceType, Type actorMachineType)
+        /// <param name="assemblyPath">Path</param>
+        /// <param name="extension">Extension</param>
+        /// <returns>Assemblies</returns>
+        private List<Assembly> GetAllAssemblies(string assemblyPath, string extension)
         {
-            if (!interfaceType.IsInterface)
-            {
-                throw new InvalidOperationException();
-            }
-            
-            string assemblyPath = Assembly.GetEntryAssembly().Location + "\\..\\..\\..\\..";
             List<Assembly> allAssemblies = new List<Assembly>();
-            foreach (string dll in Directory.GetFiles(assemblyPath, "*.exe", SearchOption.AllDirectories))
+            foreach (string dll in Directory.GetFiles(assemblyPath, "*." + extension,
+                SearchOption.AllDirectories))
             {
                 try
                 {
@@ -106,6 +103,15 @@ namespace Microsoft.PSharp.Actors.Bridge
                 }
             }
 
+            return allAssemblies;
+        }
+
+        private Type GetActorType(Type interfaceType, string assemblyPath)
+        {
+            List<Assembly> allAssemblies = new List<Assembly>();
+            allAssemblies.AddRange(this.GetAllAssemblies(assemblyPath, "exe"));
+            allAssemblies.AddRange(this.GetAllAssemblies(assemblyPath, "dll"));
+            
             var types = new List<Type>();
             foreach (var asm in allAssemblies)
             {
@@ -119,7 +125,24 @@ namespace Microsoft.PSharp.Actors.Bridge
                 }
             }
 
-            var actorType = types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).First();
+            return types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).First();
+        }
+
+        /// <summary>
+        /// Create a new proxy type.
+        /// </summary>
+        /// <param name="interfaceType">Type</param>
+        /// <param name="actorMachineType">Actor machine type</param>
+        /// <param name="assemblyPath">Assembly path</param>
+        /// <returns>Type</returns>
+        private Type CreateProxyType(Type interfaceType, Type actorMachineType, string assemblyPath)
+        {
+            if (!interfaceType.IsInterface)
+            {
+                throw new InvalidOperationException();
+            }
+            
+            var actorType = this.GetActorType(interfaceType, assemblyPath);
 
             var references = new HashSet<MetadataReference>();
             references.Add(MetadataReference.CreateFromFile(actorType.Assembly.Location));
@@ -375,30 +398,30 @@ namespace Microsoft.PSharp.Actors.Bridge
                 payloadArguments.Add(SyntaxFactory.IdentifierName(parameter.Name));
             }
 
-            //TODO: Fix this (return type of GetResult)
-            if (method.Name.StartsWith("GetResult"))
-            {
-                //returnStmt = SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(GetTypeSyntax(method.ReturnType)));
-                LocalDeclarationStatementSyntax localStmtMachine = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
-                    SyntaxFactory.IdentifierName("FabricActorMachine"), SyntaxFactory.SeparatedList(
-                        new List<VariableDeclaratorSyntax>
-                        {
-                            SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("machine"),
-                            null,
-                            SyntaxFactory.EqualsValueClause(
-                                SyntaxFactory.CastExpression(SyntaxFactory.IdentifierName("FabricActorMachine"), SyntaxFactory.IdentifierName("RefMachine"))))
-                        })));
+            ////TODO: Fix this (return type of GetResult)
+            //if (method.Name.StartsWith("GetResult"))
+            //{
+            //    //returnStmt = SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(GetTypeSyntax(method.ReturnType)));
+            //    LocalDeclarationStatementSyntax localStmtMachine = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
+            //        SyntaxFactory.IdentifierName("FabricActorMachine"), SyntaxFactory.SeparatedList(
+            //            new List<VariableDeclaratorSyntax>
+            //            {
+            //                SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("machine"),
+            //                null,
+            //                SyntaxFactory.EqualsValueClause(
+            //                    SyntaxFactory.CastExpression(SyntaxFactory.IdentifierName("FabricActorMachine"), SyntaxFactory.IdentifierName("RefMachine"))))
+            //            })));
 
-                LocalDeclarationStatementSyntax localStmtResult = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
-                    SyntaxFactory.IdentifierName("object"), SyntaxFactory.SeparatedList(
-                        new List<VariableDeclaratorSyntax>
-                        {
-                            SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("oResult"),
-                            null,
-                            SyntaxFactory.EqualsValueClause(SyntaxFactory.InvocationExpression(SyntaxFactory.InvocationExpression())))
-                        })));
-            }
-            //end TODO
+            //    LocalDeclarationStatementSyntax localStmtResult = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
+            //        SyntaxFactory.IdentifierName("object"), SyntaxFactory.SeparatedList(
+            //            new List<VariableDeclaratorSyntax>
+            //            {
+            //                SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("oResult"),
+            //                null,
+            //                SyntaxFactory.EqualsValueClause(SyntaxFactory.InvocationExpression(SyntaxFactory.InvocationExpression())))
+            //            })));
+            //}
+            ////end TODO
 
             MethodDeclarationSyntax methodDecl = SyntaxFactory.MethodDeclaration(
                 this.GetTypeSyntax(method.ReturnType),

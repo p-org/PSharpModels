@@ -31,17 +31,17 @@ namespace Microsoft.PSharp.Actors.Bridge
         }
     }
 
-    public class Task<T> : System.Threading.Tasks.Task<T>
+    public class DummyTask<T> : System.Threading.Tasks.Task<T>
     {
         private new T Result;
 
-        public Task()
+        public DummyTask()
             : base(() => { return default(T); })
         {
 
         }
 
-        public Task(Func<T> function)
+        public DummyTask(Func<T> function)
             : base(function)
         {
             this.Result = function();

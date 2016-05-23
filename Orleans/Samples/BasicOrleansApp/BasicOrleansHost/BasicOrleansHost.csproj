@@ -39,6 +39,9 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp">
       <HintPath>..\..\..\..\PSharp\Binaries\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
+      <HintPath>..\..\..\..\PSharpActors\Binaries\Microsoft.CodeAnalysis.CSharp.Workspaces.dll</HintPath>
+    </Reference>
     <Reference Include="OrleansModel">
       <HintPath>..\..\..\Binaries\OrleansModel.dll</HintPath>
     </Reference>
