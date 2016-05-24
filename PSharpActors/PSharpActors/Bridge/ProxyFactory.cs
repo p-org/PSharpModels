@@ -379,15 +379,12 @@ namespace Microsoft.PSharp.Actors.Bridge
                 payloadArguments.Add(SyntaxFactory.IdentifierName(parameter.Name));
             }
 
-            MethodDeclarationSyntax methodDecl = SyntaxFactory.MethodDeclaration(
-                this.GetTypeSyntax(method.ReturnType),
-                method.Name)
+            TypeSyntax returnType = this.GetTypeSyntax(method.ReturnType);
+            MethodDeclarationSyntax methodDecl = SyntaxFactory.MethodDeclaration(returnType, method.Name)
                 .WithParameterList(SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList(parameters)));
-
-            ////TODO: Fix this (return type of GetResult)
+            
             if (method.Name.StartsWith("GetResult"))
             {
-                Console.WriteLine("Creating proxy method for GetResult");
                 LocalDeclarationStatementSyntax localStmtMachine = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
                     SyntaxFactory.IdentifierName(typeof(ActorMachine).FullName), SyntaxFactory.SeparatedList(
                         new List<VariableDeclaratorSyntax>
@@ -424,7 +421,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                         })));
 
                 ReturnStatementSyntax returnStmtGetResult = SyntaxFactory.ReturnStatement(SyntaxFactory.CastExpression(
-                    this.GetTypeSyntax(method.ReturnType), SyntaxFactory.IdentifierName("oResult")));
+                    returnType, SyntaxFactory.IdentifierName("oResult")));
 
                 BlockSyntax bodyGetResult = SyntaxFactory.Block(localStmtMachine, localStmtResult, returnStmtGetResult);
                 methodDecl = methodDecl.WithBody(bodyGetResult).WithModifiers(
@@ -432,7 +429,6 @@ namespace Microsoft.PSharp.Actors.Bridge
 
                 return methodDecl;
             }
-            //end TODO
 
             LocalDeclarationStatementSyntax payloadDecl = SyntaxFactory.LocalDeclarationStatement(
                 SyntaxFactory.VariableDeclaration(
@@ -448,6 +444,30 @@ namespace Microsoft.PSharp.Actors.Bridge
                                     SyntaxKind.ArrayInitializerExpression,
                                     SyntaxFactory.SeparatedList(payloadArguments)))))
                         })));
+
+            ObjectCreationExpressionSyntax returnTask = null;
+            if (method.ReturnType.GetGenericArguments().Count() > 0)
+            {
+                Type genericType = method.ReturnType.GetGenericArguments().First();
+                returnTask = this.CreateReturnTask(method.ReturnType, genericType,
+                    SyntaxFactory.Block(SyntaxFactory.ReturnStatement(
+                        SyntaxFactory.DefaultExpression(
+                            this.GetTypeSyntax(genericType)))));
+            }
+            else
+            {
+                returnTask = this.CreateReturnTask(method.ReturnType, null, SyntaxFactory.Block());
+            }
+
+            LocalDeclarationStatementSyntax returnTaskExpression = SyntaxFactory.LocalDeclarationStatement(
+                SyntaxFactory.VariableDeclaration(returnType,
+                SyntaxFactory.SeparatedList(
+                    new List<VariableDeclaratorSyntax>
+                    {
+                        SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("returnTask"),
+                        null,
+                        SyntaxFactory.EqualsValueClause(returnTask))
+                    })));
 
             string eventType = actorMachineType.FullName + "." + typeof(ActorMachine.ActorEvent).Name;
             string eventName = "actorEvent";
@@ -465,30 +485,21 @@ namespace Microsoft.PSharp.Actors.Bridge
                             SyntaxKind.SimpleMemberAccessExpression,
                             SyntaxFactory.ThisExpression(),
                             SyntaxFactory.IdentifierName("Target"))),
-                        SyntaxFactory.Argument(SyntaxFactory.IdentifierName("payload"))
+                        SyntaxFactory.Argument(SyntaxFactory.IdentifierName("payload")),
+                        SyntaxFactory.Argument(SyntaxFactory.MemberAccessExpression(
+                            SyntaxKind.SimpleMemberAccessExpression,
+                            SyntaxFactory.IdentifierName("returnTask"),
+                            SyntaxFactory.IdentifierName("Id")))
                     }));
 
             LocalDeclarationStatementSyntax eventDecl = this.CreateEventDeclaration(
                 eventType, eventName, arguments);
 
             ExpressionStatementSyntax sendExpr = this.CreateSendEventExpression("Id", eventName);
+            ReturnStatementSyntax returnStmt = SyntaxFactory.ReturnStatement(
+                SyntaxFactory.IdentifierName("returnTask"));
 
-            ReturnStatementSyntax returnStmt = null;
-
-            if (method.ReturnType.GetGenericArguments().Count() > 0)
-            {
-                Type genericType = method.ReturnType.GetGenericArguments().First();
-                returnStmt = this.CreateReturnExpression(method.ReturnType, genericType,
-                    SyntaxFactory.Block(SyntaxFactory.ReturnStatement(
-                        SyntaxFactory.DefaultExpression(
-                            this.GetTypeSyntax(genericType)))));
-            }
-            else
-            {
-                returnStmt = this.CreateReturnExpression(method.ReturnType, null, SyntaxFactory.Block());
-            }
-
-            BlockSyntax body = SyntaxFactory.Block(payloadDecl, eventDecl,
+            BlockSyntax body = SyntaxFactory.Block(payloadDecl, returnTaskExpression, eventDecl,
                 sendExpr, returnStmt);
             methodDecl = methodDecl.WithBody(body).WithModifiers(
                 SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
@@ -549,23 +560,22 @@ namespace Microsoft.PSharp.Actors.Bridge
         }
 
         /// <summary>
-        /// Creates a return statement.
+        /// Creates a return task.
         /// </summary>
         /// <param name="returnType">Return type</param>
         /// <param name="genericType">Generic type</param>
         /// <param name="eventName">Body</param>
-        /// <returns>ReturnStatementSyntax</returns>
-        private ReturnStatementSyntax CreateReturnExpression(Type returnType,
+        /// <returns>ObjectCreationExpressionSyntax</returns>
+        private ObjectCreationExpressionSyntax CreateReturnTask(Type returnType,
             Type genericType, BlockSyntax body)
         {
             List<TypeSyntax> genericTypes = new List<TypeSyntax>();
-            ReturnStatementSyntax returnStmt = null;
+            ObjectCreationExpressionSyntax returnTask = null;
 
             if (genericType != null)
             {
                 genericTypes.Add(SyntaxFactory.IdentifierName(genericType.FullName));
-                returnStmt = SyntaxFactory.ReturnStatement(
-                SyntaxFactory.ObjectCreationExpression(
+                returnTask = SyntaxFactory.ObjectCreationExpression(
                     SyntaxFactory.GenericName(SyntaxFactory.Identifier(typeof(DummyTask).FullName),
                     SyntaxFactory.TypeArgumentList(
                         SyntaxFactory.SeparatedList(genericTypes))))
@@ -574,16 +584,16 @@ namespace Microsoft.PSharp.Actors.Bridge
                         new List<ArgumentSyntax>
                         {
                                     SyntaxFactory.Argument(SyntaxFactory.ParenthesizedLambdaExpression(body))
-                        }))));
+                        })));
             }
             else
             {
-                returnStmt = SyntaxFactory.ReturnStatement(SyntaxFactory.ObjectCreationExpression(
+                returnTask = SyntaxFactory.ObjectCreationExpression(
                     SyntaxFactory.IdentifierName(typeof(DummyTask).FullName))
-                    .WithArgumentList(SyntaxFactory.ArgumentList()));
+                    .WithArgumentList(SyntaxFactory.ArgumentList());
             }
 
-            return returnStmt;
+            return returnTask;
         }
 
         #region helper methods

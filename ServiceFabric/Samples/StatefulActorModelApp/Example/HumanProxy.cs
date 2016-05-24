@@ -45,14 +45,11 @@ namespace Example
             */
         }
 
-        //public int GetResult(Task<int> t)
-        //{
-        //    ActorMachine machine = (ActorMachine)((Actor)obj).RefMachine;
-        //    //ServiceFabricModel.FabricActorMachine machine = (ServiceFabricModel.FabricActorMachine)this.RefMachine;
-        //    Console.WriteLine(" this.RefMachine " + this.RefMachine);
-        //    Console.WriteLine(" machine " + machine);
-        //    object oResult = machine.GetResult(t);
-        //    return (int)oResult;
-        //}
+        public int GetResult(Task<int> t)
+        {
+            ActorMachine machine = (ActorMachine)((Actor)obj).RefMachine;
+            object oResult = machine.GetResult(t);
+            return (int)oResult;
+        }
     }
 }

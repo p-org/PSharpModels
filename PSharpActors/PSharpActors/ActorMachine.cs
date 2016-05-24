@@ -89,7 +89,9 @@ namespace Microsoft.PSharp.Actors
         #endregion
 
         #region fields
-        Dictionary<int, object> resultStore = new Dictionary<int, object>();
+
+        Dictionary<int, object> resultTaskStore = new Dictionary<int, object>();
+
         #endregion
 
         #region states
@@ -125,6 +127,8 @@ namespace Microsoft.PSharp.Actors
             MethodInfo mi = e.MethodClass.GetMethod(e.MethodName);
             try
             {
+                // TODO: check if we can associate this task with the
+                // dummy task returned to the user
                 object result = mi.Invoke(e.ClassInstance, e.Parameters);
                 Send(Id, new ReturnEvent(result, e.returnTaskId));
             }
@@ -139,19 +143,19 @@ namespace Microsoft.PSharp.Actors
         {
             var e = ReceivedEvent as ReturnEvent;
             Console.WriteLine("Task completed: " + e.returnForTask);
-            resultStore.Add(e.returnForTask, e.Result);
+            resultTaskStore.Add(e.returnForTask, e.Result);
         }
 
         public object GetResult(Task<int> t)
         {
-            if (resultStore.ContainsKey(t.Id))
+            if (resultTaskStore.ContainsKey(t.Id))
             {
                 Console.WriteLine("returning!!!!!!");
-                return resultStore[t.Id];
+                return ((Task<int>)resultTaskStore[t.Id]).Result;
             }
 
             this.Receive(typeof(ReturnEvent), retEvent => ((ReturnEvent)retEvent).returnForTask == t.Id);
-            return (int)((this.ReceivedEvent as ReturnEvent).Result);
+            return (this.ReceivedEvent as ReturnEvent).Result;
         }
 
         #endregion
