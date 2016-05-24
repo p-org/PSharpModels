@@ -31,5 +31,11 @@ namespace Example
             //Console.WriteLine(GetResult(p));
             return Task.FromResult(x + 7);
         }
+
+        public Task Foo()
+        {
+            Console.WriteLine("HI");
+            return Task.FromResult(true);
+        }
     }
 }

@@ -46,5 +46,25 @@ namespace Example
 
             return tcs.Task;
         }
+
+        public Task Foo()
+        {
+            Console.WriteLine("HI");
+
+            object[] parameters = new object[] { };
+
+            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+
+            Action<object> setResultAction = new Action<object>(task =>
+            {
+                tcs.SetResult(true);
+            });
+
+            ServiceFabricModel.FabricActorMachine.ActorEvent ev = new ServiceFabricModel.
+                FabricActorMachine.ActorEvent(typeof(IHuman), "Foo", obj, parameters, setResultAction);
+            rt.SendEvent(id, ev);
+
+            return tcs.Task;
+        }
     }
 }

@@ -32,48 +32,48 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
                 store.Add(stateName, addValue);
             }
 
-            return DummyTask.FromResult(addValue);
+            return Task.FromResult(addValue);
         }
 
         Task IActorStateManager.AddStateAsync<T>(string stateName, T value, CancellationToken cancellationToken)
         {
             store.Add(stateName, value);
-            return DummyTask.FromResult(true);
+            return Task.FromResult(true);
         }
 
         System.Threading.Tasks.Task<bool> IActorStateManager.ContainsStateAsync(string stateName, CancellationToken cancellationToken)
         {
-            return DummyTask.FromResult(store.ContainsKey(stateName));
+            return Task.FromResult(store.ContainsKey(stateName));
         }
 
         System.Threading.Tasks.Task<T> IActorStateManager.GetOrAddStateAsync<T>(string stateName, T value, CancellationToken cancellationToken)
         {
             if (store.ContainsKey(stateName))
             {
-                return DummyTask.FromResult((T)store[stateName]);
+                return Task.FromResult((T)store[stateName]);
             }
             else
             {
                 store.Add(stateName, value);
-                return DummyTask.FromResult(value);
+                return Task.FromResult(value);
             }
 
         }
 
         System.Threading.Tasks.Task<T> IActorStateManager.GetStateAsync<T>(string stateName, CancellationToken cancellationToken)
         {
-            return DummyTask.FromResult((T)store[stateName]);
+            return Task.FromResult((T)store[stateName]);
         }
 
         System.Threading.Tasks.Task<IEnumerable<string>> IActorStateManager.GetStateNamesAsync(CancellationToken cancellationToken)
         {
-            return DummyTask.FromResult((IEnumerable<string>)store.Keys);
+            return Task.FromResult((IEnumerable<string>)store.Keys);
         }
 
         Task IActorStateManager.RemoveStateAsync(string stateName, CancellationToken cancellationToken)
         {
             store.Remove(stateName);
-            return DummyTask.FromResult(true);
+            return Task.FromResult(true);
         }
 
         Task IActorStateManager.SetStateAsync<T>(string stateName, T value, CancellationToken cancellationToken)
@@ -82,24 +82,24 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
                 store.Add(stateName, value);
             else
                 store[stateName] = value;
-            return DummyTask.FromResult(true);
+            return Task.FromResult(true);
         }
 
         System.Threading.Tasks.Task<bool> IActorStateManager.TryAddStateAsync<T>(string stateName, T value, CancellationToken cancellationToken)
         {
             store.Add(stateName, value);
-            return DummyTask.FromResult(true);
+            return Task.FromResult(true);
         }
 
         System.Threading.Tasks.Task<ConditionalValue<T>> IActorStateManager.TryGetStateAsync<T>(string stateName, CancellationToken cancellationToken)
         {
             if (store.ContainsKey(stateName))
             {
-                return DummyTask.FromResult(new ConditionalValue<T>(true, (T)store[stateName]));
+                return Task.FromResult(new ConditionalValue<T>(true, (T)store[stateName]));
             }
             else
             {
-                return DummyTask.FromResult(new ConditionalValue<T>(false));
+                return Task.FromResult(new ConditionalValue<T>(false));
             }
         }
 
@@ -108,10 +108,10 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
             if (store.ContainsKey(stateName))
             {
                 store.Remove(stateName);
-                return DummyTask.FromResult(true);
+                return Task.FromResult(true);
             }
             else
-                return DummyTask.FromResult(false);
+                return Task.FromResult(false);
         }
     }
 }

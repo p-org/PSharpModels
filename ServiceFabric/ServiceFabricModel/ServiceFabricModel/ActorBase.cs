@@ -62,7 +62,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         //     A System.Threading.Tasks.Task that represents outstanding OnActivateAsync operation.
         protected virtual Task OnActivateAsync()
         {
-            return DummyTask.FromResult(true);
+            return Task.FromResult(true);
         }
         //
         // Summary:
@@ -73,7 +73,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         //     A System.Threading.Tasks.Task that represents outstanding OnDeactivateAsync operation.
         protected virtual Task OnDeactivateAsync()
         {
-            return DummyTask.FromResult(true);
+            return Task.FromResult(true);
         }
         //
         // Summary:

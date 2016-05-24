@@ -401,44 +401,25 @@ namespace Microsoft.PSharp.Actors.Bridge
                         })));
 
             LocalDeclarationStatementSyntax taskCompletionSource = null;
+            SimpleLambdaExpressionSyntax lambda = null;
             if (method.ReturnType.GetGenericArguments().Count() > 0)
             {
                 Type genericType = method.ReturnType.GetGenericArguments().First();
-                GenericNameSyntax tcsType = SyntaxFactory.GenericName(SyntaxFactory.Identifier(
-                            "System.Threading.Tasks.TaskCompletionSource"),
-                            SyntaxFactory.TypeArgumentList(
-                                SyntaxFactory.SeparatedList(
-                                    new List<TypeSyntax>
-                                    {
-                                        this.GetTypeSyntax(genericType)
-                                    })));
-
-                taskCompletionSource = SyntaxFactory.LocalDeclarationStatement(
-                    SyntaxFactory.VariableDeclaration(
-                        tcsType,
-                        SyntaxFactory.SeparatedList(
-                            new List<VariableDeclaratorSyntax>
-                            {
-                                SyntaxFactory.VariableDeclarator(
-                                    SyntaxFactory.Identifier("tcs"),
-                                    null,
-                                    SyntaxFactory.EqualsValueClause(
-                                        SyntaxFactory.ObjectCreationExpression(
-                                            tcsType,
-                                            SyntaxFactory.ArgumentList(),
-                                            null)))
-                            })));
+                taskCompletionSource = this.CreateTaskCompletionSource(genericType);
+                lambda = this.CreateSetResultLambda(SyntaxFactory.Argument(
+                    SyntaxFactory.MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        SyntaxFactory.ParenthesizedExpression(
+                            SyntaxFactory.CastExpression(
+                                returnTaskType,
+                                SyntaxFactory.IdentifierName("task"))),
+                        SyntaxFactory.IdentifierName("Result"))));
             }
             else
             {
-                //taskCompletionSource = SyntaxFactory.LocalDeclarationStatement(
-                //SyntaxFactory.GenericName(SyntaxFactory.Identifier(
-                //    "System.Threading.Tasks.TaskCompletionSource"),
-                //    SyntaxFactory.TypeArgumentList(
-                //        SyntaxFactory.SeparatedList(genericTypes))));
-
-
-                //returnTask = this.CreateReturnTask(method.ReturnType, null, SyntaxFactory.Block());
+                taskCompletionSource = this.CreateTaskCompletionSource(typeof(object));
+                lambda = this.CreateSetResultLambda(SyntaxFactory.Argument(
+                    SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression)));
             }
             
             GenericNameSyntax actionType = SyntaxFactory.GenericName(SyntaxFactory.Identifier(
@@ -449,34 +430,6 @@ namespace Microsoft.PSharp.Actors.Bridge
                         {
                             this.GetTypeSyntax(typeof(object))
                         })));
-
-            SimpleLambdaExpressionSyntax lambda = SyntaxFactory.SimpleLambdaExpression(
-                SyntaxFactory.Parameter(
-                    SyntaxFactory.List<AttributeListSyntax>(),
-                    SyntaxFactory.TokenList(),
-                    null,
-                    SyntaxFactory.Identifier("task"),
-                    null),
-                SyntaxFactory.Block(
-                    SyntaxFactory.ExpressionStatement(
-                        SyntaxFactory.InvocationExpression(
-                            SyntaxFactory.MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName("tcs"),
-                                SyntaxFactory.IdentifierName("SetResult")),
-                            SyntaxFactory.ArgumentList(
-                                SyntaxFactory.SeparatedList(
-                                    new List<ArgumentSyntax>
-                                    {
-                                        SyntaxFactory.Argument(
-                                            SyntaxFactory.MemberAccessExpression(
-                                                SyntaxKind.SimpleMemberAccessExpression,
-                                                SyntaxFactory.ParenthesizedExpression(
-                                                    SyntaxFactory.CastExpression(
-                                                        returnTaskType,
-                                                        SyntaxFactory.IdentifierName("task"))),
-                                                SyntaxFactory.IdentifierName("Result")))
-                                    }))))));
 
             LocalDeclarationStatementSyntax setResultAction = SyntaxFactory.LocalDeclarationStatement(
                 SyntaxFactory.VariableDeclaration(
@@ -590,40 +543,69 @@ namespace Microsoft.PSharp.Actors.Bridge
         }
 
         /// <summary>
-        /// Creates a return task.
+        /// Creates a task completion source.
         /// </summary>
-        /// <param name="returnType">Return type</param>
-        /// <param name="genericType">Generic type</param>
-        /// <param name="eventName">Body</param>
-        /// <returns>ObjectCreationExpressionSyntax</returns>
-        private ObjectCreationExpressionSyntax CreateReturnTask(Type returnType,
-            Type genericType, BlockSyntax body)
+        /// <param name="genericType">Type</param>
+        /// <returns>LocalDeclarationStatementSyntax</returns>
+        private LocalDeclarationStatementSyntax CreateTaskCompletionSource(Type genericType)
         {
-            List<TypeSyntax> genericTypes = new List<TypeSyntax>();
-            ObjectCreationExpressionSyntax returnTask = null;
+            GenericNameSyntax tcsType = SyntaxFactory.GenericName(SyntaxFactory.Identifier(
+                        "System.Threading.Tasks.TaskCompletionSource"),
+                        SyntaxFactory.TypeArgumentList(
+                            SyntaxFactory.SeparatedList(
+                                new List<TypeSyntax>
+                                {
+                                        this.GetTypeSyntax(genericType)
+                                })));
 
-            if (genericType != null)
-            {
-                genericTypes.Add(SyntaxFactory.IdentifierName(genericType.FullName));
-                returnTask = SyntaxFactory.ObjectCreationExpression(
-                    SyntaxFactory.GenericName(SyntaxFactory.Identifier(typeof(DummyTask).FullName),
-                    SyntaxFactory.TypeArgumentList(
-                        SyntaxFactory.SeparatedList(genericTypes))))
-                .WithArgumentList(SyntaxFactory.ArgumentList(
+            LocalDeclarationStatementSyntax tcs = SyntaxFactory.LocalDeclarationStatement(
+                SyntaxFactory.VariableDeclaration(
+                    tcsType,
                     SyntaxFactory.SeparatedList(
-                        new List<ArgumentSyntax>
+                        new List<VariableDeclaratorSyntax>
                         {
-                                    SyntaxFactory.Argument(SyntaxFactory.ParenthesizedLambdaExpression(body))
+                                SyntaxFactory.VariableDeclarator(
+                                    SyntaxFactory.Identifier("tcs"),
+                                    null,
+                                    SyntaxFactory.EqualsValueClause(
+                                        SyntaxFactory.ObjectCreationExpression(
+                                            tcsType,
+                                            SyntaxFactory.ArgumentList(),
+                                            null)))
                         })));
-            }
-            else
-            {
-                returnTask = SyntaxFactory.ObjectCreationExpression(
-                    SyntaxFactory.IdentifierName(typeof(DummyTask).FullName))
-                    .WithArgumentList(SyntaxFactory.ArgumentList());
-            }
 
-            return returnTask;
+            return tcs;
+        }
+
+        /// <summary>
+        /// Creates a set result lamda.
+        /// </summary>
+        /// <param name="argument">ArgumentSyntax</param>
+        /// <returns>SimpleLambdaExpressionSyntax</returns>
+        private SimpleLambdaExpressionSyntax CreateSetResultLambda(ArgumentSyntax argument)
+        {
+            SimpleLambdaExpressionSyntax lambda = SyntaxFactory.SimpleLambdaExpression(
+                SyntaxFactory.Parameter(
+                    SyntaxFactory.List<AttributeListSyntax>(),
+                    SyntaxFactory.TokenList(),
+                    null,
+                    SyntaxFactory.Identifier("task"),
+                    null),
+                SyntaxFactory.Block(
+                    SyntaxFactory.ExpressionStatement(
+                        SyntaxFactory.InvocationExpression(
+                            SyntaxFactory.MemberAccessExpression(
+                                SyntaxKind.SimpleMemberAccessExpression,
+                                SyntaxFactory.IdentifierName("tcs"),
+                                SyntaxFactory.IdentifierName("SetResult")),
+                            SyntaxFactory.ArgumentList(
+                                SyntaxFactory.SeparatedList(
+                                    new List<ArgumentSyntax>
+                                    {
+                                        argument
+                                    }))))));
+
+            return lambda;
         }
 
         #region helper methods
