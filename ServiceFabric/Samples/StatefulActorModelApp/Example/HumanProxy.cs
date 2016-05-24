@@ -22,6 +22,7 @@ namespace Example
             Type mt = typeof(ServiceFabricModel.FabricActorMachine);
             id = rt.CreateMachine(mt);
 
+
             ServiceFabricModel.FabricActorMachine.InitEvent iev = new ServiceFabricModel.FabricActorMachine.InitEvent(obj);
             rt.SendEvent(id, iev);           
         }
@@ -48,8 +49,13 @@ namespace Example
         public int GetResult(Task<int> t)
         {
             ActorMachine machine = (ActorMachine)((Actor)obj).RefMachine;
-            object oResult = machine.GetResult(t);
-            return (int)oResult;
+            
+            Event returnEvent = rt.Receive(id, typeof(ActorMachine.ReturnEvent),
+                retEvent => ((ActorMachine.ReturnEvent)retEvent).returnForTask == t.Id);
+            var result = ((Task<int>)((ActorMachine.ReturnEvent)returnEvent).Result).Result;
+
+            //object oResult = machine.GetResult(t);
+            return result;
         }
     }
 }
