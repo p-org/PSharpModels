@@ -31,20 +31,10 @@ namespace Example
             //Console.WriteLine(GetResult(p));
             return Task.FromResult(x + 7);
         }
-
-        /*
+        
         public int GetResult(Task<int> t)
         {
             return t.Result;
         }
-        */
-        
-        public int GetResult(Task<int> t)
-        {
-            ServiceFabricModel.FabricActorMachine machine = (ServiceFabricModel.FabricActorMachine)this.RefMachine;
-            object oResult = machine.GetResult(t);
-            return (int)oResult;
-        }
-        
     }
 }

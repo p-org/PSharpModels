@@ -32,14 +32,17 @@ namespace Microsoft.PSharp.Actors
         public class InitEvent : Event
         {
             public object ClassInstance;
+            public IDictionary<int, object> ResultTaskMap;
 
             /// <summary>
             /// Constructor.
             /// </summary>
             /// <param name="classInstance">ClassInstance</param>
-            public InitEvent(object classInstance)
+            /// <param name="resultTaskMap">Map of task ids to result tasks</param>
+            public InitEvent(object classInstance, IDictionary<int, object> resultTaskMap)
             {
                 this.ClassInstance = classInstance;
+                this.ResultTaskMap = resultTaskMap;
             }
         }
 
@@ -90,7 +93,10 @@ namespace Microsoft.PSharp.Actors
 
         #region fields
 
-        Dictionary<int, object> resultTaskStore = new Dictionary<int, object>();
+        /// <summary>
+        /// Map from task ids to result tasks.
+        /// </summary>
+        IDictionary<int, object> ResultTaskMap;
 
         #endregion
 
@@ -108,9 +114,12 @@ namespace Microsoft.PSharp.Actors
 
         private void OnInitEvent()
         {
+            var initEvent = this.ReceivedEvent as InitEvent;
+            this.ResultTaskMap = initEvent.ResultTaskMap;
+
             try
             {
-                this.Initialize();
+                this.Initialize(initEvent);
             }
             catch(Exception ex)
             {
@@ -119,7 +128,7 @@ namespace Microsoft.PSharp.Actors
             }            
         }
 
-        protected abstract void Initialize();
+        protected abstract void Initialize(InitEvent initEvent);
 
         private void OnActorEvent()
         {
@@ -143,19 +152,7 @@ namespace Microsoft.PSharp.Actors
         {
             var e = ReceivedEvent as ReturnEvent;
             Console.WriteLine("Task completed: " + e.returnForTask);
-            resultTaskStore.Add(e.returnForTask, e.Result);
-        }
-
-        public object GetResult(Task<int> t)
-        {
-            if (resultTaskStore.ContainsKey(t.Id))
-            {
-                Console.WriteLine("returning!!!!!!");
-                return ((Task<int>)resultTaskStore[t.Id]).Result;
-            }
-
-            this.Receive(typeof(ReturnEvent), retEvent => ((ReturnEvent)retEvent).returnForTask == t.Id);
-            return (this.ReceivedEvent as ReturnEvent).Result;
+            this.ResultTaskMap.Add(e.returnForTask, e.Result);
         }
 
         #endregion

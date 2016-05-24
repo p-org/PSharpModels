@@ -11,26 +11,18 @@ namespace ServiceFabricModel
 {
     public class FabricActorMachine : ActorMachine
     {
-        protected override void Initialize()
+        protected override void Initialize(InitEvent initEvent)
         {
-            var e = this.ReceivedEvent as InitEvent;
             ConstructorInfo sm = typeof(ActorStateManager).GetConstructors().Single();
             var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
-            PropertyInfo prop = e.ClassInstance.GetType().GetProperty("StateManager", BindingFlags.Public | BindingFlags.Instance);
+            PropertyInfo prop = initEvent.ClassInstance.GetType().GetProperty("StateManager", BindingFlags.Public | BindingFlags.Instance);
             if (null != prop && prop.CanWrite)
             {
-                prop.SetValue(e.ClassInstance, stateManager, null);
-            }
-
-            PropertyInfo rProp = e.ClassInstance.GetType().GetProperty("RefMachine", BindingFlags.Public | BindingFlags.Instance);
-            if (null != rProp && rProp.CanWrite)
-            {
-                Console.WriteLine("setting ref value: " + this);
-                rProp.SetValue(e.ClassInstance, this, null);
+                prop.SetValue(initEvent.ClassInstance, stateManager, null);
             }
 
             MethodInfo mo = typeof(ActorBase).GetMethod("OnActivateAsync", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            mo.Invoke(e.ClassInstance, new object[] { });
+            mo.Invoke(initEvent.ClassInstance, new object[] { });
         }
     }
 }

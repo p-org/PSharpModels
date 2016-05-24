@@ -3,6 +3,7 @@ using Microsoft.PSharp.Actors;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Example
@@ -14,8 +15,11 @@ namespace Example
         MachineId id;
         PSharpRuntime rt;
 
+        Dictionary<int, object> ResultTaskMap;
+
         public HumanProxy(PSharpRuntime runtime)
         {
+            this.ResultTaskMap = new Dictionary<int, object>();
             this.obj = new MyHuman();
             rt = runtime;
             rt = PSharpRuntime.Create();
@@ -23,7 +27,7 @@ namespace Example
             id = rt.CreateMachine(mt);
 
 
-            ServiceFabricModel.FabricActorMachine.InitEvent iev = new ServiceFabricModel.FabricActorMachine.InitEvent(obj);
+            ServiceFabricModel.FabricActorMachine.InitEvent iev = new ServiceFabricModel.FabricActorMachine.InitEvent(obj, this.ResultTaskMap);
             rt.SendEvent(id, iev);           
         }
 
@@ -48,13 +52,14 @@ namespace Example
 
         public int GetResult(Task<int> t)
         {
-            ActorMachine machine = (ActorMachine)((Actor)obj).RefMachine;
-            
+            if (this.ResultTaskMap.ContainsKey(t.Id))
+            {
+                return ((Task<int>)this.ResultTaskMap[t.Id]).Result;
+            }
+
             Event returnEvent = rt.Receive(id, typeof(ActorMachine.ReturnEvent),
                 retEvent => ((ActorMachine.ReturnEvent)retEvent).returnForTask == t.Id);
             var result = ((Task<int>)((ActorMachine.ReturnEvent)returnEvent).Result).Result;
-
-            //object oResult = machine.GetResult(t);
             return result;
         }
     }

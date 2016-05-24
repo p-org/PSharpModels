@@ -30,8 +30,6 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
 
         }
 
-        public Machine RefMachine { get; set;  }
-
         //
         // Summary:
         //     Gets the state manager for Microsoft.ServiceFabric.Actors.Runtime.Actor which
