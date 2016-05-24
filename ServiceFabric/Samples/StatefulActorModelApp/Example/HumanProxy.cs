@@ -15,19 +15,16 @@ namespace Example
         MachineId id;
         PSharpRuntime rt;
 
-        Dictionary<int, object> ResultTaskMap;
-
         public HumanProxy(PSharpRuntime runtime)
         {
-            this.ResultTaskMap = new Dictionary<int, object>();
             this.obj = new MyHuman();
             rt = runtime;
             rt = PSharpRuntime.Create();
             Type mt = typeof(ServiceFabricModel.FabricActorMachine);
             id = rt.CreateMachine(mt);
-
-
-            ServiceFabricModel.FabricActorMachine.InitEvent iev = new ServiceFabricModel.FabricActorMachine.InitEvent(obj, this.ResultTaskMap);
+            
+            ServiceFabricModel.FabricActorMachine.InitEvent iev = new ServiceFabricModel.
+                FabricActorMachine.InitEvent(obj);
             rt.SendEvent(id, iev);           
         }
 
@@ -36,31 +33,18 @@ namespace Example
         {    
             object[] parameters = new object[] { a, b, s };
 
-            Task<int> returnTask = new Task<int>(() => { return default(int); });
-            ServiceFabricModel.FabricActorMachine.ActorEvent ev = new ServiceFabricModel.FabricActorMachine.ActorEvent(typeof(IHuman), "Eat", obj, parameters, returnTask.Id);
+            TaskCompletionSource<int> tcs = new TaskCompletionSource<int>();
+
+            Action<object> setResultAction = new Action<object>(task =>
+            {
+                tcs.SetResult(((Task<int>)task).Result);
+            });
+            
+            ServiceFabricModel.FabricActorMachine.ActorEvent ev = new ServiceFabricModel.
+                FabricActorMachine.ActorEvent(typeof(IHuman), "Eat", obj, parameters, setResultAction);
             rt.SendEvent(id, ev);
 
-            return returnTask;
-            /*
-            while (true)
-            {
-               if (ev.result != null)
-                    break;
-            }
-            */
-        }
-
-        public int GetResult(Task<int> t)
-        {
-            if (this.ResultTaskMap.ContainsKey(t.Id))
-            {
-                return ((Task<int>)this.ResultTaskMap[t.Id]).Result;
-            }
-
-            Event returnEvent = rt.Receive(id, typeof(ActorMachine.ReturnEvent),
-                retEvent => ((ActorMachine.ReturnEvent)retEvent).returnForTask == t.Id);
-            var result = ((Task<int>)((ActorMachine.ReturnEvent)returnEvent).Result).Result;
-            return result;
+            return tcs.Task;
         }
     }
 }

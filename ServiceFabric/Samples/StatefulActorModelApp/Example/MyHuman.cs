@@ -31,10 +31,5 @@ namespace Example
             //Console.WriteLine(GetResult(p));
             return Task.FromResult(x + 7);
         }
-        
-        public int GetResult(Task<int> t)
-        {
-            return t.Result;
-        }
     }
 }

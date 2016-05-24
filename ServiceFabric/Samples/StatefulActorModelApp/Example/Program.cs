@@ -16,13 +16,14 @@ namespace Example
         {
             var obj = ActorProxy.Create<IHuman>(new ActorId(2), "ABC");
             Task<int> t = obj.Eat(9, 2, "qwer");
-            int x = obj.GetResult(t);
+            //int x = obj.GetResult(t);
+            int x = t.Result;
             Console.WriteLine(x);
-            //Console.WriteLine(obj.Eat(5, 20, "qwer"));
 
             //var obj = new HumanProxy(PSharpRuntime.Create());
             //Task<int> t = obj.Eat(10, 97, "asdf");
-            //int x = obj.GetResult(t);
+            ////int x = obj.GetResult(t);
+            //int x = t.Result;
             //Console.WriteLine(x);
 
             Console.ReadLine();                        

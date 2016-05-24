@@ -32,17 +32,14 @@ namespace Microsoft.PSharp.Actors
         public class InitEvent : Event
         {
             public object ClassInstance;
-            public IDictionary<int, object> ResultTaskMap;
 
             /// <summary>
             /// Constructor.
             /// </summary>
             /// <param name="classInstance">ClassInstance</param>
-            /// <param name="resultTaskMap">Map of task ids to result tasks</param>
-            public InitEvent(object classInstance, IDictionary<int, object> resultTaskMap)
+            public InitEvent(object classInstance)
             {
                 this.ClassInstance = classInstance;
-                this.ResultTaskMap = resultTaskMap;
             }
         }
 
@@ -55,7 +52,7 @@ namespace Microsoft.PSharp.Actors
             public string MethodName;
             public object ClassInstance;
             public object[] Parameters;
-            public int returnTaskId;
+            public Action<object> SetResultAction;
 
             /// <summary>
             /// Constructor.
@@ -64,28 +61,15 @@ namespace Microsoft.PSharp.Actors
             /// <param name="methodName">MethodName</param>
             /// <param name="classInstance">ClassInstance</param>
             /// <param name="parameters">Parameters</param>
-            public ActorEvent(Type methodClass, string methodName, object classInstance, object[] parameters, int returnTaskId)
+            /// <param name="tcs">TaskCompletionSource</param>
+            public ActorEvent(Type methodClass, string methodName, object classInstance,
+                object[] parameters, Action<object> setResultAction)
             {
                 this.MethodClass = methodClass;
                 this.MethodName = methodName;
                 this.ClassInstance = classInstance;
                 this.Parameters = parameters;
-                this.returnTaskId = returnTaskId;
-            }
-        }
-
-        /// <summary>
-        /// The actor return event.
-        /// </summary>
-        public class ReturnEvent : Event
-        {
-            public int returnForTask;
-            public object Result;
-            
-            public ReturnEvent(object Result, int returnForTask)
-            {
-                this.Result = Result;
-                this.returnForTask = returnForTask;
+                this.SetResultAction = setResultAction;
             }
         }
 
@@ -105,7 +89,6 @@ namespace Microsoft.PSharp.Actors
         [Start]
         [OnEventDoAction(typeof(InitEvent), nameof(OnInitEvent))]
         [OnEventDoAction(typeof(ActorEvent), nameof(OnActorEvent))]
-        [OnEventDoAction(typeof(ReturnEvent), nameof(OnReturnEvent))]
         private class Init : MachineState { }
 
         #endregion
@@ -115,7 +98,6 @@ namespace Microsoft.PSharp.Actors
         private void OnInitEvent()
         {
             var initEvent = this.ReceivedEvent as InitEvent;
-            this.ResultTaskMap = initEvent.ResultTaskMap;
 
             try
             {
@@ -139,20 +121,13 @@ namespace Microsoft.PSharp.Actors
                 // TODO: check if we can associate this task with the
                 // dummy task returned to the user
                 object result = mi.Invoke(e.ClassInstance, e.Parameters);
-                Send(Id, new ReturnEvent(result, e.returnTaskId));
+                e.SetResultAction(result);
             }
             catch(Exception ex)
             {
                 Console.WriteLine(ex);
                 Environment.Exit(Environment.ExitCode);
             }
-        }
-        
-        private void OnReturnEvent()
-        {
-            var e = ReceivedEvent as ReturnEvent;
-            Console.WriteLine("Task completed: " + e.returnForTask);
-            this.ResultTaskMap.Add(e.returnForTask, e.Result);
         }
 
         #endregion

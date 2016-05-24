@@ -10,7 +10,5 @@ namespace Example
     public interface IHuman : IActor
     {
         Task<int> Eat(int x, int y, string s);
-
-        int GetResult(Task<int> t);
     }
 }
