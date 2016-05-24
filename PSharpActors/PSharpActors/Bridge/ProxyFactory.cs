@@ -542,27 +542,76 @@ namespace Microsoft.PSharp.Actors.Bridge
                         ))),
                     SyntaxFactory.IdentifierName("Result")))));
 
-            LocalDeclarationStatementSyntax localStmtResult = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
-                SyntaxFactory.IdentifierName("object"), SyntaxFactory.SeparatedList(
+            LocalDeclarationStatementSyntax localReturnEvent = SyntaxFactory.LocalDeclarationStatement(SyntaxFactory.VariableDeclaration(
+                SyntaxFactory.IdentifierName("Event"), SyntaxFactory.SeparatedList(
                     new List<VariableDeclaratorSyntax>
                     {
-                            SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("oResult"),
-                            null,
-                            SyntaxFactory.EqualsValueClause(SyntaxFactory.InvocationExpression(
-                                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName("machine"), SyntaxFactory.IdentifierName("GetResult")),
-                                SyntaxFactory.ArgumentList(
-                                    SyntaxFactory.SeparatedList(
-                                        new List<ArgumentSyntax>
-                                        {
-                                            SyntaxFactory.Argument(payloadArguments[0])
-                                        })))))
+                        SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("returnEvent"),
+                        null,
+                        SyntaxFactory.EqualsValueClause(SyntaxFactory.InvocationExpression(
+                            SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName("Runtime")),
+                            SyntaxFactory.IdentifierName("Receive")), 
+                            SyntaxFactory.ArgumentList(
+                                SyntaxFactory.SeparatedList(
+                                    new List<ArgumentSyntax>
+                                    {
+                                        SyntaxFactory.Argument(SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                            SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName("Id"))),
+                                        SyntaxFactory.Argument(SyntaxFactory.TypeOfExpression(
+                                            SyntaxFactory.QualifiedName(SyntaxFactory.IdentifierName(
+                                                typeof(ActorMachine).FullName),
+                                            SyntaxFactory.IdentifierName(typeof(ActorMachine.ReturnEvent).Name)))),
+                                        SyntaxFactory.Argument(SyntaxFactory.SimpleLambdaExpression(SyntaxFactory.Parameter(
+                                            SyntaxFactory.List<AttributeListSyntax>(),
+                                            SyntaxFactory.TokenList(),
+                                            null,
+                                            SyntaxFactory.Identifier("e"),
+                                            null), 
+                                        SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression, 
+                                        SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                        SyntaxFactory.ParenthesizedExpression(SyntaxFactory.CastExpression(
+                                            SyntaxFactory.QualifiedName(SyntaxFactory.IdentifierName(
+                                                typeof(ActorMachine).FullName),
+                                            SyntaxFactory.IdentifierName(typeof(ActorMachine.ReturnEvent).Name)), 
+                                            SyntaxFactory.IdentifierName("e"))),
+                                        SyntaxFactory.IdentifierName("returnForTask")), 
+                                        SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                            SyntaxFactory.IdentifierName(parameters[0].Identifier),
+                                            SyntaxFactory.IdentifierName("Id")))))
+                                    })))))
                     })));
 
-            ReturnStatementSyntax returnStmtGetResult = SyntaxFactory.ReturnStatement(SyntaxFactory.CastExpression(
-                returnType, SyntaxFactory.IdentifierName("oResult")));
+            LocalDeclarationStatementSyntax resultDecl = SyntaxFactory.LocalDeclarationStatement(
+                SyntaxFactory.VariableDeclaration(returnType,
+                SyntaxFactory.SeparatedList(
+                    new List<VariableDeclaratorSyntax>
+                    {
+                        SyntaxFactory.VariableDeclarator(
+                            SyntaxFactory.Identifier("result"),
+                            null,
+                            SyntaxFactory.EqualsValueClause(
+                                SyntaxFactory.MemberAccessExpression(
+                                    SyntaxKind.SimpleMemberAccessExpression,
+                                    SyntaxFactory.ParenthesizedExpression(
+                                        SyntaxFactory.CastExpression(parameters[0].Type,
+                                            SyntaxFactory.MemberAccessExpression(
+                                                SyntaxKind.SimpleMemberAccessExpression,
+                                                SyntaxFactory.ParenthesizedExpression(
+                                                    SyntaxFactory.CastExpression(
+                                                        SyntaxFactory.QualifiedName(SyntaxFactory.IdentifierName(
+                                                            typeof(ActorMachine).FullName),
+                                                            SyntaxFactory.IdentifierName(typeof(ActorMachine.ReturnEvent).Name)),
+                                                    SyntaxFactory.IdentifierName("returnEvent"))),
+                                                SyntaxFactory.IdentifierName("Result")))),
+                                    SyntaxFactory.IdentifierName("Result"))))
+                    })));
 
-            BlockSyntax bodyGetResult = SyntaxFactory.Block(ifStmt, localStmtResult, returnStmtGetResult);
+            ReturnStatementSyntax returnStmt = SyntaxFactory.ReturnStatement(
+                SyntaxFactory.IdentifierName("result"));
+
+            BlockSyntax bodyGetResult = SyntaxFactory.Block(ifStmt, localReturnEvent, resultDecl, returnStmt);
             methodDecl = methodDecl.WithBody(bodyGetResult).WithModifiers(
                 SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
 
