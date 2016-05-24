@@ -16,9 +16,10 @@ namespace Example
         {
             var obj = ActorProxy.Create<IHuman>(new ActorId(2), "ABC");
             Task<int> t =  obj.Eat(9, 2, "qwer");
-            Thread.Sleep(5000);
+            Thread.Sleep(3000);
+            Console.WriteLine("DONE sleeping " + t.Id);
             int x = obj.GetResult(t);
-            //Console.WriteLine(x);
+            Console.WriteLine(x);
             //Console.WriteLine(obj.Eat(5, 20, "qwer"));
 
             /*     

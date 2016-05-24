@@ -31,11 +31,11 @@ namespace Example
         {    
             object[] parameters = new object[] { a, b, s };
 
-
-            ServiceFabricModel.FabricActorMachine.ActorEvent ev = new ServiceFabricModel.FabricActorMachine.ActorEvent(typeof(IHuman), "Eat", obj, parameters);
+            Task<int> returnTask = new Task<int>(() => { return default(int); });
+            ServiceFabricModel.FabricActorMachine.ActorEvent ev = new ServiceFabricModel.FabricActorMachine.ActorEvent(typeof(IHuman), "Eat", obj, parameters, returnTask.Id);
             rt.SendEvent(id, ev);
 
-            return new Task<int>(() => { return default(int); });
+            return returnTask;
             /*
             while (true)
             {
@@ -48,9 +48,6 @@ namespace Example
         //public int GetResult(Task<int> t)
         //{
         //    ActorMachine machine = (ActorMachine)((Actor)obj).RefMachine;
-
-
-
         //    //ServiceFabricModel.FabricActorMachine machine = (ServiceFabricModel.FabricActorMachine)this.RefMachine;
         //    Console.WriteLine(" this.RefMachine " + this.RefMachine);
         //    Console.WriteLine(" machine " + machine);

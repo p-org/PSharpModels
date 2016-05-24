@@ -25,9 +25,9 @@ namespace Example
         public Task<int> Eat(int x, int y, string s)
         {
             Console.WriteLine("received: " + x + " " + y + " " + s);
-            var obj = ActorProxy.Create<IAnotherHuman>(ActorId.NewId(), " ");
+            /*var obj = ActorProxy.Create<IAnotherHuman>(ActorId.NewId(), " ");
             Task<int> p = obj.Play(1000, 6, "gotit");
-            Task<int> q = obj.Play(999, 8, "asdf");
+            Task<int> q = obj.Play(999, 8, "asdf");*/
             //Console.WriteLine(GetResult(p));
             return Task.FromResult(x + 7);
         }

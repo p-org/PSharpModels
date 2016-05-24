@@ -13,6 +13,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -51,7 +52,7 @@ namespace Microsoft.PSharp.Actors
             public string MethodName;
             public object ClassInstance;
             public object[] Parameters;
-            public object Result;
+            public int returnTaskId;
 
             /// <summary>
             /// Constructor.
@@ -60,12 +61,13 @@ namespace Microsoft.PSharp.Actors
             /// <param name="methodName">MethodName</param>
             /// <param name="classInstance">ClassInstance</param>
             /// <param name="parameters">Parameters</param>
-            public ActorEvent(Type methodClass, string methodName, object classInstance, object[] parameters)
+            public ActorEvent(Type methodClass, string methodName, object classInstance, object[] parameters, int returnTaskId)
             {
                 this.MethodClass = methodClass;
                 this.MethodName = methodName;
                 this.ClassInstance = classInstance;
                 this.Parameters = parameters;
+                this.returnTaskId = returnTaskId;
             }
         }
 
@@ -74,10 +76,10 @@ namespace Microsoft.PSharp.Actors
         /// </summary>
         public class ReturnEvent : Event
         {
-            public Task<int> returnForTask;
+            public int returnForTask;
             public object Result;
             
-            public ReturnEvent(object Result, Task<int> returnForTask)
+            public ReturnEvent(object Result, int returnForTask)
             {
                 this.Result = Result;
                 this.returnForTask = returnForTask;
@@ -87,7 +89,7 @@ namespace Microsoft.PSharp.Actors
         #endregion
 
         #region fields
-
+        Dictionary<int, object> resultStore = new Dictionary<int, object>();
         #endregion
 
         #region states
@@ -95,6 +97,7 @@ namespace Microsoft.PSharp.Actors
         [Start]
         [OnEventDoAction(typeof(InitEvent), nameof(OnInitEvent))]
         [OnEventDoAction(typeof(ActorEvent), nameof(OnActorEvent))]
+        [OnEventDoAction(typeof(ReturnEvent), nameof(OnReturnEvent))]
         private class Init : MachineState { }
 
         #endregion
@@ -122,7 +125,8 @@ namespace Microsoft.PSharp.Actors
             MethodInfo mi = e.MethodClass.GetMethod(e.MethodName);
             try
             {
-                e.Result = mi.Invoke(e.ClassInstance, e.Parameters);
+                object result = mi.Invoke(e.ClassInstance, e.Parameters);
+                Send(Id, new ReturnEvent(result, e.returnTaskId));
             }
             catch(Exception ex)
             {
@@ -131,9 +135,22 @@ namespace Microsoft.PSharp.Actors
             }
         }
         
+        private void OnReturnEvent()
+        {
+            var e = ReceivedEvent as ReturnEvent;
+            Console.WriteLine("Task completed: " + e.returnForTask);
+            resultStore.Add(e.returnForTask, e.Result);
+        }
+
         public object GetResult(Task<int> t)
         {
-            this.Receive(typeof(ReturnEvent), retEvent => ((ReturnEvent)retEvent).returnForTask.Id == t.Id);
+            if (resultStore.ContainsKey(t.Id))
+            {
+                Console.WriteLine("returning!!!!!!");
+                return resultStore[t.Id];
+            }
+
+            this.Receive(typeof(ReturnEvent), retEvent => ((ReturnEvent)retEvent).returnForTask == t.Id);
             return (int)((this.ReceivedEvent as ReturnEvent).Result);
         }
 
