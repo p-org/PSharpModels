@@ -12,6 +12,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using System.Threading.Tasks;
 
 using Microsoft.PSharp.Actors.Bridge;
@@ -35,12 +36,21 @@ namespace Microsoft.PSharp.Actors
         #region methods
 
         /// <summary>
-        /// Initializes the model with the P# runtime.
+        /// Starts executing the specified action using the
+        /// specified P# runtime.
         /// </summary>
         /// <param name="runtime">PSharpRuntime</param>
-        public static void Initialize(PSharpRuntime runtime)
+        public static void Start(PSharpRuntime runtime, Action action)
         {
+            if (runtime == null)
+            {
+                throw new InvalidOperationException(
+                    "The P# runtime has not been initialized.");
+            }
+
             ActorModel.Runtime = runtime;
+            ActorModel.Runtime.CreateMachine(typeof(ActorRootMachine),
+                new ActorRootMachine.RunEvent(action));
         }
 
         /// <summary>

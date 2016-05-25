@@ -23,9 +23,11 @@ namespace TwoActors.Client
         [Microsoft.PSharp.Test]
         public static void Execute(PSharpRuntime runtime)
         {
-            ActorModel.Initialize(runtime);
-            var actor1Proxy = ActorProxy.Create<IActor1>(new ActorId(2), "A1");
-            actor1Proxy.Foo();
+            ActorModel.Start(runtime, () =>
+            {
+                var actor1Proxy = ActorProxy.Create<IActor1>(new ActorId(2), "A1");
+                actor1Proxy.Foo();
+            });
         }
     }
 }

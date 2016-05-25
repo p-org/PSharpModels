@@ -31,7 +31,7 @@ namespace Microsoft.ServiceFabric.Actors
 
             if (ActorModel.Runtime == null)
             {
-                ActorModel.Initialize(PSharpRuntime.Create());
+                throw new InvalidOperationException("The P# runtime has not been initialized.");
             }
 
             string assemblyPath = Assembly.GetEntryAssembly().Location + "\\..\\..\\..\\..";

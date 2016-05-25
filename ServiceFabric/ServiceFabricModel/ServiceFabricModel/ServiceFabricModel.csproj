@@ -74,7 +74,6 @@
     <Compile Include="IActorProxy.cs" />
     <Compile Include="IActorStateManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\PSharpActors\PSharpActors\PSharpActors.csproj">
