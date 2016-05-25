@@ -34,10 +34,8 @@ namespace Microsoft.ServiceFabric.Actors
                 throw new InvalidOperationException("The P# runtime has not been initialized.");
             }
 
-            string assemblyPath = Assembly.GetEntryAssembly().Location + "\\..\\..\\..\\..";
-
             Type proxyType = ProxyFactory.GetProxyType(typeof(TActorInterface),
-                typeof(FabricActorMachine), assemblyPath);
+                typeof(FabricActorMachine));
             var res = (TActorInterface)Activator.CreateInstance(proxyType);
             IdMap.Add(actorId, res);
 
