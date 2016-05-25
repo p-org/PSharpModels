@@ -12,6 +12,12 @@ namespace Actor1
 {
     public class Actor1 : Actor, IActor1
     {
+        //protected override Task OnActivateAsync()
+        //{
+        //    (this as IActor1).Foo();
+        //    return base.OnActivateAsync();
+        //}
+
         public Task Foo()
         {
             var actor2Proxy = ActorProxy.Create<IActor2>(new ActorId(1), "A2");
