@@ -54,7 +54,6 @@
   <ItemGroup>
     <Compile Include="Actor2.cs" />
     <Compile Include="Actor2State.cs" />
-    <Compile Include="MyTask.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

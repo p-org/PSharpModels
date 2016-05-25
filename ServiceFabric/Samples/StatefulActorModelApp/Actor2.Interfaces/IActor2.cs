@@ -11,6 +11,5 @@ namespace Actor2.Interfaces
     {
         Task<int> GetValue();
         Task SetValue(int val);
-        int GetResult(Task<int> t);
     }
 }

@@ -17,11 +17,6 @@ namespace Actor2
             return base.OnActivateAsync();
         }
 
-        public int GetResult(Task<int> t)
-        {
-            return t.Result;
-        }
-
         Task<int> IActor2.GetValue()
         {
             return this.StateManager.GetStateAsync<int>("value");

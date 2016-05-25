@@ -19,15 +19,16 @@ namespace Actor1
             int val = 9;
             var t = actor2Proxy.SetValue(val);
             Task<int> s = actor2Proxy.GetValue();
-            var r = GetResult(s);
+            //var r = GetResult(s);
+            var r = s.Result;
             Console.WriteLine(r);
             return Task.FromResult(true);
         }
 
-        public int GetResult(Task<int> t)
-        {
-            //return t.Result;
-            return (int)((ServiceFabricModel.FabricActorMachine)this.RefMachine).GetResult(t);
-        }
+        //public int GetResult(Task<int> t)
+        //{
+        //    //return t.Result;
+        //    return (int)((ServiceFabricModel.FabricActorMachine)this.RefMachine).GetResult(t);
+        //}
     }
 }
