@@ -11,5 +11,11 @@ namespace Actor2.Interfaces
     {
         Task<int> GetValue();
         Task SetValue(int val);
+
+        TResult GetResult<TResult>(Task<TResult> task);
+
+        void Wait<TResult>(Task<TResult> task);
+
+        void Wait(Task task);
     }
 }

@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using Microsoft.PSharp.Actors.Bridge;
+
 namespace Example
 {
   
@@ -33,18 +35,13 @@ namespace Example
         {    
             object[] parameters = new object[] { a, b, s };
 
-            TaskCompletionSource<int> tcs = new TaskCompletionSource<int>();
-
-            Action<object> setResultAction = new Action<object>(task =>
-            {
-                tcs.SetResult(((Task<int>)task).Result);
-            });
+            ActorCompletionTask<int> task = new ActorCompletionTask<int>(rt);
             
             ServiceFabricModel.FabricActorMachine.ActorEvent ev = new ServiceFabricModel.
-                FabricActorMachine.ActorEvent(typeof(IHuman), "Eat", obj, parameters, setResultAction);
+                FabricActorMachine.ActorEvent(typeof(IHuman), "Eat", obj, parameters, task.ActorCompletionMachine);
             rt.SendEvent(id, ev);
 
-            return tcs.Task;
+            return task;
         }
 
         public Task Foo()
@@ -53,18 +50,23 @@ namespace Example
 
             object[] parameters = new object[] { };
 
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-
-            Action<object> setResultAction = new Action<object>(task =>
-            {
-                tcs.SetResult(true);
-            });
+            ActorCompletionTask<int> task = new ActorCompletionTask<int>(rt);
 
             ServiceFabricModel.FabricActorMachine.ActorEvent ev = new ServiceFabricModel.
-                FabricActorMachine.ActorEvent(typeof(IHuman), "Foo", obj, parameters, setResultAction);
+                FabricActorMachine.ActorEvent(typeof(IHuman), "Foo", obj, parameters, task.ActorCompletionMachine);
             rt.SendEvent(id, ev);
 
-            return tcs.Task;
+            return task;
+        }
+
+        public TResult GetResult<TResult>(Task<TResult> task)
+        {
+            return ((ActorCompletionTask<TResult>)task).Result;
+        }
+
+        public void Wait(Task task)
+        {
+            ((ActorCompletionTask)task).Wait();
         }
     }
 }

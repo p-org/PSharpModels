@@ -17,6 +17,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
+using Microsoft.PSharp.Actors.Bridge;
+
 namespace Microsoft.PSharp.Actors
 {
     /// <summary>
@@ -52,7 +54,7 @@ namespace Microsoft.PSharp.Actors
             public string MethodName;
             public object ClassInstance;
             public object[] Parameters;
-            public Action<object> SetResultAction;
+            public MachineId ActorCompletionMachine;
 
             /// <summary>
             /// Constructor.
@@ -63,13 +65,13 @@ namespace Microsoft.PSharp.Actors
             /// <param name="parameters">Parameters</param>
             /// <param name="tcs">TaskCompletionSource</param>
             public ActorEvent(Type methodClass, string methodName, object classInstance,
-                object[] parameters, Action<object> setResultAction)
+                object[] parameters, MachineId actorCompletionMachine)
             {
                 this.MethodClass = methodClass;
                 this.MethodName = methodName;
                 this.ClassInstance = classInstance;
                 this.Parameters = parameters;
-                this.SetResultAction = setResultAction;
+                this.ActorCompletionMachine = actorCompletionMachine;
             }
         }
 
@@ -118,10 +120,8 @@ namespace Microsoft.PSharp.Actors
             MethodInfo mi = e.MethodClass.GetMethod(e.MethodName);
             try
             {
-                // TODO: check if we can associate this task with the
-                // dummy task returned to the user
                 object result = mi.Invoke(e.ClassInstance, e.Parameters);
-                e.SetResultAction(result);
+                this.Send(e.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(result));
             }
             catch(Exception ex)
             {

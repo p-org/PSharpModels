@@ -17,14 +17,29 @@ namespace Actor2
             return base.OnActivateAsync();
         }
 
-        Task<int> IActor2.GetValue()
+        public Task<int> GetValue()
         {
             return this.StateManager.GetStateAsync<int>("value");
         }
 
-        Task IActor2.SetValue(int val)
+        public Task SetValue(int val)
         {
             return this.StateManager.SetStateAsync("value", val);
+        }
+
+        TResult IActor2.GetResult<TResult>(Task<TResult> task)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IActor2.Wait(Task task)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Wait<TResult>(Task<TResult> task)
+        {
+            throw new NotImplementedException();
         }
     }
 }

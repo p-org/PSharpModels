@@ -37,5 +37,15 @@ namespace Example
             Console.WriteLine("HI");
             return Task.FromResult(true);
         }
+
+        public TResult GetResult<TResult>(Task<TResult> task)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Wait(Task task)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

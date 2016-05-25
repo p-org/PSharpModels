@@ -229,13 +229,22 @@ namespace Microsoft.PSharp.Actors.Bridge
             ConstructorDeclarationSyntax constructor = this.CreateProxyConstructor(
                 interfaceType, actorType, actorMachineType);
 
-            var baseTypes = new HashSet<BaseTypeSyntax>();
+            var baseTypes = new HashSet<BaseTypeSyntax>
+            {
+                SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(typeof(AbstractProxy).FullName))
+            };
+
             var methodDecls = new List<MethodDeclarationSyntax>();
             foreach (var type in actorType.GetInterfaces())
             {
                 baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(type.FullName)));
                 foreach (var method in type.GetMethods())
                 {
+                    if (method.Name.Equals("GetResult") || method.Name.Equals("Wait"))
+                    {
+                        continue;
+                    }
+
                     methodDecls.Add(this.CreateProxyMethod(method, interfaceType, actorMachineType));
                 }
             }
@@ -401,25 +410,14 @@ namespace Microsoft.PSharp.Actors.Bridge
                         })));
 
             LocalDeclarationStatementSyntax taskCompletionSource = null;
-            SimpleLambdaExpressionSyntax lambda = null;
             if (method.ReturnType.GetGenericArguments().Count() > 0)
             {
                 Type genericType = method.ReturnType.GetGenericArguments().First();
-                taskCompletionSource = this.CreateTaskCompletionSource(genericType);
-                lambda = this.CreateSetResultLambda(SyntaxFactory.Argument(
-                    SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.ParenthesizedExpression(
-                            SyntaxFactory.CastExpression(
-                                returnTaskType,
-                                SyntaxFactory.IdentifierName("task"))),
-                        SyntaxFactory.IdentifierName("Result"))));
+                taskCompletionSource = this.CreateActorCompletionTask(genericType);
             }
             else
             {
-                taskCompletionSource = this.CreateTaskCompletionSource(typeof(object));
-                lambda = this.CreateSetResultLambda(SyntaxFactory.Argument(
-                    SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression)));
+                taskCompletionSource = this.CreateActorCompletionTask(typeof(object));
             }
             
             GenericNameSyntax actionType = SyntaxFactory.GenericName(SyntaxFactory.Identifier(
@@ -429,27 +427,6 @@ namespace Microsoft.PSharp.Actors.Bridge
                         new List<TypeSyntax>
                         {
                             this.GetTypeSyntax(typeof(object))
-                        })));
-
-            LocalDeclarationStatementSyntax setResultAction = SyntaxFactory.LocalDeclarationStatement(
-                SyntaxFactory.VariableDeclaration(
-                    actionType,
-                    SyntaxFactory.SeparatedList(
-                        new List<VariableDeclaratorSyntax>
-                        {
-                            SyntaxFactory.VariableDeclarator(
-                                SyntaxFactory.Identifier("setResultAction"),
-                                null,
-                                SyntaxFactory.EqualsValueClause(
-                                    SyntaxFactory.ObjectCreationExpression(
-                                        actionType,
-                                        SyntaxFactory.ArgumentList(
-                                            SyntaxFactory.SeparatedList(
-                                                new List<ArgumentSyntax>
-                                                {
-                                                    SyntaxFactory.Argument(lambda)
-                                                })),
-                                        null)))
                         })));
 
             string eventType = actorMachineType.FullName + "." + typeof(ActorMachine.ActorEvent).Name;
@@ -469,7 +446,10 @@ namespace Microsoft.PSharp.Actors.Bridge
                             SyntaxFactory.ThisExpression(),
                             SyntaxFactory.IdentifierName("Target"))),
                         SyntaxFactory.Argument(SyntaxFactory.IdentifierName("payload")),
-                        SyntaxFactory.Argument(SyntaxFactory.IdentifierName("setResultAction"))
+                        SyntaxFactory.Argument(SyntaxFactory.MemberAccessExpression(
+                            SyntaxKind.SimpleMemberAccessExpression,
+                            SyntaxFactory.IdentifierName("actorCompletionTask"),
+                            SyntaxFactory.IdentifierName("ActorCompletionMachine")))
                     }));
 
             LocalDeclarationStatementSyntax eventDecl = this.CreateEventDeclaration(
@@ -477,12 +457,9 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             ExpressionStatementSyntax sendExpr = this.CreateSendEventExpression("Id", eventName);
             ReturnStatementSyntax returnStmt = SyntaxFactory.ReturnStatement(
-                SyntaxFactory.MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                    SyntaxFactory.IdentifierName("tcs"),
-                    SyntaxFactory.IdentifierName("Task")));
+                SyntaxFactory.IdentifierName("actorCompletionTask"));
 
-            BlockSyntax body = SyntaxFactory.Block(payloadDecl, taskCompletionSource, setResultAction,
+            BlockSyntax body = SyntaxFactory.Block(payloadDecl, taskCompletionSource,
                 eventDecl, sendExpr, returnStmt);
             methodDecl = methodDecl.WithBody(body).WithModifiers(
                 SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
@@ -543,14 +520,14 @@ namespace Microsoft.PSharp.Actors.Bridge
         }
 
         /// <summary>
-        /// Creates a task completion source.
+        /// Creates an actor completion task.
         /// </summary>
         /// <param name="genericType">Type</param>
         /// <returns>LocalDeclarationStatementSyntax</returns>
-        private LocalDeclarationStatementSyntax CreateTaskCompletionSource(Type genericType)
+        private LocalDeclarationStatementSyntax CreateActorCompletionTask(Type genericType)
         {
             GenericNameSyntax tcsType = SyntaxFactory.GenericName(SyntaxFactory.Identifier(
-                        "System.Threading.Tasks.TaskCompletionSource"),
+                        "Microsoft.PSharp.Actors.Bridge.ActorCompletionTask"),
                         SyntaxFactory.TypeArgumentList(
                             SyntaxFactory.SeparatedList(
                                 new List<TypeSyntax>
@@ -565,12 +542,21 @@ namespace Microsoft.PSharp.Actors.Bridge
                         new List<VariableDeclaratorSyntax>
                         {
                                 SyntaxFactory.VariableDeclarator(
-                                    SyntaxFactory.Identifier("tcs"),
+                                    SyntaxFactory.Identifier("actorCompletionTask"),
                                     null,
                                     SyntaxFactory.EqualsValueClause(
                                         SyntaxFactory.ObjectCreationExpression(
                                             tcsType,
-                                            SyntaxFactory.ArgumentList(),
+                                            SyntaxFactory.ArgumentList(
+                                                SyntaxFactory.SeparatedList(
+                                                    new List<ArgumentSyntax>
+                                                    {
+                                                        SyntaxFactory.Argument(
+                                                            SyntaxFactory.MemberAccessExpression(
+                                                                SyntaxKind.SimpleMemberAccessExpression,
+                                                                SyntaxFactory.ThisExpression(),
+                                                                SyntaxFactory.IdentifierName("Runtime")))
+                                                    })),
                                             null)))
                         })));
 

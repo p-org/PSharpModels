@@ -18,11 +18,28 @@ namespace Actor1
             var actor2Proxy = ActorProxy.Create<IActor2>(new ActorId(1), "A2");
             int val = 9;
             var t = actor2Proxy.SetValue(val);
+            actor2Proxy.Wait(t);
+
             Task<int> s = actor2Proxy.GetValue();
-            //var r = GetResult(s);
-            var r = s.Result;
+            var r = actor2Proxy.GetResult<int>(s);
             Console.WriteLine(r);
+
             return Task.FromResult(true);
+        }
+
+        public void Wait<TResult>(Task<TResult> task)
+        {
+            throw new NotImplementedException();
+        }
+
+        TResult IActor1.GetResult<TResult>(Task<TResult> task)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IActor1.Wait(Task task)
+        {
+            throw new NotImplementedException();
         }
 
         //public int GetResult(Task<int> t)

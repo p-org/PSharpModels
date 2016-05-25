@@ -57,6 +57,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActorMachine.cs" />
+    <Compile Include="Bridge\AbstractProxy.cs" />
+    <Compile Include="Bridge\ActorCompletionMachine.cs" />
+    <Compile Include="Bridge\ActorCompletionTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Bridge\ProxyFactory.cs" />
   </ItemGroup>

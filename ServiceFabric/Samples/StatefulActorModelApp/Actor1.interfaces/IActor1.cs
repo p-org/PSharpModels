@@ -10,5 +10,11 @@ namespace Actor1.interfaces
     public interface IActor1 : IActor
     {
         Task Foo();
+
+        TResult GetResult<TResult>(Task<TResult> task);
+
+        void Wait<TResult>(Task<TResult> task);
+
+        void Wait(Task task);
     }
 }
