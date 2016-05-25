@@ -12,18 +12,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.PSharp.Actors.Bridge
 {
     public class ActorCompletionTask<TResult> : Task<TResult>
     {
-        /// <summary>
-        /// The P# runtime.
-        /// </summary>
-        private PSharpRuntime Runtime;
-
         /// <summary>
         /// Actor completion machine id.
         /// </summary>
@@ -33,25 +27,29 @@ namespace Microsoft.PSharp.Actors.Bridge
         {
             get
             {
-                MachineId mid = this.Runtime.GetCurrentMachine();
-                this.Runtime.SendEvent(this.ActorCompletionMachine, new ActorCompletionMachine.GetResultRequest(mid));
-                Event resultEvent = this.Runtime.Receive(mid, typeof(ActorCompletionMachine.GetResultResponse));
-                return (TResult)((Task<TResult>)(resultEvent as ActorCompletionMachine.GetResultResponse).Result).Result;
+                MachineId mid = ActorModel.Runtime.GetCurrentMachine();
+                ActorModel.Runtime.SendEvent(this.ActorCompletionMachine,
+                    new ActorCompletionMachine.GetResultRequest(mid));
+                Event resultEvent = ActorModel.Runtime.Receive(mid,
+                    typeof(ActorCompletionMachine.GetResultResponse));
+                return (TResult)((Task<TResult>)(resultEvent as
+                    ActorCompletionMachine.GetResultResponse).Result).Result;
             }
         }
 
-        public ActorCompletionTask(PSharpRuntime runtime)
+        public ActorCompletionTask()
             : base(() => { return default(TResult); })
         {
-            this.Runtime = runtime;
-            this.ActorCompletionMachine = this.Runtime.CreateMachine(typeof(ActorCompletionMachine));
+            this.ActorCompletionMachine = ActorModel.Runtime.CreateMachine(
+                typeof(ActorCompletionMachine));
         }
 
         public new void Wait()
         {
-            MachineId mid = this.Runtime.GetCurrentMachine();
-            this.Runtime.SendEvent(this.ActorCompletionMachine, new ActorCompletionMachine.GetResultRequest(mid));
-            this.Runtime.Receive(mid, typeof(ActorCompletionMachine.GetResultResponse));
+            MachineId mid = ActorModel.Runtime.GetCurrentMachine();
+            ActorModel.Runtime.SendEvent(this.ActorCompletionMachine,
+                new ActorCompletionMachine.GetResultRequest(mid));
+            ActorModel.Runtime.Receive(mid, typeof(ActorCompletionMachine.GetResultResponse));
         }
     }
 }

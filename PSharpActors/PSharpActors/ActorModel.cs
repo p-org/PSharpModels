@@ -28,7 +28,7 @@ namespace Microsoft.PSharp.Actors
         /// <summary>
         /// The P# runtime.
         /// </summary>
-        internal static PSharpRuntime Runtime;
+        public static PSharpRuntime Runtime { get; private set; }
 
         #endregion
 

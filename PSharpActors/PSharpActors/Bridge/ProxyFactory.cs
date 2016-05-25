@@ -186,7 +186,8 @@ namespace Microsoft.PSharp.Actors.Bridge
                 {
                     SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("System")),
                     SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("System.Threading.Tasks")),
-                    SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.PSharp"))
+                    SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.PSharp")),
+                    SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.PSharp.Actors"))
                 };
 
             foreach (var requiredNamespace in this.RequiredNamespaces)
@@ -223,8 +224,6 @@ namespace Microsoft.PSharp.Actors.Bridge
                 interfaceType, "Target");
             FieldDeclarationSyntax id = this.CreateProxyField(
                 typeof(MachineId), "Id");
-            FieldDeclarationSyntax runtime = this.CreateProxyField(
-                typeof(PSharpRuntime), "Runtime");
 
             ConstructorDeclarationSyntax constructor = this.CreateProxyConstructor(
                 interfaceType, actorType, actorMachineType);
@@ -236,11 +235,6 @@ namespace Microsoft.PSharp.Actors.Bridge
                 baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(type.FullName)));
                 foreach (var method in type.GetMethods())
                 {
-                    if (method.Name.Equals("GetResult") || method.Name.Equals("Wait"))
-                    {
-                        continue;
-                    }
-
                     methodDecls.Add(this.CreateProxyMethod(method, interfaceType, actorMachineType));
                 }
             }
@@ -251,7 +245,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             classDecl = classDecl.WithMembers(SyntaxFactory.List(
                 new List<MemberDeclarationSyntax>
                 {
-                    target, id, runtime,
+                    target, id,
                     constructor
                 }).AddRange(methodDecls));
 
@@ -270,16 +264,7 @@ namespace Microsoft.PSharp.Actors.Bridge
         {
             ConstructorDeclarationSyntax constructor = SyntaxFactory.ConstructorDeclaration(
                 interfaceType.Name + "_PSharpProxy")
-                .WithParameterList(SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList(
-                    new List<ParameterSyntax>
-                    {
-                        SyntaxFactory.Parameter(
-                            SyntaxFactory.List<AttributeListSyntax>(),
-                            SyntaxFactory.TokenList(),
-                            SyntaxFactory.IdentifierName(typeof(PSharpRuntime).FullName),
-                            SyntaxFactory.Identifier("runtime"),
-                            null)
-                    })))
+                //.WithParameterList(null)
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
 
             ExpressionStatementSyntax targetConstruction = SyntaxFactory.ExpressionStatement(
@@ -288,12 +273,6 @@ namespace Microsoft.PSharp.Actors.Bridge
                 SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName("Target")),
                 SyntaxFactory.ObjectCreationExpression(SyntaxFactory.IdentifierName(actorType.FullName))
                 .WithArgumentList(SyntaxFactory.ArgumentList())));
-
-            ExpressionStatementSyntax runtimeAssignment = SyntaxFactory.ExpressionStatement(
-                SyntaxFactory.AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName("Runtime")),
-                SyntaxFactory.IdentifierName("runtime")));
 
             LocalDeclarationStatementSyntax machineTypeDecl = SyntaxFactory.LocalDeclarationStatement(
                 SyntaxFactory.VariableDeclaration(
@@ -314,7 +293,8 @@ namespace Microsoft.PSharp.Actors.Bridge
                 SyntaxFactory.InvocationExpression(SyntaxFactory.MemberAccessExpression(
                     SyntaxKind.SimpleMemberAccessExpression,
                      SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                     SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName("Runtime")),
+                      SyntaxFactory.IdentifierName("ActorModel"),
+                     SyntaxFactory.IdentifierName("Runtime")),
                     SyntaxFactory.IdentifierName("CreateMachine")),
                     SyntaxFactory.ArgumentList(
                         SyntaxFactory.SeparatedList(
@@ -341,7 +321,7 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             ExpressionStatementSyntax sendExpr = this.CreateSendEventExpression("Id", eventName);
 
-            BlockSyntax body = SyntaxFactory.Block(targetConstruction, runtimeAssignment,
+            BlockSyntax body = SyntaxFactory.Block(targetConstruction,
                 machineTypeDecl, createMachine, eventDecl, sendExpr);
             constructor = constructor.WithBody(body);
 
@@ -501,7 +481,8 @@ namespace Microsoft.PSharp.Actors.Bridge
                 SyntaxFactory.InvocationExpression(SyntaxFactory.MemberAccessExpression(
                     SyntaxKind.SimpleMemberAccessExpression,
                      SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                     SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName("Runtime")),
+                     SyntaxFactory.IdentifierName("ActorModel"),
+                     SyntaxFactory.IdentifierName("Runtime")),
                     SyntaxFactory.IdentifierName("SendEvent")),
                     SyntaxFactory.ArgumentList(
                         SyntaxFactory.SeparatedList(
@@ -543,16 +524,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                                     SyntaxFactory.EqualsValueClause(
                                         SyntaxFactory.ObjectCreationExpression(
                                             tcsType,
-                                            SyntaxFactory.ArgumentList(
-                                                SyntaxFactory.SeparatedList(
-                                                    new List<ArgumentSyntax>
-                                                    {
-                                                        SyntaxFactory.Argument(
-                                                            SyntaxFactory.MemberAccessExpression(
-                                                                SyntaxKind.SimpleMemberAccessExpression,
-                                                                SyntaxFactory.ThisExpression(),
-                                                                SyntaxFactory.IdentifierName("Runtime")))
-                                                    })),
+                                            SyntaxFactory.ArgumentList(),
                                             null)))
                         })));
 

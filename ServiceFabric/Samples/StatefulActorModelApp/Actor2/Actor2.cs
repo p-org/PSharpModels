@@ -26,20 +26,5 @@ namespace Actor2
         {
             return this.StateManager.SetStateAsync("value", val);
         }
-
-        TResult IActor2.GetResult<TResult>(Task<TResult> task)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IActor2.Wait(Task task)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Wait<TResult>(Task<TResult> task)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

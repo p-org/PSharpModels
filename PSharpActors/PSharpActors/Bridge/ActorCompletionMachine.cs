@@ -14,6 +14,9 @@
 
 namespace Microsoft.PSharp.Actors.Bridge
 {
+    /// <summary>
+    /// The actor completion machine.
+    /// </summary>
     public class ActorCompletionMachine : Machine
     {
         public class SetResultRequest : Event
@@ -47,15 +50,15 @@ namespace Microsoft.PSharp.Actors.Bridge
         }
 
         /// <summary>
-        /// The result.
-        /// </summary>
-        private object Result;
-
-        /// <summary>
         /// The target machine.
         /// </summary>
         private MachineId Target;
 
+        /// <summary>
+        /// The result.
+        /// </summary>
+        private object Result;
+        
         [Start]
         [OnEntry(nameof(InitOnAction))]
         private class Init : MachineState { }

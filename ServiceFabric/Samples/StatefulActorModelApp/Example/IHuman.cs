@@ -12,9 +12,5 @@ namespace Example
         Task<int> Eat(int x, int y, string s);
 
         Task Foo();
-
-        TResult GetResult<TResult>(Task<TResult> task);
-
-        void Wait(Task task);
     }
 }
