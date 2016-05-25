@@ -56,8 +56,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActorModel.cs" />
     <Compile Include="ActorMachine.cs" />
-    <Compile Include="Bridge\AbstractProxy.cs" />
     <Compile Include="Bridge\ActorCompletionMachine.cs" />
     <Compile Include="Bridge\ActorCompletionTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

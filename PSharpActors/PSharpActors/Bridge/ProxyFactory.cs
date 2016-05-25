@@ -229,11 +229,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             ConstructorDeclarationSyntax constructor = this.CreateProxyConstructor(
                 interfaceType, actorType, actorMachineType);
 
-            var baseTypes = new HashSet<BaseTypeSyntax>
-            {
-                SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(typeof(AbstractProxy).FullName))
-            };
-
+            var baseTypes = new HashSet<BaseTypeSyntax>();
             var methodDecls = new List<MethodDeclarationSyntax>();
             foreach (var type in actorType.GetInterfaces())
             {
