@@ -117,6 +117,9 @@ namespace Microsoft.PSharp.Actors
         {
             var e = (this.ReceivedEvent as ActorEvent);
             MethodInfo mi = e.MethodClass.GetMethod(e.MethodName);
+
+            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{base.Id}' is invoking '{e.MethodName}'.");
+
             try
             {
                 object result = mi.Invoke(e.ClassInstance, e.Parameters);

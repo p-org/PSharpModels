@@ -19,6 +19,9 @@ namespace Microsoft.PSharp.Actors.Bridge
     /// </summary>
     public class ActorCompletionMachine : Machine
     {
+        /// <summary>
+        /// Set result request event.
+        /// </summary>
         public class SetResultRequest : Event
         {
             public object Result;
@@ -29,6 +32,9 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
         }
 
+        /// <summary>
+        /// Get result request event.
+        /// </summary>
         public class GetResultRequest : Event
         {
             public MachineId Target;
@@ -39,6 +45,9 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
         }
 
+        /// <summary>
+        /// Get result response event.
+        /// </summary>
         public class GetResultResponse : Event
         {
             public object Result;
@@ -73,6 +82,9 @@ namespace Microsoft.PSharp.Actors.Bridge
         [OnEventDoAction(typeof(GetResultRequest), nameof(HandleGetResultRequest))]
         private class Active : MachineState { }
 
+        /// <summary>
+        /// Handles the set result request event.
+        /// </summary>
         private void HandleSetResultRequest()
         {
             this.Result = (this.ReceivedEvent as SetResultRequest).Result;
@@ -83,6 +95,9 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
         }
 
+        /// <summary>
+        /// Handles the get result request event.
+        /// </summary>
         private void HandleGetResultRequest()
         {
             this.Target = (this.ReceivedEvent as GetResultRequest).Target;

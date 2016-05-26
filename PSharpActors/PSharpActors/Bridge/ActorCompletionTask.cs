@@ -23,6 +23,9 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// </summary>
         public MachineId ActorCompletionMachine { get; private set; }
 
+        /// <summary>
+        /// The result of the task.
+        /// </summary>
         public new TResult Result
         {
             get
@@ -37,6 +40,9 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
         }
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
         public ActorCompletionTask()
             : base(() => { return default(TResult); })
         {
@@ -44,6 +50,9 @@ namespace Microsoft.PSharp.Actors.Bridge
                 typeof(ActorCompletionMachine));
         }
 
+        /// <summary>
+        /// Wait the task to complete.
+        /// </summary>
         public new void Wait()
         {
             MachineId mid = ActorModel.Runtime.GetCurrentMachine();

@@ -195,9 +195,9 @@ namespace Microsoft.PSharp.Actors.Bridge
                 SyntaxFactory.IdentifierName(actorType.Namespace + "_PSharpProxy"));
 
             var usingDirectives = new List<UsingDirectiveSyntax>
-                {
-                    SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.PSharp.Actors"))
-                };
+            {
+                SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.PSharp.Actors"))
+            };
 
             foreach (var requiredNamespace in this.RequiredNamespaces)
             {
