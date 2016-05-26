@@ -31,6 +31,10 @@ namespace Microsoft.PSharp.Actors.Bridge
             get
             {
                 MachineId mid = ActorModel.Runtime.GetCurrentMachine();
+
+                ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid}' is " +
+                    "waiting to receive a result.");
+
                 ActorModel.Runtime.SendEvent(this.ActorCompletionMachine,
                     new ActorCompletionMachine.GetResultRequest(mid));
                 Event resultEvent = ActorModel.Runtime.Receive(mid,
@@ -56,6 +60,10 @@ namespace Microsoft.PSharp.Actors.Bridge
         public new void Wait()
         {
             MachineId mid = ActorModel.Runtime.GetCurrentMachine();
+
+            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid}' is " +
+                    "waiting for a task to complete.");
+
             ActorModel.Runtime.SendEvent(this.ActorCompletionMachine,
                 new ActorCompletionMachine.GetResultRequest(mid));
             ActorModel.Runtime.Receive(mid, typeof(ActorCompletionMachine.GetResultResponse));
