@@ -34,11 +34,17 @@ namespace Microsoft.ServiceFabric.Actors
                 throw new InvalidOperationException("The P# runtime has not been initialized.");
             }
 
+            ActorModel.Runtime.Log("<ActorModelLog> Creating actor proxy of type '{0}'.",
+                typeof(TActorInterface).FullName);
+
             Type proxyType = ProxyFactory.GetProxyType(typeof(TActorInterface),
                 typeof(FabricActorMachine));
             var res = (TActorInterface)Activator.CreateInstance(proxyType);
             IdMap.Add(actorId, res);
 
+            ActorModel.Runtime.Log("<ActorModelLog> Created actor proxy of type '{0}'.",
+                typeof(TActorInterface).FullName);
+            
             return res;
         }
     }

@@ -13,12 +13,10 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -102,7 +100,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
 
             SyntaxTree syntaxTree = this.CreateProxySyntaxTree(interfaceType, actorType, actorMachineType);
-            Console.WriteLine(syntaxTree);
+            //Console.WriteLine(syntaxTree);
 
             var context = CompilationContext.Create().LoadSolution(syntaxTree.ToString(), references, "cs");
             var compilation = context.GetSolution().Projects.First().GetCompilationAsync().Result;
@@ -117,7 +115,8 @@ namespace Microsoft.PSharp.Actors.Bridge
             compilation = compilation.WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             string proxyAssemblyPath = CompilationEngine.Create(context).ToFile(compilation,
-                OutputKind.DynamicallyLinkedLibrary, Assembly.GetExecutingAssembly().Location, false);
+                OutputKind.DynamicallyLinkedLibrary, Assembly.GetExecutingAssembly().Location,
+                false, false);
 
             Assembly proxyAssembly = Assembly.LoadFrom(proxyAssemblyPath);
             
@@ -125,7 +124,8 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             try
             {
-                proxyType = proxyAssembly.GetType(typeSymbol.ContainingNamespace.ToString() + "." + typeSymbol.Name);
+                proxyType = proxyAssembly.GetType(typeSymbol.ContainingNamespace.ToString() +
+                    "." + typeSymbol.Name);
             }
             catch(Exception ex)
             {
@@ -196,9 +196,6 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             var usingDirectives = new List<UsingDirectiveSyntax>
                 {
-                    SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("System")),
-                    SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("System.Threading.Tasks")),
-                    SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.PSharp")),
                     SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.PSharp.Actors"))
                 };
 
