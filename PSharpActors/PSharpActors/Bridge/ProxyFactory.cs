@@ -586,7 +586,7 @@ namespace Microsoft.PSharp.Actors.Bridge
         private List<Assembly> GetAllAssemblies(string assemblyPath, string extension)
         {
             List<Assembly> allAssemblies = new List<Assembly>();
-            foreach (string dll in Directory.GetFiles(assemblyPath, "*." + extension))
+            foreach (string dll in Directory.GetFiles(assemblyPath, "*." + extension, SearchOption.AllDirectories))
             {
                 try
                 {
