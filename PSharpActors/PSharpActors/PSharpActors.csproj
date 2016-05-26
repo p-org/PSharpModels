@@ -49,7 +49,8 @@
     <Reference Include="Microsoft.CodeAnalysis.Workspaces">
       <HintPath>..\..\PSharp\Binaries\Microsoft.CodeAnalysis.Workspaces.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.PSharp">
+    <Reference Include="Microsoft.PSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c4566cf0a7f74012, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\PSharp\Binaries\Microsoft.PSharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.PSharp.LanguageServices">
@@ -62,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActorExecutorMachine.cs" />
     <Compile Include="ActorRootMachine.cs" />
     <Compile Include="ActorModel.cs" />
     <Compile Include="ActorMachine.cs" />

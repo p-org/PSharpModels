@@ -75,7 +75,7 @@ namespace Microsoft.PSharp.Actors
         }
 
         #endregion
-
+        MachineId executorMachine;
         #region fields
 
         /// <summary>
@@ -103,6 +103,7 @@ namespace Microsoft.PSharp.Actors
             try
             {
                 this.Initialize(initEvent);
+                executorMachine = CreateMachine(typeof(ActorExecutorMachine));
             }
             catch(Exception ex)
             {
@@ -116,20 +117,33 @@ namespace Microsoft.PSharp.Actors
         private void OnActorEvent()
         {
             var e = (this.ReceivedEvent as ActorEvent);
-            MethodInfo mi = e.MethodClass.GetMethod(e.MethodName);
 
-            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{base.Id}' is invoking '{e.MethodName}'.");
+            //For non-FIFO
+            if (Random())               
+            {
+                //For multiple sends
+                if(Random())
+                    Send(executorMachine, e);
+                Send(executorMachine, e);
+            }
+            else
+            {
+                Send(Id, e);
+            }
+            //MethodInfo mi = e.MethodClass.GetMethod(e.MethodName);
 
-            try
-            {
-                object result = mi.Invoke(e.ClassInstance, e.Parameters);
-                this.Send(e.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(result));
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex);
-                Environment.Exit(Environment.ExitCode);
-            }
+            //ActorModel.Runtime.Log($"<ActorModelLog> Machine '{base.Id}' is invoking '{e.MethodName}'.");
+
+            //try
+            //{
+            //    object result = mi.Invoke(e.ClassInstance, e.Parameters);
+            //    this.Send(e.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(result));
+            //}
+            //catch(Exception ex)
+            //{
+            //    Console.WriteLine(ex);
+            //    Environment.Exit(Environment.ExitCode);
+            //}
         }
 
         #endregion
