@@ -12,7 +12,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Reflection;
 
 using Microsoft.PSharp.Actors;
@@ -26,28 +25,20 @@ namespace OrleansModel
     /// </summary>
     public class OrleansActorMachine : ActorMachine
     {
-        protected override void Initialize()
+        protected override void Initialize(InitEvent initEvent)
         {
-            var e = this.ReceivedEvent as InitEvent;
-
+            //ConstructorInfo sm = typeof(ActorStateManager).GetConstructors().Single();
             //var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
-            //PropertyInfo prop = e.ClassInstance.GetType().GetProperty(
-            //    "StateManager", BindingFlags.Public | BindingFlags.Instance);
+            //PropertyInfo prop = initEvent.ClassInstance.GetType().GetProperty("StateManager",
+            //    BindingFlags.Public | BindingFlags.Instance);
             //if (null != prop && prop.CanWrite)
             //{
-            //    prop.SetValue(e.ClassInstance, stateManager, null);
+            //    prop.SetValue(initEvent.ClassInstance, stateManager, null);
             //}
-
-            PropertyInfo refMachine = e.ClassInstance.GetType().GetProperty(
-                "RefMachine", BindingFlags.Public | BindingFlags.Instance);
-            if (null != refMachine && refMachine.CanWrite)
-            {
-                refMachine.SetValue(e.ClassInstance, base.RefMachine, null);
-            }
 
             MethodInfo mo = typeof(Grain).GetMethod("OnActivateAsync",
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            mo.Invoke(e.ClassInstance, new object[] { });
+            mo.Invoke(initEvent.ClassInstance, new object[] { });
         }
     }
 }

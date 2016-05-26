@@ -27,11 +27,6 @@ namespace OrleansModel
     internal class GrainRuntime : IGrainRuntime
     {
         /// <summary>
-        /// The P# runtime.
-        /// </summary>
-        internal PSharpRuntime PSharpRuntime;
-
-        /// <summary>
         /// The grain factory.
         /// </summary>
         public IGrainFactory GrainFactory { get; private set; }
@@ -47,7 +42,6 @@ namespace OrleansModel
         /// <param name="grainFactory">IGrainFactory</param>
         public GrainRuntime(IGrainFactory grainFactory)
         {
-            this.PSharpRuntime = PSharpRuntime.Create();
             this.GrainFactory = grainFactory;
         }
     }

@@ -13,6 +13,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Microsoft.PSharp.Actors.Bridge;
@@ -31,6 +32,20 @@ namespace Microsoft.PSharp.Actors
         /// </summary>
         public static PSharpRuntime Runtime { get; private set; }
 
+        private static ISet<Action> CleanUpActions;
+
+        #endregion
+
+        #region constructors
+
+        /// <summary>
+        /// Static constructor.
+        /// </summary>
+        static ActorModel()
+        {
+            ActorModel.CleanUpActions = new HashSet<Action>();
+        }
+
         #endregion
 
         #region methods
@@ -48,9 +63,25 @@ namespace Microsoft.PSharp.Actors
                     "The P# runtime has not been initialized.");
             }
 
+            foreach (var cleanupAction in ActorModel.CleanUpActions)
+            {
+                cleanupAction();
+            }
+
             ActorModel.Runtime = runtime;
             ActorModel.Runtime.CreateMachine(typeof(ActorRootMachine),
                 new ActorRootMachine.RunEvent(action));
+        }
+
+        /// <summary>
+        /// Registers a cleanup action, to execute at the
+        /// beginning of each testing iteration. Any static
+        /// fields should be reset in this action.
+        /// </summary>
+        /// <param name="action">Action</param>
+        public static void RegisterCleanUpAction(Action action)
+        {
+            ActorModel.CleanUpActions.Add(action);
         }
 
         /// <summary>

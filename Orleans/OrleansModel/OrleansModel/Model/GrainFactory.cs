@@ -17,6 +17,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
+using Microsoft.PSharp.Actors;
+
 using Orleans;
 
 namespace OrleansModel
@@ -77,15 +79,23 @@ namespace OrleansModel
             {
                 return (TGrainInterface)id.Grain;
             }
-            
-            string assemblyPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Type proxyType = GrainClient.ProxyFactory.GetProxyType(
-                typeof(TGrainInterface), typeof(OrleansActorMachine), assemblyPath);
 
-            var grain = (TGrainInterface)Activator.CreateInstance(
-                proxyType, GrainClient.Runtime.PSharpRuntime);
+            if (ActorModel.Runtime == null)
+            {
+                throw new InvalidOperationException("The P# runtime has not been initialized.");
+            }
 
+            ActorModel.Runtime.Log("<ActorModelLog> Creating grain of type '{0}'.",
+                typeof(TGrainInterface).FullName);
+
+            Type proxyType = GrainClient.ProxyFactory.GetProxyType(typeof(TGrainInterface),
+                typeof(OrleansActorMachine));
+            var grain = (TGrainInterface)Activator.CreateInstance(proxyType);
             GrainId newId = new GrainId(primaryKey, (IGrain)grain);
+
+            ActorModel.Runtime.Log("<ActorModelLog> Created grain of type '{0}'.",
+                typeof(TGrainInterface).FullName);
+
             return grain;
         }
     }

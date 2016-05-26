@@ -33,11 +33,6 @@ namespace Orleans
         #region fields
 
         /// <summary>
-        /// The reference P# machine.
-        /// </summary>
-        public Machine RefMachine { get; internal set; }
-
-        /// <summary>
         /// The grain identity.
         /// </summary>
         internal IGrainIdentity Identity { get; private set; }
@@ -107,7 +102,7 @@ namespace Orleans
         /// <returns>Task</returns>
         public virtual Task OnActivateAsync()
         {
-            return DummyTask.FromResult(true);
+            return Task.FromResult(true);
         }
 
         /// <summary>
@@ -117,7 +112,7 @@ namespace Orleans
         /// <returns>Task</returns>
         public virtual Task OnDeactivateAsync()
         {
-            return DummyTask.FromResult(true);
+            return Task.FromResult(true);
         }
 
         #endregion

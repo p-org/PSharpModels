@@ -25,13 +25,19 @@ namespace Microsoft.ServiceFabric.Actors
 {
     public class ActorProxy
     {
-        private static readonly ProxyFactory<Actor> ProxyFactory;
+        private static ProxyFactory<Actor> ProxyFactory;
         private static Dictionary<ActorId, Object> IdMap;
 
         static ActorProxy()
         {
-            ProxyFactory = new ProxyFactory<Actor>(new HashSet<string> { "Microsoft.ServiceFabric.Actors" });
-            IdMap = new Dictionary<ActorId, object>();
+            ActorProxy.ProxyFactory = new ProxyFactory<Actor>(
+                new HashSet<string> { "Microsoft.ServiceFabric.Actors" });
+            ActorProxy.IdMap = new Dictionary<ActorId, object>();
+
+            ActorModel.RegisterCleanUpAction(() =>
+            {
+                ActorProxy.IdMap.Clear();
+            });
         }
 
         public static TActorInterface Create<TActorInterface>(ActorId actorId, string applicationName = null,

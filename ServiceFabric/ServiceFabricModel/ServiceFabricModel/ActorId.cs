@@ -14,21 +14,69 @@
 
 using System;
 
+using Microsoft.PSharp.Actors;
+
 namespace Microsoft.ServiceFabric.Actors
 {
     public class ActorId : IEquatable<ActorId>
     {
-        static long Identity = 0;
+        #region fields
+
+        /// <summary>
+        /// The identity counter.
+        /// </summary>
+        private static long IdentityCounter = 0;
+
+        /// <summary>
+        /// The unique id of the actor.
+        /// </summary>
         public readonly long Id;
-        public ActorId(long id)
+
+        #endregion
+
+        #region constructors
+
+        /// <summary>
+        /// Static constructor.
+        /// </summary>
+        static ActorId()
         {
-            Id = id;
+            ActorModel.RegisterCleanUpAction(() =>
+            {
+                ActorId.IdentityCounter = 0;
+            });
         }
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="id">Id</param>
+        public ActorId(long id)
+        {
+            this.Id = id;
+        }
+
+        #endregion
+
+        #region methods
+
+        /// <summary>
+        /// Creates a new actor id.
+        /// </summary>
+        /// <returns>ActorId</returns>
         public static ActorId NewId()
         {
-            Identity++;
-            return (new ActorId(Identity));
+            ActorId.IdentityCounter++;
+            return (new ActorId(IdentityCounter));
+        }
+
+        /// <summary>
+        /// Gets the id for this ActorId.
+        /// </summary>
+        /// <returns>Id</returns>
+        public long GetLongId()
+        {
+            return (long)this.Id;
         }
 
         public bool Equals(ActorId other)
@@ -46,21 +94,6 @@ namespace Microsoft.ServiceFabric.Actors
             return this.Id.ToString();
         }
 
-        //
-        // Summary:
-        //     Gets id for ActorId whose Microsoft.ServiceFabric.Actors.ActorIdKind is Microsoft.ServiceFabric.Actors.ActorIdKind.Long.
-        //
-        // Returns:
-        //     System.Int64 id value for AcotrId.
-        public long GetLongId()
-        {
-            return (long)this.Id;
-        }
-
-        public static ActorId CreateRandom()
-        {
-            long randIdentity = new Random(7).Next();
-            return new ActorId(randIdentity);
-        }
+        #endregion
     }
 }

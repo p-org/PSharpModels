@@ -49,7 +49,7 @@ namespace OrleansModel
         /// <returns>Task</returns>
         Task IStorage.ClearStateAsync()
         {
-            return DummyTask.FromResult(true);
+            return Task.FromResult(true);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace OrleansModel
         /// <returns>Task</returns>
         Task IStorage.WriteStateAsync()
         {
-            return DummyTask.FromResult(true);
+            return Task.FromResult(true);
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace OrleansModel
         /// <returns>Task</returns>
         Task IStorage.ReadStateAsync()
         {
-            return DummyTask.FromResult(true);
+            return Task.FromResult(true);
         }
 
         #endregion
