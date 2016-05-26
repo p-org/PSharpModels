@@ -14,6 +14,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 
 using Microsoft.PSharp.Actors.Bridge;
@@ -43,6 +45,12 @@ namespace Microsoft.PSharp.Actors
         /// </summary>
         static ActorModel()
         {
+            var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            foreach (string file in Directory.GetFiles(path, "*_PSharpProxy.dll"))
+            {
+                File.Delete(file);
+            }
+
             ActorModel.CleanUpActions = new HashSet<Action>();
         }
 
