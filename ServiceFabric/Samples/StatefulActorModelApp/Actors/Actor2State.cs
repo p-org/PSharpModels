@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Actor2
+namespace Actors
 {
     [DataContract]
     public class Actor2State

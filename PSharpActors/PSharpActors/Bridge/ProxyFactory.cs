@@ -58,8 +58,9 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// </summary>
         /// <param name="interfaceType">Type</param>
         /// <param name="actorMachineType">Actor machine type</param>
+        /// <param name="assemblyPath">Assembly path</param>
         /// <returns>Type</returns>
-        public Type GetProxyType(Type interfaceType, Type actorMachineType)
+        public Type GetProxyType(Type interfaceType, Type actorMachineType, string assemblyPath)
         {
             lock (this.Lock)
             {
@@ -68,7 +69,7 @@ namespace Microsoft.PSharp.Actors.Bridge
 
                 if (res == null)
                 {
-                    res = CreateProxyType(interfaceType, actorMachineType);
+                    res = CreateProxyType(interfaceType, actorMachineType, assemblyPath);
                     this.ProxyTypes.Add(interfaceType, res);
                 }
 
@@ -81,15 +82,16 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// </summary>
         /// <param name="interfaceType">Type</param>
         /// <param name="actorMachineType">Actor machine type</param>
+        /// <param name="assemblyPath">Assembly path</param>
         /// <returns>Type</returns>
-        private Type CreateProxyType(Type interfaceType, Type actorMachineType)
+        private Type CreateProxyType(Type interfaceType, Type actorMachineType, string assemblyPath)
         {
             if (!interfaceType.IsInterface)
             {
                 throw new InvalidOperationException();
             }
             
-            var actorType = this.GetActorType(interfaceType);
+            var actorType = this.GetActorType(interfaceType, assemblyPath);
 
             var references = new HashSet<MetadataReference>();
             references.Add(MetadataReference.CreateFromFile(actorType.Assembly.Location));
@@ -131,42 +133,28 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// interface and assembly path.
         /// </summary>
         /// <param name="interfaceType">Type</param>
+        /// <param name="assemblyPath">Assembly path</param>
         /// <returns>Type</returns>
-        private Type GetActorType(Type interfaceType)
+        private Type GetActorType(Type interfaceType, string assemblyPath)
         {
-            string assemblyPath = Assembly.GetCallingAssembly().Location + "\\..";
-            Type actorType = null;
-            bool foundType = false;
-            while (!foundType)
-            {
-                List<Assembly> allAssemblies = new List<Assembly>();
-                allAssemblies.AddRange(this.GetAllAssemblies(assemblyPath, "exe"));
-                allAssemblies.AddRange(this.GetAllAssemblies(assemblyPath, "dll"));
+            List<Assembly> allAssemblies = new List<Assembly>();
+            allAssemblies.AddRange(this.GetAllAssemblies(assemblyPath, "exe"));
+            allAssemblies.AddRange(this.GetAllAssemblies(assemblyPath, "dll"));
 
-                var types = new List<Type>();
-                foreach (var asm in allAssemblies)
+            var types = new List<Type>();
+            foreach (var asm in allAssemblies)
+            {
+                try
                 {
-                    try
-                    {
-                        types.AddRange(asm.GetTypes());
-                    }
-                    catch
-                    {
-                        continue;
-                    }
+                    types.AddRange(asm.GetTypes());
                 }
-                if (types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).Count() == 0)
+                catch
                 {
-                    assemblyPath += "\\..";
                     continue;
                 }
-                else
-                {
-                    foundType = true;
-                    actorType = types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).First();
-                }
             }
-            return actorType;
+
+            return types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).First();
         }
 
         /// <summary>
@@ -578,6 +566,7 @@ namespace Microsoft.PSharp.Actors.Bridge
         private List<Assembly> GetAllAssemblies(string assemblyPath, string extension)
         {
             List<Assembly> allAssemblies = new List<Assembly>();
+            Console.WriteLine("------------------------------- " + assemblyPath);
             foreach (string dll in Directory.GetFiles(assemblyPath, "*." + extension, SearchOption.AllDirectories))
             {
                 try

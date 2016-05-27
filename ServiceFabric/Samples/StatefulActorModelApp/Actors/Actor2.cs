@@ -1,5 +1,4 @@
-﻿using Actor2.Interfaces;
-using Microsoft.ServiceFabric.Actors.Runtime;
+﻿using Microsoft.ServiceFabric.Actors.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.PSharp;
 
-namespace Actor2
+using ActorInterfaces;
+using Microsoft.PSharp.Actors;
+
+namespace Actors
 {
     public class Actor2 : Actor, IActor2
     {
@@ -22,8 +24,11 @@ namespace Actor2
             return this.StateManager.GetStateAsync<int>("value");
         }
 
-        public Task SetValue(int val)
+        public Task SetValue(int val, IActor1 actor1Proxy)
         {
+            var t = actor1Proxy.Bar();
+            Console.WriteLine("Actor2 is waiting for bar from Actor1");
+            ActorModel.Wait(t);
             return this.StateManager.SetStateAsync("value", val);
         }
     }

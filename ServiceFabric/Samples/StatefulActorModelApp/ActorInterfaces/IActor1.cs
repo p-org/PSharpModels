@@ -5,10 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Actor1.interfaces
+namespace ActorInterfaces
 {
     public interface IActor1 : IActor
     {
         Task Foo();
+        Task Bar();
     }
 }

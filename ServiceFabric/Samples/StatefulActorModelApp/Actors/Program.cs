@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Actor1
+namespace Actors
 {
     class Program
     {

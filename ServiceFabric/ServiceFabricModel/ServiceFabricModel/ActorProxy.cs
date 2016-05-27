@@ -14,6 +14,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
 using Microsoft.PSharp.Actors;
 using Microsoft.PSharp.Actors.Bridge;
@@ -56,8 +58,10 @@ namespace Microsoft.ServiceFabric.Actors
             ActorModel.Runtime.Log("<ActorModelLog> Creating actor proxy of type '{0}'.",
                 typeof(TActorInterface).FullName);
 
+            string assemblyPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+
             Type proxyType = ProxyFactory.GetProxyType(typeof(TActorInterface),
-                typeof(FabricActorMachine));
+                typeof(FabricActorMachine), assemblyPath);
             var res = (TActorInterface)Activator.CreateInstance(proxyType);
             IdMap.Add(actorId, res);
 
