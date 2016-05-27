@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="fabric:/FabricBuggyExample" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+   <Parameters>
+      <Parameter Name="ReceiverActorService_PartitionCount" Value="1" />
+      <Parameter Name="SenderActorService_PartitionCount" Value="1" />
+   </Parameters>
+</Application>

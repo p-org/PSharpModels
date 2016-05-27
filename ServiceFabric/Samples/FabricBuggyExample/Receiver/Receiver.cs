@@ -28,7 +28,8 @@ namespace Receiver
 
         public Task TransmitData(string item)
         {
-            Console.WriteLine(item);
+            //Console.WriteLine(item);
+            ActorEventSource.Current.ActorMessage(this, "Received item: {0}", item);
             int count = this.StateManager.GetStateAsync<int>("itemCount").Result;
             count++;
             this.StateManager.SetStateAsync<int>("itemCount", count);

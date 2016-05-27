@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="FabricBuggyExampleType" ApplicationTypeVersion="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+   <Parameters>
+      <Parameter Name="ReceiverActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="ReceiverActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="ReceiverActorService_TargetReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="SenderActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="SenderActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="SenderActorService_TargetReplicaSetSize" DefaultValue="1" />
+   </Parameters>
+   <ServiceManifestImport>
+      <ServiceManifestRef ServiceManifestName="ReceiverPkg" ServiceManifestVersion="1.0.0" />
+   </ServiceManifestImport>
+   <ServiceManifestImport>
+      <ServiceManifestRef ServiceManifestName="SenderPkg" ServiceManifestVersion="1.0.0" />
+   </ServiceManifestImport>
+   <DefaultServices>
+      <Service Name="ReceiverActorService" GeneratedIdRef="6d172bab-7ced-445e-9245-6ef4deea1691|None">
+         <StatefulService ServiceTypeName="ReceiverActorServiceType" TargetReplicaSetSize="[ReceiverActorService_TargetReplicaSetSize]" MinReplicaSetSize="[ReceiverActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[ReceiverActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+      <Service Name="SenderActorService" GeneratedIdRef="eb3c4b20-1d2d-48e9-8b90-aefd6290cd9a|None">
+         <StatefulService ServiceTypeName="SenderActorServiceType" TargetReplicaSetSize="[SenderActorService_TargetReplicaSetSize]" MinReplicaSetSize="[SenderActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[SenderActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+   </DefaultServices>
+</ApplicationManifest>
