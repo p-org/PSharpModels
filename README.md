@@ -1,43 +1,45 @@
 # PSharpModels
 Models of distributed systems using P#
 
-## How to build PSharp
-First you need to download and build P# (provided as a git submodule). To do this run the following:
+## How to build P\# #
+First you need to download and build P#, which is provided as a git submodule:
 
 ```
-cd PSharpModels
+cd ${PSHARP_MODELS_DIR}
 git submodule init
 git submodule update
 cd PSharp
 ```
 
-Open `PSharp.sln` and build.
+Open `PSharp.sln` in Visual Studio and build it.
 
-## How to build Service Fabric Model
-To build the ServiceFabricModel run the following:
+## How to build ServiceFabricModel
+To build ServiceFabricModel (model of Azure Service Fabric in P#) do the following:
 
 ```
-cd PSharpModels
+cd ${PSHARP_MODELS_DIR}
 cd ServiceFabric
 cd ServiceFabricModel
 ```
-Open `ServiceFabricModel.sln` and build.
+Open `ServiceFabricModel.sln` in Visual Studio and build it.
 
 ## How to build and run the ServiceFabric buggy example
-First you need to build the example using the P# compiler. The example uses the ServiceFabricModel library, instead of the original ServiceFabric dlls. Do the following:
+First you need to build the example using the P# compiler. The example uses ServiceFabricModel, instead of the original Azure Service Fabric dlls. This allows P# to take control of nondeterminism during testing.
 
 ```
-cd PSharpModels
+cd ${PSHARP_MODELS_DIR}
 cd PSharp
 cd Binaries
-.\PSharpCompiler.exe /s:{PATH_TO_PSharpModels_ROOT}\ServiceFabric\Samples\BuggyExample\BuggyExam
+.\PSharpCompiler.exe /s:{PSHARP_MODELS_DIR}\ServiceFabric\Samples\BuggyExample\BuggyExam
 ple.sln /p:BuggyExample.Client /t:test
 ```
 
-The above command should dump the `BuggyExample.dll`. You can then systematically test this compiled buggy example using P#:
+Running the P# compiler will output `BuggyExample.dll`. You can then systematically test this dll using P#:
 
 ```
-.\PSharpTester.exe /test:{PATH_TO_BUGGY_EXAMPLE_DLL}\BuggyExample.dll /i:1 /v:2
+.\PSharpTester.exe /test:{PATH_TO_BUGGY_EXAMPLE_DLL}\BuggyExample.dll /i:1
 ```
 
-For more testing options, see the P# [guidelines](https://github.com/p-org/PSharp)
+Where `/i:N` is the number of scheduling tests. You can use `/v:2` to raise the verbosity of the output. When a bug is found, a readable trace is generated.
+
+For more testing flags, see the P# [guidelines](https://github.com/p-org/PSharp).
