@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="ActorExecutorMachine.cs">
+// <copyright file="ActorModelException.cs">
 //      Copyright (c) Microsoft Corporation. All rights reserved.
 // 
 //      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -22,32 +22,16 @@ using System.Threading.Tasks;
 
 namespace Microsoft.PSharp.Actors
 {
-    public class ActorExecutorMachine : Machine
+    public sealed class ActorModelException : Exception
     {
-        #region states
-        [Start]
-        [OnEventDoAction(typeof(ActorMachine.ActorEvent), nameof(OnActorEvent))]
-        class Init : MachineState { }
-        #endregion
-
-        #region actions
-        void OnActorEvent()
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="message">Message</param>
+        public ActorModelException(string message)
+            : base(message)
         {
-            var e = (this.ReceivedEvent as ActorMachine.ActorEvent);
 
-            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{base.Id}' is invoking '{e.MethodName}'.");
-
-            MethodInfo mi = e.MethodClass.GetMethod(e.MethodName);
-            try
-            {
-                object result = mi.Invoke(e.ClassInstance, e.Parameters);
-                this.Send(e.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(result));
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw new ActorModelException(ex.ToString());
-            }
         }
-        #endregion
     }
 }

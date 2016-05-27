@@ -111,7 +111,7 @@ namespace Microsoft.PSharp.Actors
             }
             catch(TargetInvocationException ex)
             {
-                throw ex.InnerException;
+                throw new ActorModelException(ex.ToString());
             }       
         }
 

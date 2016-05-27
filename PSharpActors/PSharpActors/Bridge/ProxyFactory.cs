@@ -102,7 +102,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
 
             SyntaxTree syntaxTree = this.CreateProxySyntaxTree(interfaceType, actorType, actorMachineType);
-            //Console.WriteLine(syntaxTree);
+            Console.WriteLine(syntaxTree);
 
             var context = CompilationContext.Create().LoadSolution(syntaxTree.ToString(), references, "cs");
             var compilation = context.GetSolution().Projects.First().GetCompilationAsync().Result;

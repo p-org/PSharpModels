@@ -26,7 +26,8 @@ namespace TwoActors.Client
             ActorModel.Start(runtime, () =>
             {
                 var actor1Proxy = ActorProxy.Create<IActor1>(new ActorId(2), "A1");
-                actor1Proxy.Foo();
+                var t = actor1Proxy.Foo();
+                //ActorModel.Wait(t);
             });
         }
     }

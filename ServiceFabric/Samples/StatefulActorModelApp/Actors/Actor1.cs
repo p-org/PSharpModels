@@ -6,6 +6,7 @@ using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 using ActorInterfaces;
+using Microsoft.PSharp.Actors.Bridge;
 
 namespace Actors
 {
@@ -23,7 +24,7 @@ namespace Actors
             int val = 9;
             var t = actor2Proxy.SetValue(val, this);
             Console.WriteLine("Actor1 is waiting for set value from Actor2");
-            ActorModel.Wait(t);
+            //ActorModel.Wait(t);
 
             Task<int> s = actor2Proxy.GetValue();
             var r = ActorModel.GetResult<int>(s);
@@ -34,7 +35,9 @@ namespace Actors
 
         public Task Bar()
         {
+            //return new ActorCompletionTask<object>();
             return new Task(() => { });
+            //return Task.FromResult(true);
         }
     }
 }

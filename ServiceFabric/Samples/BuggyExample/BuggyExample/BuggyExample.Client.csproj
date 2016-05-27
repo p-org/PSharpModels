@@ -61,9 +61,21 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Receiver.Interfaces\Receiver.Interfaces.csproj">
+      <Project>{a172c42f-c8f2-467d-9edd-4365ca1a7ae1}</Project>
+      <Name>Receiver.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Receiver\Receiver.csproj">
+      <Project>{28506573-5d30-4b7d-8af5-67417cdba7a4}</Project>
+      <Name>Receiver</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Sender.Interfaces\Sender.Interfaces.csproj">
       <Project>{d8d2c83c-c6e3-4a4d-b97b-b8d32af79d03}</Project>
       <Name>Sender.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Sender\Sender.csproj">
+      <Project>{2b72ffd5-926e-4e5f-8aeb-1e3cc3a8b455}</Project>
+      <Name>Sender</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
