@@ -14,6 +14,6 @@ namespace Receiver.Interfaces
 
         Task TransmitData(string item);
 
-        Task<int> GetFinalCount();
+        Task<int> GetCurrentCount();
     }
 }

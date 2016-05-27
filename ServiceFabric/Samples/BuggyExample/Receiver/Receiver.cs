@@ -16,7 +16,7 @@ namespace Receiver
             return base.OnActivateAsync();
         }
 
-        public Task<int> GetFinalCount()
+        public Task<int> GetCurrentCount()
         {
             return Task.FromResult(this.StateManager.GetStateAsync<int>("itemCount").Result);
         }

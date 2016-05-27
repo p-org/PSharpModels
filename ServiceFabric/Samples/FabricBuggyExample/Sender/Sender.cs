@@ -22,7 +22,7 @@ namespace Sender
             for (int i = 0; i < numberOfItems; i++)
                 receiverProxy.TransmitData("xyz" + i);
 
-            int transmitted = receiverProxy.GetFinalCount().Result;
+            int transmitted = receiverProxy.GetCurrentCount().Result;
 
             ActorEventSource.Current.ActorMessage(this, "Final Count: {0}", transmitted);
 

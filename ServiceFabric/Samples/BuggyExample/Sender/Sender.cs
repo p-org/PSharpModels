@@ -22,7 +22,7 @@ namespace Sender
             for (int i = 0; i < numberOfItems; i++)
                 receiverProxy.TransmitData("xyz" + i);
 
-            int transmitted = ActorModel.GetResult<int>(receiverProxy.GetFinalCount());
+            int transmitted = ActorModel.GetResult<int>(receiverProxy.GetCurrentCount());
             ActorModel.Assert(transmitted <= numberOfItems, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
             return Task.FromResult(true);
         }
