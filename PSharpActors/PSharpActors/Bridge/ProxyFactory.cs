@@ -102,7 +102,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
 
             SyntaxTree syntaxTree = this.CreateProxySyntaxTree(interfaceType, actorType, actorMachineType);
-            Console.WriteLine(syntaxTree);
+            //Console.WriteLine(syntaxTree);
 
             var context = CompilationContext.Create().LoadSolution(syntaxTree.ToString(), references, "cs");
             var compilation = context.GetSolution().Projects.First().GetCompilationAsync().Result;
@@ -566,7 +566,6 @@ namespace Microsoft.PSharp.Actors.Bridge
         private List<Assembly> GetAllAssemblies(string assemblyPath, string extension)
         {
             List<Assembly> allAssemblies = new List<Assembly>();
-            Console.WriteLine("------------------------------- " + assemblyPath);
             foreach (string dll in Directory.GetFiles(assemblyPath, "*." + extension, SearchOption.AllDirectories))
             {
                 try
