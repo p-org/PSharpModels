@@ -26,7 +26,7 @@ namespace Sender
 
             ActorEventSource.Current.ActorMessage(this, "Final Count: {0}", transmitted);
 
-            Contract.Assert(numberOfItems == transmitted, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
+            Contract.Assert(transmitted <= numberOfItems, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
             
             return Task.FromResult(true);
         }
