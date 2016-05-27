@@ -1,5 +1,5 @@
 # PSharpModels
-Models of distributed systems using P#
+Models of distributed systems using [P#](https://github.com/p-org/PSharp).
 
 ## How to build P\# #
 First you need to download and build P#, which is provided as a git submodule:
