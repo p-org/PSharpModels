@@ -66,6 +66,10 @@
       <Project>{6f8dba8a-6b08-4c88-9d32-dc40aaee44a4}</Project>
       <Name>ActorInterfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Actors\Actors.csproj">
+      <Project>{5a42352b-20df-4a81-b8dd-cc03c7750ab0}</Project>
+      <Name>Actors</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
