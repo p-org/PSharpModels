@@ -33,14 +33,17 @@ namespace Microsoft.PSharp.Actors
         public class InitEvent : Event
         {
             public object ClassInstance;
+            public Type ActorType;
 
             /// <summary>
             /// Constructor.
             /// </summary>
             /// <param name="classInstance">ClassInstance</param>
-            public InitEvent(object classInstance)
+            /// <param name="actorType">Type</param>
+            public InitEvent(object classInstance, Type actorType)
             {
                 this.ClassInstance = classInstance;
+                this.ActorType = actorType;
             }
         }
 
@@ -103,13 +106,13 @@ namespace Microsoft.PSharp.Actors
             try
             {
                 this.Initialize(initEvent);
-                executorMachine = CreateMachine(typeof(ActorExecutorMachine));
+                executorMachine = CreateMachine(typeof(ActorExecutorMachine),
+                    initEvent.ActorType.FullName);
             }
-            catch(Exception ex)
+            catch(TargetInvocationException ex)
             {
-                Console.WriteLine(ex);
-                Environment.Exit(Environment.ExitCode);
-            }            
+                throw ex.InnerException;
+            }       
         }
 
         protected abstract void Initialize(InitEvent initEvent);
@@ -130,20 +133,6 @@ namespace Microsoft.PSharp.Actors
             {
                 Send(Id, e);
             }
-            //MethodInfo mi = e.MethodClass.GetMethod(e.MethodName);
-
-            //ActorModel.Runtime.Log($"<ActorModelLog> Machine '{base.Id}' is invoking '{e.MethodName}'.");
-
-            //try
-            //{
-            //    object result = mi.Invoke(e.ClassInstance, e.Parameters);
-            //    this.Send(e.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(result));
-            //}
-            //catch(Exception ex)
-            //{
-            //    Console.WriteLine(ex);
-            //    Environment.Exit(Environment.ExitCode);
-            //}
         }
 
         #endregion

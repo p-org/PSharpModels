@@ -82,6 +82,28 @@ namespace Microsoft.PSharp.Actors
         }
 
         /// <summary>
+        /// Checks if the assertion holds, and if not it reports
+        /// an error and exits.
+        /// </summary>
+        /// <param name="predicate">Predicate</param>
+        public static void Assert(bool predicate)
+        {
+            ActorModel.Runtime.Assert(predicate);
+        }
+
+        /// <summary>
+        /// Checks if the assertion holds, and if not it reports
+        /// an error and exits.
+        /// </summary>
+        /// <param name="predicate">Predicate</param>
+        /// <param name="s">Message</param>
+        /// <param name="args">Message arguments</param>
+        public static void Assert(bool predicate, string s, params object[] args)
+        {
+            ActorModel.Runtime.Assert(predicate, s, args);
+        }
+
+        /// <summary>
         /// Registers a cleanup action, to execute at the
         /// beginning of each testing iteration. Any static
         /// fields should be reset in this action.

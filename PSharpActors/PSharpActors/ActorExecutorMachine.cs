@@ -29,10 +29,9 @@ namespace Microsoft.PSharp.Actors
                 object result = mi.Invoke(e.ClassInstance, e.Parameters);
                 this.Send(e.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(result));
             }
-            catch (Exception ex)
+            catch (TargetInvocationException ex)
             {
-                Console.WriteLine(ex);
-                Environment.Exit(Environment.ExitCode);
+                throw ex.InnerException;
             }
         }
         #endregion

@@ -120,18 +120,8 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             Assembly proxyAssembly = Assembly.LoadFrom(proxyAssemblyPath);
             
-            Type proxyType = null;
-
-            try
-            {
-                proxyType = proxyAssembly.GetType(typeSymbol.ContainingNamespace.ToString() +
+            Type proxyType = proxyAssembly.GetType(typeSymbol.ContainingNamespace.ToString() +
                     "." + typeSymbol.Name);
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex);
-                Environment.Exit(Environment.ExitCode);
-            }
 
             return proxyType;
         }
@@ -309,7 +299,10 @@ namespace Microsoft.PSharp.Actors.Bridge
                         SyntaxFactory.SeparatedList(
                             new List<ArgumentSyntax>
                             {
-                                SyntaxFactory.Argument(SyntaxFactory.IdentifierName("machineType"))
+                                SyntaxFactory.Argument(SyntaxFactory.IdentifierName("machineType")),
+                                SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(
+                                    SyntaxKind.StringLiteralExpression,
+                                    SyntaxFactory.Literal(actorType.FullName)))
                             })))));
 
             string eventType = actorMachineType.FullName + "." + typeof(ActorMachine.InitEvent).Name;
@@ -322,7 +315,9 @@ namespace Microsoft.PSharp.Actors.Bridge
                         SyntaxFactory.Argument(SyntaxFactory.MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
                             SyntaxFactory.ThisExpression(),
-                            SyntaxFactory.IdentifierName("Target")))
+                            SyntaxFactory.IdentifierName("Target"))),
+                        SyntaxFactory.Argument(SyntaxFactory.TypeOfExpression(
+                            SyntaxFactory.IdentifierName(actorType.FullName)))
                     }));
 
             LocalDeclarationStatementSyntax eventDecl = this.CreateEventDeclaration(

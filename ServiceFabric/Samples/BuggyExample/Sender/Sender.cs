@@ -23,7 +23,7 @@ namespace Sender
                 receiverProxy.TransmitData(new TransactionItems("xyz" + i));
 
             int transmitted = ActorModel.GetResult<int>(receiverProxy.GetFinalCount());
-            Debug.Assert(numberOfItems == transmitted, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
+            ActorModel.Assert(numberOfItems == transmitted, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
             return Task.FromResult(true);
         }
     }
