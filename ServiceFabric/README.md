@@ -18,8 +18,7 @@ First you need to build the example using the P# compiler. The example uses Serv
 cd ${PSHARP_MODELS_DIR}
 cd PSharp
 cd Binaries
-.\PSharpCompiler.exe /s:{PSHARP_MODELS_DIR}\ServiceFabric\Samples\BuggyExample\BuggyExam
-ple.sln /p:BuggyExample.Client /t:test
+.\PSharpCompiler.exe /s:{PSHARP_MODELS_DIR}\ServiceFabric\Samples\BuggyExample\BuggyExample.sln /p:BuggyExample.Client /t:test
 ```
 
 Running the P# compiler will output `BuggyExample.dll`. You can then systematically test this dll using P#:
