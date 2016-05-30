@@ -27,6 +27,8 @@ namespace OrleansModel
     {
         protected override void Initialize(InitEvent initEvent)
         {
+            //ConstructorInfo sm = initEvent.ActorType.BaseType.GetConstructors().Single();
+
             //ConstructorInfo sm = typeof(ActorStateManager).GetConstructors().Single();
             //var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
             //PropertyInfo prop = initEvent.ClassInstance.GetType().GetProperty("StateManager",

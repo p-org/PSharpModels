@@ -13,6 +13,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -20,6 +21,7 @@ using System.Reflection;
 using Microsoft.PSharp.Actors;
 
 using Orleans;
+using Orleans.Runtime;
 
 namespace OrleansModel
 {
@@ -28,6 +30,24 @@ namespace OrleansModel
     /// </summary>
     internal class GrainFactory : IGrainFactory
     {
+        #region methods
+
+        /// <summary>
+        /// Static constructor.
+        /// </summary>
+        static GrainFactory()
+        {
+            GrainClient.ProxyFactory.RegisterIgnoredInterfaceTypes(new HashSet<Type>
+            {
+                typeof(IAddressable),
+                typeof(IStatefulGrain)
+            });
+        }
+
+        #endregion
+
+        #region methods
+
         public TGrainInterface GetGrain<TGrainInterface>(Guid primaryKey,
             string grainClassNamePrefix = null)
             where TGrainInterface : IGrainWithGuidKey
@@ -100,5 +120,7 @@ namespace OrleansModel
 
             return grain;
         }
+
+        #endregion
     }
 }
