@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuggyGrainInterfaces", "BuggyGrainInterfaces\BuggyGrainInterfaces.csproj", "{54F391EA-9952-4C74-A861-A22E335CFE48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuggyGrains", "BuggyGrains\BuggyGrains.csproj", "{D567FA6D-132B-4DE4-AE9F-70C0E087BC96}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuggyOrleansHost", "BuggyOrleansHost\BuggyOrleansHost.csproj", "{36359D1F-DE82-410D-987F-2F8E3119CCBD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{54F391EA-9952-4C74-A861-A22E335CFE48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54F391EA-9952-4C74-A861-A22E335CFE48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54F391EA-9952-4C74-A861-A22E335CFE48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54F391EA-9952-4C74-A861-A22E335CFE48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D567FA6D-132B-4DE4-AE9F-70C0E087BC96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D567FA6D-132B-4DE4-AE9F-70C0E087BC96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D567FA6D-132B-4DE4-AE9F-70C0E087BC96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D567FA6D-132B-4DE4-AE9F-70C0E087BC96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36359D1F-DE82-410D-987F-2F8E3119CCBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36359D1F-DE82-410D-987F-2F8E3119CCBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36359D1F-DE82-410D-987F-2F8E3119CCBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36359D1F-DE82-410D-987F-2F8E3119CCBD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
