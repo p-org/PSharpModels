@@ -12,25 +12,27 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using Microsoft.PSharp.Actors.Bridge;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+
+using Microsoft.PSharp.Actors.Bridge;
 
 namespace Microsoft.PSharp.Actors
 {
+    /// <summary>
+    /// A P# actor executor machine.
+    /// </summary>
     public class ActorExecutorMachine : Machine
     {
         #region states
+
         [Start]
         [OnEventDoAction(typeof(ActorMachine.ActorEvent), nameof(OnActorEvent))]
         class Init : MachineState { }
+
         #endregion
 
         #region actions
+
         void OnActorEvent()
         {
             var e = (this.ReceivedEvent as ActorMachine.ActorEvent);
@@ -48,6 +50,7 @@ namespace Microsoft.PSharp.Actors
                 throw new ActorModelException(ex.ToString());
             }
         }
+
         #endregion
     }
 }

@@ -1,12 +1,11 @@
-﻿using Microsoft.PSharp;
+﻿using System;
+using System.Threading.Tasks;
+
+using Microsoft.PSharp;
 using Microsoft.PSharp.Actors;
 using Microsoft.ServiceFabric.Actors;
+
 using Sender.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BuggyExample
 {

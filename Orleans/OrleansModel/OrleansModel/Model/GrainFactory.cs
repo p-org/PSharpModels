@@ -88,8 +88,10 @@ namespace OrleansModel
             ActorModel.Runtime.Log("<ActorModelLog> Creating grain of type '{0}'.",
                 typeof(TGrainInterface).FullName);
 
+            string assemblyPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+
             Type proxyType = GrainClient.ProxyFactory.GetProxyType(typeof(TGrainInterface),
-                typeof(OrleansActorMachine));
+                typeof(OrleansActorMachine), assemblyPath);
             var grain = (TGrainInterface)Activator.CreateInstance(proxyType);
             GrainId newId = new GrainId(primaryKey, (IGrain)grain);
 

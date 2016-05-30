@@ -21,6 +21,9 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace ServiceFabricModel
 {
+    /// <summary>
+    /// A Service Fabric P# actor machine.
+    /// </summary>
     public class FabricActorMachine : ActorMachine
     {
         protected override void Initialize(InitEvent initEvent)
