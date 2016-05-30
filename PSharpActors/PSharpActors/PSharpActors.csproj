@@ -61,12 +61,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\PSharp\Binaries\System.Collections.Immutable.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActorExecutorMachine.cs" />
     <Compile Include="ActorRootMachine.cs" />
     <Compile Include="ActorModel.cs" />
     <Compile Include="ActorMachine.cs" />
+    <Compile Include="Bridge\BaseActorProxy.cs" />
     <Compile Include="Bridge\ActorCompletionMachine.cs" />
     <Compile Include="Bridge\ActorCompletionTask.cs" />
     <Compile Include="Exceptions\ActorModelException.cs" />

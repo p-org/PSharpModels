@@ -117,7 +117,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
 
             SyntaxTree syntaxTree = this.CreateProxySyntaxTree(interfaceType, actorType, actorMachineType);
-            //Console.WriteLine(syntaxTree);
+            Console.WriteLine(syntaxTree);
 
             var context = CompilationContext.Create().LoadSolution(syntaxTree.ToString(), references, "cs");
             var compilation = context.GetSolution().Projects.First().GetCompilationAsync().Result;
@@ -230,7 +230,11 @@ namespace Microsoft.PSharp.Actors.Bridge
             ConstructorDeclarationSyntax constructor = this.CreateProxyConstructor(
                 interfaceType, actorType, actorMachineType);
 
-            var baseTypes = new HashSet<BaseTypeSyntax>();
+            var baseTypes = new HashSet<BaseTypeSyntax>
+            {
+                SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(typeof(BaseActorProxy).FullName))
+            };
+
             var methodDecls = new List<MethodDeclarationSyntax>();
 
             foreach (var type in actorType.GetInterfaces().Where(
@@ -363,7 +367,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             Type interfaceType, Type actorMachineType)
         {
             List<ParameterSyntax> parameters = new List<ParameterSyntax>();
-            List<ExpressionSyntax> payloadArguments = new List<ExpressionSyntax>();
+            List<ArgumentSyntax> payloadArguments = new List<ArgumentSyntax>();
             foreach (var parameter in method.GetParameters())
             {
                 parameters.Add(SyntaxFactory.Parameter(
@@ -372,7 +376,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                     this.GetTypeSyntax(parameter.ParameterType),
                     SyntaxFactory.Identifier(parameter.Name),
                     null));
-                payloadArguments.Add(SyntaxFactory.IdentifierName(parameter.Name));
+                payloadArguments.Add(SyntaxFactory.Argument(SyntaxFactory.IdentifierName(parameter.Name)));
             }
 
             TypeSyntax returnTaskType = this.GetTypeSyntax(method.ReturnType);
@@ -387,10 +391,12 @@ namespace Microsoft.PSharp.Actors.Bridge
                         {
                             SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("payload"),
                             null,
-                            SyntaxFactory.EqualsValueClause(SyntaxFactory.ObjectCreationExpression(
-                                SyntaxFactory.IdentifierName("object[]"))
-                                .WithInitializer(SyntaxFactory.InitializerExpression(
-                                    SyntaxKind.ArrayInitializerExpression,
+                            SyntaxFactory.EqualsValueClause(SyntaxFactory.InvocationExpression(
+                                SyntaxFactory.MemberAccessExpression(
+                                    SyntaxKind.SimpleMemberAccessExpression,
+                                    SyntaxFactory.ThisExpression(),
+                                    SyntaxFactory.IdentifierName("Serialize")),
+                                SyntaxFactory.ArgumentList(
                                     SyntaxFactory.SeparatedList(payloadArguments)))))
                         })));
 
