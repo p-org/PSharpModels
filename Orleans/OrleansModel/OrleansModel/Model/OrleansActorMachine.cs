@@ -28,17 +28,22 @@ namespace OrleansModel
     {
         protected override void Initialize(InitEvent initEvent)
         {
-            Console.WriteLine(initEvent.ActorType + " >> " + initEvent.ActorType.BaseType);
+            var genericTypes = initEvent.ActorType.BaseType.GetGenericArguments();
+            if (genericTypes.Length == 1)
+            {
+                var grainStateType = Type.GetType($"OrleansModel.GrainState`1[{genericTypes[0]}]");
+                Console.WriteLine(grainStateType);
+                var grainState = Activator.CreateInstance(grainStateType);
+                FieldInfo field = initEvent.ClassInstance.GetType().GetField("GrainState",
+                    BindingFlags.Public | BindingFlags.Instance);
+                if (field != null)
+                {
+                    field.SetValue(initEvent.ClassInstance, grainState);
+                }
 
-            //ConstructorInfo sm = typeof(GrainState).GetConstructors().Single();
-            //var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
-            //PropertyInfo prop = initEvent.ClassInstance.GetType().GetProperty("StateManager",
-            //    BindingFlags.Public | BindingFlags.Instance);
-            //if (null != prop && prop.CanWrite)
-            //{
-            //    prop.SetValue(initEvent.ClassInstance, stateManager, null);
-            //}
-
+                ((IStatefulGrain)initEvent.ClassInstance).SetStorage(new InMemoryStorage());
+            }
+            
             MethodInfo mo = typeof(Grain).GetMethod("OnActivateAsync",
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             mo.Invoke(initEvent.ClassInstance, new object[] { });

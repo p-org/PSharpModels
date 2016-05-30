@@ -127,7 +127,8 @@ namespace Orleans
         /// <summary>
         /// The grain state.
         /// </summary>
-        private readonly GrainState<TGrainState> GrainState;
+        //private readonly GrainState<TGrainState> GrainState;
+        internal GrainState<TGrainState> GrainState;
 
         IGrainState IStatefulGrain.GrainState
         {
