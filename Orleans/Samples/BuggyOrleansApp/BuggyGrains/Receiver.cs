@@ -7,7 +7,7 @@ namespace BuggyOrleansApp
     /// <summary>
     /// Grain implementation class Client.
     /// </summary>
-    public class Receiver : Grain, IReceiver
+    public class Receiver : Grain<int>, IReceiver
     {
         public override Task OnActivateAsync()
         {

@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
 using Orleans;
 
-namespace BuggyOrleansApp
+namespace OrleansBuggyExample
 {
     /// <summary>
-    /// Grain interface IClient
+    /// Grain interface IReceiver
     /// </summary>
 	public interface IReceiver : IGrainWithIntegerKey
     {
