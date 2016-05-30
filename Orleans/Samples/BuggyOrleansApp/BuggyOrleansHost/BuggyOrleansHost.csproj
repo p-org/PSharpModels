@@ -72,6 +72,10 @@
       <Project>{d567fa6d-132b-4de4-ae9f-70c0e087bc96}</Project>
       <Name>BuggyGrains</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TransactionData\TransactionData.csproj">
+      <Project>{3921052e-63f6-43ee-8d85-d93e13942489}</Project>
+      <Name>TransactionData</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

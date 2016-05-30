@@ -29,9 +29,9 @@ namespace BuggyOrleansApp
             return this.WriteStateAsync();
         }
 
-        public Task TransmitData(string item)
+        public Task TransmitData(TransactionItems item)
         {
-            Console.WriteLine(item);
+            Console.WriteLine(item.name);
             this.ReadStateAsync().Wait();
             int count = this.State;
             count++;

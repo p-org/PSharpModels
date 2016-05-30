@@ -10,7 +10,7 @@ namespace BuggyOrleansApp
     {
         Task StartTransaction();
 
-        Task TransmitData(string item);
+        Task TransmitData(TransactionItems item);
 
         Task<int> GetCurrentCount();
     }

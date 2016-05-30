@@ -40,17 +40,19 @@ namespace Microsoft.PSharp.Actors.Bridge
                 {
                     serializedPayload[idx] = payload[idx];
                 }
-                else if (type.GetCustomAttribute(typeof(SerializableAttribute), false) != null)
-                {
-                    MemoryStream stream = new MemoryStream();
-                    BinaryFormatter bf = new BinaryFormatter();
-                    bf.Serialize(stream, payload[idx]);
-                    serializedPayload[idx] = bf.Deserialize(stream);
-                }
-                else if (type.GetInterfaces().Any(val => val == typeof(ICloneable)))
-                {
-                    serializedPayload[idx] = ((ICloneable)payload[idx]).Clone();
-                }
+                //else if (type.GetCustomAttribute(typeof(SerializableAttribute), false) != null)
+                //{
+                //    MemoryStream stream = new MemoryStream();
+                //    BinaryFormatter bf = new BinaryFormatter();
+                //    bf.Serialize(stream, payload[idx]);
+                    
+                //    stream.Seek(0, SeekOrigin.Begin);
+                //    serializedPayload[idx] = bf.Deserialize(stream);
+                //}
+                //else if (type.GetInterfaces().Any(val => val == typeof(ICloneable)))
+                //{
+                //    serializedPayload[idx] = ((ICloneable)payload[idx]).Clone();
+                //}
                 else
                 {
                     try

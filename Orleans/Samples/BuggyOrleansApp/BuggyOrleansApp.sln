@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuggyOrleansHost", "BuggyOr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuggyGrains", "BuggyGrains\BuggyGrains.csproj", "{D567FA6D-132B-4DE4-AE9F-70C0E087BC96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionData", "TransactionData\TransactionData.csproj", "{3921052E-63F6-43EE-8D85-D93E13942489}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{D567FA6D-132B-4DE4-AE9F-70C0E087BC96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D567FA6D-132B-4DE4-AE9F-70C0E087BC96}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D567FA6D-132B-4DE4-AE9F-70C0E087BC96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3921052E-63F6-43EE-8D85-D93E13942489}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3921052E-63F6-43EE-8D85-D93E13942489}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3921052E-63F6-43EE-8D85-D93E13942489}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3921052E-63F6-43EE-8D85-D93E13942489}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
