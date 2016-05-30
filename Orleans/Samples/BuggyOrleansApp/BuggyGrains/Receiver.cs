@@ -11,27 +11,31 @@ namespace BuggyOrleansApp
     {
         public override Task OnActivateAsync()
         {
-            this.StateManager.AddStateAsync<int>("itemCount", 0);
+            this.State = 0;
+            this.WriteStateAsync().Wait();
             return base.OnActivateAsync();
         }
 
         public Task<int> GetCurrentCount()
         {
-            return Task.FromResult(this.StateManager.GetStateAsync<int>("itemCount").Result);
+            this.ReadStateAsync().Wait();
+            return Task.FromResult(this.State);
         }
 
         public Task StartTransaction()
         {
-            return this.StateManager.SetStateAsync<int>("itemCount", 0);
+            this.State = 0;
+            return this.WriteStateAsync();
         }
 
         public Task TransmitData(string item)
         {
             Console.WriteLine(item);
-            int count = this.StateManager.GetStateAsync<int>("itemCount").Result;
+            this.ReadStateAsync().Wait();
+            int count = this.State;
             count++;
-            this.StateManager.SetStateAsync<int>("itemCount", count);
-            return Task.FromResult(true);
+            this.State = count;
+            return this.WriteStateAsync();
         }
     }
 }

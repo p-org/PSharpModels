@@ -12,6 +12,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using System.Reflection;
 
 using Microsoft.PSharp.Actors;
@@ -27,7 +28,9 @@ namespace OrleansModel
     {
         protected override void Initialize(InitEvent initEvent)
         {
-            //ConstructorInfo sm = typeof(ActorStateManager).GetConstructors().Single();
+            Console.WriteLine(initEvent.ActorType + " >> " + initEvent.ActorType.BaseType);
+
+            //ConstructorInfo sm = typeof(GrainState).GetConstructors().Single();
             //var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
             //PropertyInfo prop = initEvent.ClassInstance.GetType().GetProperty("StateManager",
             //    BindingFlags.Public | BindingFlags.Instance);

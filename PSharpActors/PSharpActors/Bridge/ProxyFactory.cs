@@ -37,6 +37,11 @@ namespace Microsoft.PSharp.Actors.Bridge
         private readonly Dictionary<Type, Type> ProxyTypes;
 
         /// <summary>
+        /// Ignored interface types.
+        /// </summary>
+        private ISet<Type> IgnoredInterfaceTypes;
+
+        /// <summary>
         /// The factory lock.
         /// </summary>
         private readonly object Lock;
@@ -49,8 +54,14 @@ namespace Microsoft.PSharp.Actors.Bridge
         public ProxyFactory(ISet<string> requiredNamespaces)
         {
             this.ProxyTypes = new Dictionary<Type, Type>();
+            this.IgnoredInterfaceTypes = new HashSet<Type>();
             this.Lock = new object();
             this.RequiredNamespaces = requiredNamespaces;
+        }
+
+        public void RegisterIgnoredInterfaceTypes(ISet<Type> interfaces)
+        {
+            this.IgnoredInterfaceTypes.UnionWith(interfaces);
         }
 
         /// <summary>
@@ -102,7 +113,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
 
             SyntaxTree syntaxTree = this.CreateProxySyntaxTree(interfaceType, actorType, actorMachineType);
-            //Console.WriteLine(syntaxTree);
+            Console.WriteLine(syntaxTree);
 
             var context = CompilationContext.Create().LoadSolution(syntaxTree.ToString(), references, "cs");
             var compilation = context.GetSolution().Projects.First().GetCompilationAsync().Result;
@@ -217,7 +228,7 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             var baseTypes = new HashSet<BaseTypeSyntax>();
             var methodDecls = new List<MethodDeclarationSyntax>();
-            foreach (var type in actorType.GetInterfaces())
+            foreach (var type in actorType.GetInterfaces().Where(val => !this.IgnoredInterfaceTypes.Contains(val)))
             {
                 baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(type.FullName)));
                 foreach (var method in type.GetMethods())

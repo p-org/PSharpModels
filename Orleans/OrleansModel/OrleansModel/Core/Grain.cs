@@ -143,6 +143,15 @@ namespace Orleans
         private IStorage Storage;
 
         /// <summary>
+        /// The grain state.
+        /// </summary>
+        protected TGrainState State
+        {
+            get { return this.GrainState.State; }
+            set { this.GrainState.State = value; }
+        }
+
+        /// <summary>
         /// Constructor. This constructor should never be invoked. We
         /// expose it so that client code (subclasses of Grain) do not
         /// have to add a constructor. Client code should use the
