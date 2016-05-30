@@ -32,22 +32,6 @@ namespace OrleansModel
     {
         #region methods
 
-        /// <summary>
-        /// Static constructor.
-        /// </summary>
-        static GrainFactory()
-        {
-            GrainClient.ProxyFactory.RegisterIgnoredInterfaceTypes(new HashSet<Type>
-            {
-                typeof(IAddressable),
-                typeof(IStatefulGrain)
-            });
-        }
-
-        #endregion
-
-        #region methods
-
         public TGrainInterface GetGrain<TGrainInterface>(Guid primaryKey,
             string grainClassNamePrefix = null)
             where TGrainInterface : IGrainWithGuidKey
@@ -107,6 +91,12 @@ namespace OrleansModel
 
             ActorModel.Runtime.Log("<ActorModelLog> Creating grain of type '{0}'.",
                 typeof(TGrainInterface).FullName);
+
+            GrainClient.ProxyFactory.RegisterIgnoredInterfaceTypes(new HashSet<Type>
+            {
+                typeof(IAddressable),
+                typeof(IStatefulGrain)
+            });
 
             string assemblyPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
 
