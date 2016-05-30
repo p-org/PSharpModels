@@ -21,6 +21,7 @@ using System.Reflection;
 using Microsoft.PSharp.Actors;
 
 using Orleans;
+using Orleans.Runtime;
 
 namespace OrleansModel
 {
@@ -29,6 +30,8 @@ namespace OrleansModel
     /// </summary>
     internal class GrainFactory : IGrainFactory
     {
+        #region methods
+
         public TGrainInterface GetGrain<TGrainInterface>(Guid primaryKey,
             string grainClassNamePrefix = null)
             where TGrainInterface : IGrainWithGuidKey
@@ -91,6 +94,7 @@ namespace OrleansModel
 
             GrainClient.ProxyFactory.RegisterIgnoredInterfaceTypes(new HashSet<Type>
             {
+                typeof(IAddressable),
                 typeof(IStatefulGrain)
             });
 
@@ -105,5 +109,7 @@ namespace OrleansModel
 
             return grain;
         }
+
+        #endregion
     }
 }

@@ -73,10 +73,6 @@
       <Project>{54f391ea-9952-4c74-a861-a22e335cfe48}</Project>
       <Name>BuggyGrainInterfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\BuggyGrains\BuggyGrains.csproj">
-      <Project>{d567fa6d-132b-4de4-ae9f-70c0e087bc96}</Project>
-      <Name>BuggyGrains</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

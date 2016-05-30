@@ -7,7 +7,7 @@ using Orleans;
 namespace BuggyOrleansApp
 {
     /// <summary>
-    /// Grain implementation class Server.
+    /// Grain implementation class Sender.
     /// </summary>
     public class Sender : Grain, ISender
     {

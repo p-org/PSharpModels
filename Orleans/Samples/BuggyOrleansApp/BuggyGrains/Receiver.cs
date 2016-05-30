@@ -5,8 +5,9 @@ using Orleans;
 namespace BuggyOrleansApp
 {
     /// <summary>
-    /// Grain implementation class Client.
+    /// Grain implementation class Receiver.
     /// </summary>
+    //[StorageProvider(ProviderName = "DevStore")]
     public class Receiver : Grain<int>, IReceiver
     {
         public override Task OnActivateAsync()
