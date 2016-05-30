@@ -45,7 +45,8 @@ namespace BasicOrleansApp
                 var server = GrainClient.GrainFactory.GetGrain<IServer>(0);
                 var client = GrainClient.GrainFactory.GetGrain<IClient>(1);
 
-                var initResult = client.Initialize(server).Result;
+                var initTask = client.Initialize(server);
+                string initResult = ActorModel.GetResult(initTask);
                 Console.WriteLine("Initialization: " + initResult);
 
                 client.Ping();

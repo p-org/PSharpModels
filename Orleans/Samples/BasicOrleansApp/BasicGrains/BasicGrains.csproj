@@ -35,6 +35,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.PSharp.Actors, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5ab419457034fcfb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\PSharpActors\Binaries\Microsoft.PSharp.Actors.dll</HintPath>
+    </Reference>
     <Reference Include="OrleansModel">
       <HintPath>..\..\..\Binaries\OrleansModel.dll</HintPath>
     </Reference>
