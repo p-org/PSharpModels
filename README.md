@@ -14,8 +14,8 @@ cd PSharp
 Open `PSharp.sln` in Visual Studio and build it.
 
 ## How to build and use OrleansModel
-Follow the instructions (here)[https://github.com/p-org/PSharpModels/tree/master/Orleans].
+Follow the instructions [here](https://github.com/p-org/PSharpModels/tree/master/Orleans).
 
 
 ## How to build and use ServiceFabricModel
-Follow the instructions (here)[https://github.com/p-org/PSharpModels/tree/master/ServiceFabric].
+Follow the instructions [here](https://github.com/p-org/PSharpModels/tree/master/ServiceFabric).
