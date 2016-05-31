@@ -171,6 +171,15 @@ namespace Microsoft.PSharp.Actors
 
         private void InactiveOnEntry()
         {
+            try
+            {
+                this.Deactivate();
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw new ActorModelException(ex.ToString());
+            }
+
             this.IsActive = false;
         }
 
@@ -221,6 +230,8 @@ namespace Microsoft.PSharp.Actors
         protected abstract void InitializeState();
 
         protected abstract void Activate();
+
+        protected abstract void Deactivate();
 
         #endregion
     }

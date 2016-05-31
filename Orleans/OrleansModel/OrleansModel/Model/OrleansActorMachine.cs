@@ -51,5 +51,12 @@ namespace OrleansModel
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             mo.Invoke(base.WrappedActorInstance, new object[] { });
         }
+
+        protected override void Deactivate()
+        {
+            MethodInfo mo = typeof(Grain).GetMethod("OnDeactivateAsync",
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            mo.Invoke(base.WrappedActorInstance, new object[] { });
+        }
     }
 }
