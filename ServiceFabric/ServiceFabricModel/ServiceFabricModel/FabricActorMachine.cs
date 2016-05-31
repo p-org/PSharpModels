@@ -26,20 +26,47 @@ namespace ServiceFabricModel
     /// </summary>
     public class FabricActorMachine : ActorMachine
     {
-        protected override void Initialize(InitEvent initEvent)
+        //protected override void Initialize(InitEvent initEvent)
+        //{
+        //    ConstructorInfo sm = typeof(ActorStateManager).GetConstructors().Single();
+        //    var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
+        //    PropertyInfo prop = initEvent.ClassInstance.GetType().GetProperty("StateManager",
+        //        BindingFlags.Public | BindingFlags.Instance);
+        //    if (null != prop && prop.CanWrite)
+        //    {
+        //        prop.SetValue(initEvent.ClassInstance, stateManager, null);
+        //    }
+
+        //    MethodInfo mo = typeof(ActorBase).GetMethod("OnActivateAsync",
+        //        BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        //    mo.Invoke(initEvent.ClassInstance, new object[] { });
+        //}
+
+        protected override void Initialize()
         {
             ConstructorInfo sm = typeof(ActorStateManager).GetConstructors().Single();
             var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
-            PropertyInfo prop = initEvent.ClassInstance.GetType().GetProperty("StateManager",
+            PropertyInfo prop = base.WrappedActorType.GetProperty("StateManager",
                 BindingFlags.Public | BindingFlags.Instance);
             if (null != prop && prop.CanWrite)
             {
-                prop.SetValue(initEvent.ClassInstance, stateManager, null);
+                prop.SetValue(base.WrappedActorInstance, stateManager, null);
             }
 
+        }
+
+        protected override void Activate()
+        {
             MethodInfo mo = typeof(ActorBase).GetMethod("OnActivateAsync",
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            mo.Invoke(initEvent.ClassInstance, new object[] { });
+            mo.Invoke(base.WrappedActorInstance, new object[] { });
+        }
+
+        protected override void Deactivate()
+        {
+            MethodInfo mo = typeof(ActorBase).GetMethod("OnDeactivateAsync",
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            mo.Invoke(base.WrappedActorInstance, new object[] { });
         }
     }
 }
