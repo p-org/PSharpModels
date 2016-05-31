@@ -64,7 +64,8 @@
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActorExecutorMachine.cs" />
+    <Compile Include="Timers\TimerCancellationSource.cs" />
+    <Compile Include="Timers\TimerMachine.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="ActorRootMachine.cs" />
     <Compile Include="ActorModel.cs" />

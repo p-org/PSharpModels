@@ -13,7 +13,11 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
+
+using Microsoft.PSharp.Actors.Bridge;
 
 namespace Microsoft.PSharp.Actors
 {
@@ -89,11 +93,6 @@ namespace Microsoft.PSharp.Actors
         protected Type WrappedActorType;
 
         /// <summary>
-        /// Machine for executing actor operations.
-        /// </summary>
-        private MachineId executorMachine;
-
-        /// <summary>
         /// Event that was buffered while the actor was inactive.
         /// It should be handled as soon as the actor becomes
         /// active.
@@ -111,15 +110,18 @@ namespace Microsoft.PSharp.Actors
 
         [Start]
         [OnEntry(nameof(InitOnEntry))]
+        [DeferEvents(typeof(TimerMachine.TimeoutEvent))]
         private class Init : MachineState { }
 
         [OnEntry(nameof(ActiveOnEntry))]
         [OnEventDoAction(typeof(ActorEvent), nameof(OnActorEvent))]
+        [OnEventDoAction(typeof(TimerMachine.TimeoutEvent), nameof(HandleTimeout))]
         [OnEventDoAction(typeof(Default), nameof(HandleDefaultAction))]
         private class Active : MachineState { }
 
         [OnEntry(nameof(InactiveOnEntry))]
         [OnEventDoAction(typeof(ActorEvent), nameof(BufferEventAndActivate))]
+        [IgnoreEvents(typeof(TimerMachine.TimeoutEvent))]
         private class Inactive : MachineState { }
 
         #endregion
@@ -129,16 +131,13 @@ namespace Microsoft.PSharp.Actors
         private void InitOnEntry()
         {
             var initEvent = this.ReceivedEvent as InitEvent;
-
+            
             this.WrappedActorInstance = initEvent.ClassInstance;
             this.WrappedActorType = initEvent.ActorType;
 
-            executorMachine = CreateMachine(typeof(ActorExecutorMachine),
-                initEvent.ActorType.FullName);
-
             try
             {
-                this.InitializeState();
+                this.Initialize();
             }
             catch (TargetInvocationException ex)
             {
@@ -171,6 +170,11 @@ namespace Microsoft.PSharp.Actors
 
         private void InactiveOnEntry()
         {
+            if (ActorModel.RegisteredTimers.ContainsKey(this.Id))
+            {
+                ActorModel.RegisteredTimers[this.Id].Clear();
+            }
+
             try
             {
                 this.Deactivate();
@@ -185,12 +189,12 @@ namespace Microsoft.PSharp.Actors
 
         private void OnActorEvent()
         {
-            var e = (this.ReceivedEvent as ActorEvent);
+            var actorEvent = (this.ReceivedEvent as ActorEvent);
 
             //For non-FIFO order.
             if (ActorModel.Configuration.DisableFirstInFirstOutOrder && Random())               
             {
-                Send(this.Id, e);
+                Send(this.Id, actorEvent);
             }
             else
             {
@@ -199,16 +203,47 @@ namespace Microsoft.PSharp.Actors
                 if (ActorModel.Configuration.DisableFirstInFirstOutOrder &&
                     ActorModel.Configuration.DoMultipleSends && Random())
                 {
-                    Send(this.Id, e);
+                    Send(this.Id, actorEvent);
                 }
                 // Otherwise, if only multiple sends are enabled, send
                 // nondeterministically a duplicate event to the executor.
                 else if (ActorModel.Configuration.DoMultipleSends && Random())
                 {
-                    Send(executorMachine, e);
+                    this.ExecuteActorAction(actorEvent);
                 }
 
-                Send(executorMachine, e);
+                this.ExecuteActorAction(actorEvent);
+            }
+        }
+
+        private void ExecuteActorAction(ActorEvent actorEvent)
+        {
+            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{base.Id.Name}' is invoking '{actorEvent.MethodName}'.");
+
+            MethodInfo mi = actorEvent.MethodClass.GetMethod(actorEvent.MethodName);
+            try
+            {
+                object result = mi.Invoke(actorEvent.ClassInstance, actorEvent.Parameters);
+                this.Send(actorEvent.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(result));
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw new ActorModelException(ex.ToString());
+            }
+        }
+
+        private void HandleTimeout()
+        {
+            var timer = (this.ReceivedEvent as TimerMachine.TimeoutEvent).Timer;
+            var callback = (this.ReceivedEvent as TimerMachine.TimeoutEvent).Callback;
+            var callbackState = (this.ReceivedEvent as TimerMachine.TimeoutEvent).CallbackState;
+
+            if (ActorModel.RegisteredTimers.ContainsKey(this.Id) &&
+                ActorModel.RegisteredTimers[this.Id].Contains(timer))
+            {
+                ActorModel.Runtime.Log($"<ActorModelLog> Machine '{this.Id.Name}' is " +
+                    $"handling timeout from timer '{timer.Name}'.");
+                callback(callbackState);
             }
         }
 
@@ -227,7 +262,7 @@ namespace Microsoft.PSharp.Actors
             this.Goto(typeof(Active));
         }
 
-        protected abstract void InitializeState();
+        protected abstract void Initialize();
 
         protected abstract void Activate();
 

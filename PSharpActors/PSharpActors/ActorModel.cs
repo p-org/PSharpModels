@@ -40,6 +40,16 @@ namespace Microsoft.PSharp.Actors
         internal static Configuration Configuration { get; private set; }
 
         /// <summary>
+        /// Map from actors to sets of registered timers.
+        /// </summary>
+        internal static IDictionary<MachineId, ISet<MachineId>> RegisteredTimers;
+
+        /// <summary>
+        /// Map from actors to sets of registered reminders.
+        /// </summary>
+        internal static IDictionary<MachineId, ISet<MachineId>> RegisteredReminders;
+
+        /// <summary>
         /// Set of cleanup actions to perform in each iteration.
         /// </summary>
         private static ISet<Action> CleanUpActions;
@@ -54,6 +64,9 @@ namespace Microsoft.PSharp.Actors
         static ActorModel()
         {
             ActorModel.Configuration = Configuration.Default();
+
+            ActorModel.RegisteredTimers = new Dictionary<MachineId, ISet<MachineId>>();
+            ActorModel.RegisteredReminders = new Dictionary<MachineId, ISet<MachineId>>();
 
             var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             foreach (string file in Directory.GetFiles(path, "*_PSharpProxy.dll"))
@@ -97,6 +110,9 @@ namespace Microsoft.PSharp.Actors
             }
 
             ActorModel.Runtime = runtime;
+            ActorModel.RegisteredTimers.Clear();
+            ActorModel.RegisteredReminders.Clear();
+
             ActorModel.Runtime.CreateMachine(typeof(ActorRootMachine),
                 new ActorRootMachine.RunEvent(action));
         }

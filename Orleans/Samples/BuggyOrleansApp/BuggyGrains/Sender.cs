@@ -11,6 +11,13 @@ namespace BuggyOrleansApp
     /// </summary>
     public class Sender : Grain, ISender
     {
+        //public override Task OnActivateAsync()
+        //{
+        //    this.Timer = this.RegisterTimer(HandleTimeout, null,
+        //        TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0));
+        //    return base.OnActivateAsync();
+        //}
+
         public Task DoSomething(int numberOfItems)
         {
             var receiver = GrainClient.GrainFactory.GetGrain<IReceiver>(1);
@@ -22,5 +29,11 @@ namespace BuggyOrleansApp
             ActorModel.Assert(transmitted <= numberOfItems, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
             return Task.FromResult(true);
         }
+
+        //public Task HandleTimeout(object args)
+        //{
+        //    Console.WriteLine("Timed out");
+        //    return Task.FromResult(true);
+        //}
     }
 }

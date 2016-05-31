@@ -17,6 +17,8 @@ namespace Sender
     {
         public Task DoSomething(int numberOfItems)
         {
+            this.RegisterTimer(HandleTimeout, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(10));
+
             var receiverProxy = ActorProxy.Create<IReceiver>(new ActorId(1), "fabric:/FabricBuggyExample");
             receiverProxy.StartTransaction();
             for (int i = 0; i < numberOfItems; i++)
@@ -28,6 +30,12 @@ namespace Sender
 
             Contract.Assert(transmitted <= numberOfItems, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
             
+            return Task.FromResult(true);
+        }
+
+        public Task HandleTimeout(object args)
+        {
+            ActorEventSource.Current.Message("Timed out");
             return Task.FromResult(true);
         }
     }

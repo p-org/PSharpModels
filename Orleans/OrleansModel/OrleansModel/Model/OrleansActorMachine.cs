@@ -26,7 +26,7 @@ namespace OrleansModel
     /// </summary>
     public class OrleansActorMachine : ActorMachine
     {
-        protected override void InitializeState()
+        protected override void Initialize()
         {
             var genericTypes = base.WrappedActorType.BaseType.GetGenericArguments();
             if (genericTypes.Length == 1)

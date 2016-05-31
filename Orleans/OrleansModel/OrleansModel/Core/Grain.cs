@@ -16,7 +16,7 @@ using System;
 using System.Threading.Tasks;
 
 using Microsoft.PSharp;
-using Microsoft.PSharp.Actors.Bridge;
+using Microsoft.PSharp.Actors;
 
 using Orleans.Core;
 using Orleans.Runtime;
@@ -31,7 +31,7 @@ namespace Orleans
     public abstract class Grain : IAddressable
     {
         #region fields
-
+        
         /// <summary>
         /// The grain identity.
         /// </summary>
@@ -113,6 +113,23 @@ namespace Orleans
         public virtual Task OnDeactivateAsync()
         {
             return Task.FromResult(true);
+        }
+
+        /// <summary>
+        /// Registers a timer to send periodic callbacks to this grain.
+        /// </summary>
+        /// <param name="asyncCallback">Callback</param>
+        /// <param name="state">State</param>
+        /// <param name="dueTime">Timeout</param>
+        /// <param name="period">Period</param>
+        /// <returns>IDisposable</returns>
+        protected virtual IDisposable RegisterTimer(Func<object, Task> asyncCallback,
+            object state, TimeSpan dueTime, TimeSpan period)
+        {
+            MachineId timer = ActorModel.Runtime.CreateMachine(typeof(TimerMachine),
+                new TimerMachine.InitEvent(ActorModel.Runtime.GetCurrentMachine(),
+                asyncCallback, state));
+            return new TimerCancellationSource(ActorModel.Runtime.GetCurrentMachine(), timer);
         }
 
         #endregion
