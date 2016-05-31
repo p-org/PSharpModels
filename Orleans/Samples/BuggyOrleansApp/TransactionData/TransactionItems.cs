@@ -3,7 +3,7 @@
 namespace BuggyOrleansApp
 {
     //[Serializable]
-    public class TransactionItems
+    public class TransactionItems : ICloneable
     {
         public string name;
 
@@ -15,6 +15,11 @@ namespace BuggyOrleansApp
         public TransactionItems(string name)
         {
             this.name = name;
+        }
+
+        object ICloneable.Clone()
+        {
+            return new TransactionItems(this.name);
         }
     }
 }

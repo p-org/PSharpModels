@@ -36,7 +36,9 @@ namespace Microsoft.PSharp.Actors.Bridge
             for (int idx = 0; idx < payload.Length; idx++)
             {
                 Type type = payload[idx].GetType();
-                if (type.IsPrimitive || type.IsEnum || type.Equals(typeof(string)))
+
+                if (!ActorModel.Configuration.PerformSerialization ||
+                    type.IsPrimitive || type.IsEnum || type.Equals(typeof(string)))
                 {
                     serializedPayload[idx] = payload[idx];
                 }
@@ -45,14 +47,14 @@ namespace Microsoft.PSharp.Actors.Bridge
                 //    MemoryStream stream = new MemoryStream();
                 //    BinaryFormatter bf = new BinaryFormatter();
                 //    bf.Serialize(stream, payload[idx]);
-                    
+
                 //    stream.Seek(0, SeekOrigin.Begin);
                 //    serializedPayload[idx] = bf.Deserialize(stream);
                 //}
-                //else if (type.GetInterfaces().Any(val => val == typeof(ICloneable)))
-                //{
-                //    serializedPayload[idx] = ((ICloneable)payload[idx]).Clone();
-                //}
+                else if (type.GetInterfaces().Any(val => val == typeof(ICloneable)))
+                {
+                    serializedPayload[idx] = ((ICloneable)payload[idx]).Clone();
+                }
                 else
                 {
                     try

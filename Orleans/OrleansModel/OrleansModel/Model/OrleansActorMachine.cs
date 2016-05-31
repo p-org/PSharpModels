@@ -26,27 +26,30 @@ namespace OrleansModel
     /// </summary>
     public class OrleansActorMachine : ActorMachine
     {
-        protected override void Initialize(InitEvent initEvent)
+        protected override void InitializeState()
         {
-            var genericTypes = initEvent.ActorType.BaseType.GetGenericArguments();
+            var genericTypes = base.WrappedActorType.BaseType.GetGenericArguments();
             if (genericTypes.Length == 1)
             {
                 var grainStateType = Type.GetType($"OrleansModel.GrainState`1[{genericTypes[0]}]");
                 Console.WriteLine(grainStateType);
                 var grainState = Activator.CreateInstance(grainStateType);
-                FieldInfo field = initEvent.ClassInstance.GetType().GetField("GrainState",
+                FieldInfo field = base.WrappedActorInstance.GetType().GetField("GrainState",
                     BindingFlags.Public | BindingFlags.Instance);
                 if (field != null)
                 {
-                    field.SetValue(initEvent.ClassInstance, grainState);
+                    field.SetValue(base.WrappedActorInstance, grainState);
                 }
 
-                ((IStatefulGrain)initEvent.ClassInstance).SetStorage(new InMemoryStorage());
+                ((IStatefulGrain)base.WrappedActorInstance).SetStorage(new InMemoryStorage());
             }
-            
+        }
+
+        protected override void Activate()
+        {
             MethodInfo mo = typeof(Grain).GetMethod("OnActivateAsync",
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            mo.Invoke(initEvent.ClassInstance, new object[] { });
+            mo.Invoke(base.WrappedActorInstance, new object[] { });
         }
     }
 }

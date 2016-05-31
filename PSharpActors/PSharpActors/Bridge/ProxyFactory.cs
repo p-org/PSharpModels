@@ -117,7 +117,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
 
             SyntaxTree syntaxTree = this.CreateProxySyntaxTree(interfaceType, actorType, actorMachineType);
-            //Console.WriteLine(syntaxTree);
+            Console.WriteLine(syntaxTree);
 
             var context = CompilationContext.Create().LoadSolution(syntaxTree.ToString(), references, "cs");
             var compilation = context.GetSolution().Projects.First().GetCompilationAsync().Result;
@@ -294,26 +294,6 @@ namespace Microsoft.PSharp.Actors.Bridge
                                 SyntaxFactory.IdentifierName(actorMachineType.FullName))))
                         })));
 
-            ExpressionStatementSyntax createMachine = SyntaxFactory.ExpressionStatement(
-                SyntaxFactory.AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName("Id")),
-                SyntaxFactory.InvocationExpression(SyntaxFactory.MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                     SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                      SyntaxFactory.IdentifierName("ActorModel"),
-                     SyntaxFactory.IdentifierName("Runtime")),
-                    SyntaxFactory.IdentifierName("CreateMachine")),
-                    SyntaxFactory.ArgumentList(
-                        SyntaxFactory.SeparatedList(
-                            new List<ArgumentSyntax>
-                            {
-                                SyntaxFactory.Argument(SyntaxFactory.IdentifierName("machineType")),
-                                SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(
-                                    SyntaxKind.StringLiteralExpression,
-                                    SyntaxFactory.Literal(actorType.FullName)))
-                            })))));
-
             string eventType = actorMachineType.FullName + "." + typeof(ActorMachine.InitEvent).Name;
             string eventName = "initEvent";
 
@@ -332,10 +312,29 @@ namespace Microsoft.PSharp.Actors.Bridge
             LocalDeclarationStatementSyntax eventDecl = this.CreateEventDeclaration(
                 eventType, eventName, arguments);
 
-            ExpressionStatementSyntax sendExpr = this.CreateSendEventExpression("Id", eventName);
+            ExpressionStatementSyntax createMachine = SyntaxFactory.ExpressionStatement(
+                SyntaxFactory.AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName("Id")),
+                SyntaxFactory.InvocationExpression(SyntaxFactory.MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                     SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                      SyntaxFactory.IdentifierName("ActorModel"),
+                     SyntaxFactory.IdentifierName("Runtime")),
+                    SyntaxFactory.IdentifierName("CreateMachine")),
+                    SyntaxFactory.ArgumentList(
+                        SyntaxFactory.SeparatedList(
+                            new List<ArgumentSyntax>
+                            {
+                                SyntaxFactory.Argument(SyntaxFactory.IdentifierName("machineType")),
+                                SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(
+                                    SyntaxKind.StringLiteralExpression,
+                                    SyntaxFactory.Literal(actorType.FullName))),
+                                SyntaxFactory.Argument(SyntaxFactory.IdentifierName(eventName))
+                            })))));
 
             BlockSyntax body = SyntaxFactory.Block(targetConstruction,
-                machineTypeDecl, createMachine, eventDecl, sendExpr);
+                machineTypeDecl, eventDecl, createMachine);
             constructor = constructor.WithBody(body);
 
             return constructor;

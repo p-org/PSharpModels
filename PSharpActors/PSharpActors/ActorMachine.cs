@@ -13,10 +13,7 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-
-using Microsoft.PSharp.Actors.Bridge;
 
 namespace Microsoft.PSharp.Actors
 {
@@ -78,62 +75,152 @@ namespace Microsoft.PSharp.Actors
         }
 
         #endregion
-        MachineId executorMachine;
+
         #region fields
 
         /// <summary>
-        /// Map from task ids to result tasks.
+        /// The wrapped actor instance.
         /// </summary>
-        IDictionary<int, object> ResultTaskMap;
+        protected object WrappedActorInstance;
+
+        /// <summary>
+        /// The wrapped actor type.
+        /// </summary>
+        protected Type WrappedActorType;
+
+        /// <summary>
+        /// Machine for executing actor operations.
+        /// </summary>
+        private MachineId executorMachine;
+
+        /// <summary>
+        /// Event that was buffered while the actor was inactive.
+        /// It should be handled as soon as the actor becomes
+        /// active.
+        /// </summary>
+        private ActorEvent EventToHandleOnActive;
+
+        /// <summary>
+        /// Checks if the actor machine is active.
+        /// </summary>
+        internal bool IsActive;
 
         #endregion
 
         #region states
 
         [Start]
-        [OnEventDoAction(typeof(InitEvent), nameof(OnInitEvent))]
-        [OnEventDoAction(typeof(ActorEvent), nameof(OnActorEvent))]
+        [OnEntry(nameof(InitOnEntry))]
         private class Init : MachineState { }
+
+        [OnEntry(nameof(ActiveOnEntry))]
+        [OnEventDoAction(typeof(ActorEvent), nameof(OnActorEvent))]
+        [OnEventDoAction(typeof(Default), nameof(HandleDefaultAction))]
+        private class Active : MachineState { }
+
+        [OnEntry(nameof(InactiveOnEntry))]
+        [OnEventDoAction(typeof(ActorEvent), nameof(BufferEventAndActivate))]
+        private class Inactive : MachineState { }
 
         #endregion
 
         #region actions
 
-        private void OnInitEvent()
+        private void InitOnEntry()
         {
             var initEvent = this.ReceivedEvent as InitEvent;
 
+            this.WrappedActorInstance = initEvent.ClassInstance;
+            this.WrappedActorType = initEvent.ActorType;
+
+            executorMachine = CreateMachine(typeof(ActorExecutorMachine),
+                initEvent.ActorType.FullName);
+
             try
             {
-                this.Initialize(initEvent);
-                executorMachine = CreateMachine(typeof(ActorExecutorMachine),
-                    initEvent.ActorType.FullName);
+                this.InitializeState();
             }
-            catch(TargetInvocationException ex)
+            catch (TargetInvocationException ex)
             {
                 throw new ActorModelException(ex.ToString());
-            }       
+            }
+            
+            this.Goto(typeof(Active));
         }
 
-        protected abstract void Initialize(InitEvent initEvent);
+        private void ActiveOnEntry()
+        {
+            try
+            {
+                this.Activate();
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw new ActorModelException(ex.ToString());
+            }
+
+            this.IsActive = true;
+            
+            if (this.EventToHandleOnActive != null)
+            {
+                var eventToHandle = this.EventToHandleOnActive;
+                this.EventToHandleOnActive = null;
+                this.Raise(eventToHandle);
+            }
+        }
+
+        private void InactiveOnEntry()
+        {
+            this.IsActive = false;
+        }
 
         private void OnActorEvent()
         {
             var e = (this.ReceivedEvent as ActorEvent);
 
-            //For non-FIFO
-            if (Random())               
+            //For non-FIFO order.
+            if (ActorModel.Configuration.DisableFirstInFirstOutOrder && Random())               
             {
-                //For multiple sends
-                if(Random())
-                    Send(executorMachine, e);
-                Send(executorMachine, e);
+                Send(this.Id, e);
             }
             else
             {
-                Send(Id, e);
+                // If FIFO order is disabled and multiple sends are enabled,
+                // send nondeterministically a duplicate event to itself.
+                if (ActorModel.Configuration.DisableFirstInFirstOutOrder &&
+                    ActorModel.Configuration.DoMultipleSends && Random())
+                {
+                    Send(this.Id, e);
+                }
+                // Otherwise, if only multiple sends are enabled, send
+                // nondeterministically a duplicate event to the executor.
+                else if (ActorModel.Configuration.DoMultipleSends && Random())
+                {
+                    Send(executorMachine, e);
+                }
+
+                Send(executorMachine, e);
             }
         }
+
+        private void HandleDefaultAction()
+        {
+            // Deactivate the actor nondeterministically.
+            if (ActorModel.Configuration.DoLifetimeManagement && this.Random())
+            {
+                this.Goto(typeof(Inactive));
+            }
+        }
+
+        private void BufferEventAndActivate()
+        {
+            this.EventToHandleOnActive = this.ReceivedEvent as ActorEvent;
+            this.Goto(typeof(Active));
+        }
+
+        protected abstract void InitializeState();
+
+        protected abstract void Activate();
 
         #endregion
     }

@@ -34,6 +34,14 @@ namespace Microsoft.PSharp.Actors
         /// </summary>
         public static PSharpRuntime Runtime { get; private set; }
 
+        /// <summary>
+        /// The configuration.
+        /// </summary>
+        internal static Configuration Configuration { get; private set; }
+
+        /// <summary>
+        /// Set of cleanup actions to perform in each iteration.
+        /// </summary>
         private static ISet<Action> CleanUpActions;
 
         #endregion
@@ -45,6 +53,8 @@ namespace Microsoft.PSharp.Actors
         /// </summary>
         static ActorModel()
         {
+            ActorModel.Configuration = Configuration.Default();
+
             var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             foreach (string file in Directory.GetFiles(path, "*_PSharpProxy.dll"))
             {
@@ -59,10 +69,20 @@ namespace Microsoft.PSharp.Actors
         #region methods
 
         /// <summary>
+        /// Configures the P# actor model with the specified configuration.
+        /// </summary>
+        /// <param name="config">Configuration</param>
+        public static void Configure(Configuration config)
+        {
+            ActorModel.Configuration = config;
+        }
+
+        /// <summary>
         /// Starts executing the specified action using the
         /// specified P# runtime.
         /// </summary>
         /// <param name="runtime">PSharpRuntime</param>
+        /// <param name="action">Action</param>
         public static void Start(PSharpRuntime runtime, Action action)
         {
             if (runtime == null)

@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActorExecutorMachine.cs" />
+    <Compile Include="Configuration.cs" />
     <Compile Include="ActorRootMachine.cs" />
     <Compile Include="ActorModel.cs" />
     <Compile Include="ActorMachine.cs" />
