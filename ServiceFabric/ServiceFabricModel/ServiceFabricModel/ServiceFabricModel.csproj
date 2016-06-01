@@ -79,6 +79,7 @@
     <Compile Include="IActor.cs" />
     <Compile Include="IActorProxy.cs" />
     <Compile Include="IActorStateManager.cs" />
+    <Compile Include="IActorTimer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

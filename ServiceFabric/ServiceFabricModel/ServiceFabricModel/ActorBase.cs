@@ -12,6 +12,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using Microsoft.PSharp;
+using Microsoft.PSharp.Actors;
 using System;
 using System.Threading.Tasks;
 
@@ -130,7 +132,13 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         //
         // Returns:
         //     Returns IActorTimer object.
-        //protected IActorTimer RegisterTimer(Func<object, Task> asyncCallback, object state, TimeSpan dueTime, TimeSpan period);
+        protected IActorTimer RegisterTimer(Func<object, Task> asyncCallback, object state, TimeSpan dueTime, TimeSpan period)
+        {
+            MachineId timer = ActorModel.Runtime.CreateMachine(typeof(TimerMachine),
+                new TimerMachine.InitEvent(ActorModel.Runtime.GetCurrentMachine(),
+                asyncCallback, state));
+            return new IActorTimer(dueTime, period, ActorModel.Runtime.GetCurrentMachine(), timer);
+        }
         //
         // Summary:
         //     Unregisters the specified reminder with actor.
@@ -147,7 +155,10 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         //     When the specified reminder is not registered with actor.
         //[AsyncStateMachine(typeof(< UnregisterReminderAsync > d__0))]
         //[DebuggerStepThrough]
-        //protected Task UnregisterReminderAsync(IActorReminder reminder);
+        //protected Task UnregisterReminderAsync(IActorReminder reminder)
+        //{
+        //    throw new NotImplementedException();
+        //}
         //
         // Summary:
         //     Unregisters a Timer previously set on this actor.
@@ -155,6 +166,9 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         // Parameters:
         //   timer:
         //     IActorTimer representing timer that needs to be unregistered..
-        //protected void UnregisterTimer(IActorTimer timer);
+        protected void UnregisterTimer(IActorTimer timer)
+        {
+            timer.Dispose();
+        }
     }
 }

@@ -34,7 +34,7 @@ namespace Microsoft.PSharp.Actors
             this.Timer = timer;
         }
 
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             ActorModel.Assert(ActorModel.Runtime.GetCurrentMachine().Equals(this.Actor),
                 $"The timer can only be disposed by its owner, which is {this.Actor}." +
