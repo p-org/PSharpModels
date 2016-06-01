@@ -7,7 +7,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
     //
     // Summary:
     //     Represents Timer set on an Actor
-    public class IActorTimer : TimerCancellationSource
+    public interface IActorTimer 
     {
         //
         // Summary:
@@ -17,12 +17,5 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         // Summary:
         //     Periodic time when timer will be invoked.
         TimeSpan Period { get; }
-
-        public IActorTimer(TimeSpan dueTime, TimeSpan period, MachineId actor, MachineId timer)
-            :base(actor, timer)
-        {
-            this.DueTime = dueTime;
-            this.Period = period;
-        }
     }
 }

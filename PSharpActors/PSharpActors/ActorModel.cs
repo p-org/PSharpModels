@@ -47,7 +47,7 @@ namespace Microsoft.PSharp.Actors
         /// <summary>
         /// Map from actors to sets of registered reminders.
         /// </summary>
-        internal static IDictionary<MachineId, ISet<MachineId>> RegisteredReminders;
+        internal static IDictionary<MachineId, ISet<ReminderCancellationSource>> RegisteredReminders;
 
         /// <summary>
         /// Set of cleanup actions to perform in each iteration.
@@ -66,7 +66,7 @@ namespace Microsoft.PSharp.Actors
             ActorModel.Configuration = Configuration.Default();
 
             ActorModel.RegisteredTimers = new Dictionary<MachineId, ISet<MachineId>>();
-            ActorModel.RegisteredReminders = new Dictionary<MachineId, ISet<MachineId>>();
+            ActorModel.RegisteredReminders = new Dictionary<MachineId, ISet<ReminderCancellationSource>>();
 
             var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             foreach (string file in Directory.GetFiles(path, "*_PSharpProxy.dll"))
@@ -137,6 +137,22 @@ namespace Microsoft.PSharp.Actors
         public static void Assert(bool predicate, string s, params object[] args)
         {
             ActorModel.Runtime.Assert(predicate, s, args);
+        }
+
+        /// <summary>
+        /// Returns all reminder cancellation sources
+        /// associated with the registered reminders
+        /// for the specified P# machine id.
+        /// </summary>
+        /// <returns>ReminderCancellationSources</returns>
+        public static ISet<ReminderCancellationSource> GetReminders(MachineId mid)
+        {
+            if (!ActorModel.RegisteredReminders.ContainsKey(mid))
+            {
+                return new HashSet<ReminderCancellationSource>();
+            }
+
+            return ActorModel.RegisteredReminders[mid];
         }
 
         /// <summary>

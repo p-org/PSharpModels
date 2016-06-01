@@ -13,10 +13,12 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.PSharp;
 using Microsoft.PSharp.Actors;
+using Microsoft.PSharp.Actors.Bridge;
 
 using Orleans.Core;
 using Orleans.Runtime;
@@ -126,10 +128,40 @@ namespace Orleans
         protected virtual IDisposable RegisterTimer(Func<object, Task> asyncCallback,
             object state, TimeSpan dueTime, TimeSpan period)
         {
-            MachineId timer = ActorModel.Runtime.CreateMachine(typeof(TimerMachine),
+            MachineId timerMachine = ActorModel.Runtime.CreateMachine(typeof(TimerMachine),
                 new TimerMachine.InitEvent(ActorModel.Runtime.GetCurrentMachine(),
                 asyncCallback, state));
-            return new TimerCancellationSource(ActorModel.Runtime.GetCurrentMachine(), timer);
+            return new TimerCancellationSource(ActorModel.Runtime.GetCurrentMachine(), timerMachine);
+        }
+
+        /// <summary>
+        /// Registers a reminder to send periodic callbacks to this grain.
+        /// </summary>
+        /// <param name="reminderName">Name</param>
+        /// <param name="dueTime">Timeout</param>
+        /// <param name="period">Period</param>
+        /// <returns>Task<IGrainReminder></returns>
+        protected virtual Task<IGrainReminder> RegisterOrUpdateReminder(string reminderName,
+            TimeSpan dueTime, TimeSpan period)
+        {
+            var task = new ActorCompletionTask<IGrainReminder>();
+            var actorCompletionMachine = task.ActorCompletionMachine;
+
+            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
+            var reminder = reminders.SingleOrDefault(val => ((GrainReminder)val).ReminderName.Equals(reminderName));
+            if (reminder != null)
+            {
+                ActorModel.Runtime.SendEvent(actorCompletionMachine,
+                    new ActorCompletionMachine.SetResultRequest(reminder));
+            }
+            else
+            {
+                ActorModel.Runtime.CreateMachine(typeof(GrainReminderMachine), reminderName,
+                    new ReminderMachine.InitEvent(ActorModel.Runtime.GetCurrentMachine(),
+                    actorCompletionMachine, reminderName, null));
+            }
+            
+            return task;
         }
 
         #endregion

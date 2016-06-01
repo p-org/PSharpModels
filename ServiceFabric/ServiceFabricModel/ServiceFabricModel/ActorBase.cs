@@ -137,7 +137,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
             MachineId timer = ActorModel.Runtime.CreateMachine(typeof(TimerMachine),
                 new TimerMachine.InitEvent(ActorModel.Runtime.GetCurrentMachine(),
                 asyncCallback, state));
-            return new IActorTimer(dueTime, period, ActorModel.Runtime.GetCurrentMachine(), timer);
+            return new ActorTimer(dueTime, period, ActorModel.Runtime.GetCurrentMachine(), timer);
         }
         //
         // Summary:
@@ -168,7 +168,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         //     IActorTimer representing timer that needs to be unregistered..
         protected void UnregisterTimer(IActorTimer timer)
         {
-            timer.Dispose();
+            ((ActorTimer)timer).Dispose();
         }
     }
 }

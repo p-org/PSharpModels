@@ -97,7 +97,7 @@ namespace Microsoft.PSharp.Actors
         /// It should be handled as soon as the actor becomes
         /// active.
         /// </summary>
-        private ActorEvent EventToHandleOnActive;
+        private Event BufferedEvent;
 
         /// <summary>
         /// Checks if the actor machine is active.
@@ -110,17 +110,19 @@ namespace Microsoft.PSharp.Actors
 
         [Start]
         [OnEntry(nameof(InitOnEntry))]
-        [DeferEvents(typeof(TimerMachine.TimeoutEvent))]
+        [DeferEvents(typeof(TimerMachine.TimeoutEvent), typeof(ReminderMachine.RemindEvent))]
         private class Init : MachineState { }
 
         [OnEntry(nameof(ActiveOnEntry))]
         [OnEventDoAction(typeof(ActorEvent), nameof(OnActorEvent))]
         [OnEventDoAction(typeof(TimerMachine.TimeoutEvent), nameof(HandleTimeout))]
+        [OnEventDoAction(typeof(ReminderMachine.RemindEvent), nameof(HandleReminder))]
         [OnEventDoAction(typeof(Default), nameof(HandleDefaultAction))]
         private class Active : MachineState { }
 
         [OnEntry(nameof(InactiveOnEntry))]
         [OnEventDoAction(typeof(ActorEvent), nameof(BufferEventAndActivate))]
+        [OnEventDoAction(typeof(ReminderMachine.RemindEvent), nameof(BufferEventAndActivate))]
         [IgnoreEvents(typeof(TimerMachine.TimeoutEvent))]
         private class Inactive : MachineState { }
 
@@ -160,10 +162,10 @@ namespace Microsoft.PSharp.Actors
 
             this.IsActive = true;
             
-            if (this.EventToHandleOnActive != null)
+            if (this.BufferedEvent != null)
             {
-                var eventToHandle = this.EventToHandleOnActive;
-                this.EventToHandleOnActive = null;
+                var eventToHandle = BufferedEvent;
+                this.BufferedEvent = null;
                 this.Raise(eventToHandle);
             }
         }
@@ -247,6 +249,21 @@ namespace Microsoft.PSharp.Actors
             }
         }
 
+        private void HandleReminder()
+        {
+            var cancellationSource = (this.ReceivedEvent as ReminderMachine.RemindEvent).CancellationSource;
+            var reminderName = (this.ReceivedEvent as ReminderMachine.RemindEvent).ReminderName;
+            var callbackState = (this.ReceivedEvent as ReminderMachine.RemindEvent).CallbackState;
+
+            if (ActorModel.RegisteredReminders.ContainsKey(this.Id) &&
+                ActorModel.RegisteredReminders[this.Id].Contains(cancellationSource))
+            {
+                ActorModel.Runtime.Log($"<ActorModelLog> Machine '{this.Id.Name}' is " +
+                    $"handling timeout from reminder '{cancellationSource.Reminder.Name}'.");
+                this.InvokeReminder(reminderName, callbackState);
+            }
+        }
+
         private void HandleDefaultAction()
         {
             // Deactivate the actor nondeterministically.
@@ -258,7 +275,7 @@ namespace Microsoft.PSharp.Actors
 
         private void BufferEventAndActivate()
         {
-            this.EventToHandleOnActive = this.ReceivedEvent as ActorEvent;
+            this.BufferedEvent = this.ReceivedEvent;
             this.Goto(typeof(Active));
         }
 
@@ -267,6 +284,8 @@ namespace Microsoft.PSharp.Actors
         protected abstract void Activate();
 
         protected abstract void Deactivate();
+
+        protected abstract void InvokeReminder(string reminderName, object callbackState);
 
         #endregion
     }

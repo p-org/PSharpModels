@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="TimerMachine.cs">
+// <copyright file="ReminderMachine.cs">
 //      Copyright (c) Microsoft Corporation. All rights reserved.
 // 
 //      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -12,61 +12,66 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+
+using Microsoft.PSharp.Actors.Bridge;
 
 namespace Microsoft.PSharp.Actors
 {
     /// <summary>
-    /// A P# actor timer machine.
+    /// An abstract P# actor reminder machine.
     /// </summary>
-    public class TimerMachine : Machine
+    public abstract class ReminderMachine : Machine
     {
         #region events
 
         /// <summary>
-        /// The timer initialization event.
+        /// The reminder initialization event.
         /// </summary>
         public class InitEvent : Event
         {
             public MachineId Target;
-            public Func<object, Task> Callback;
+            public MachineId ActorCompletionMachine;
+            public string ReminderName;
             public object CallbackState;
 
             /// <summary>
             /// Constructor.
             /// </summary>
             /// <param name="target">MachineId</param>
-            /// <param name="callback">Callback</param>
+            /// <param name="actorCompletionMachine">MachineId</param>
+            /// <param name="reminderName">string</param>
             /// <param name="callbackState">State</param>
-            public InitEvent(MachineId target, Func<object, Task> callback, object callbackState)
+            public InitEvent(MachineId target, MachineId actorCompletionMachine,
+                string reminderName, object callbackState)
             {
                 this.Target = target;
-                this.Callback = callback;
+                this.ActorCompletionMachine = actorCompletionMachine;
+                this.ReminderName = reminderName;
                 this.CallbackState = callbackState;
             }
         }
 
         /// <summary>
-        /// The timeout event.
+        /// The remind event.
         /// </summary>
-        public class TimeoutEvent : Event
+        public class RemindEvent : Event
         {
-            public MachineId Timer;
-            public Func<object, Task> Callback;
+            public ReminderCancellationSource CancellationSource;
+            public string ReminderName;
             public object CallbackState;
 
             /// <summary>
             /// Constructor.
             /// </summary>
-            /// <param name="timer">MachineId</param>
-            /// <param name="callback">Callback</param>
+            /// <param name="cancellationSource">ReminderCancellationSource</param>
+            /// <param name="reminderName">string</param>
             /// <param name="callbackState">State</param>
-            public TimeoutEvent(MachineId timer, Func<object, Task> callback, object callbackState)
+            public RemindEvent(ReminderCancellationSource cancellationSource,
+                string reminderName, object callbackState)
             {
-                this.Timer = timer;
-                this.Callback = callback;
+                this.CancellationSource = cancellationSource;
+                this.ReminderName = reminderName;
                 this.CallbackState = callbackState;
             }
         }
@@ -75,9 +80,11 @@ namespace Microsoft.PSharp.Actors
 
         #region fields
 
-        private MachineId Target;
+        protected MachineId Target;
 
-        private Func<object, Task> Callback;
+        private ReminderCancellationSource CancellationSource;
+
+        protected string ReminderName;
 
         private object CallbackState;
 
@@ -99,15 +106,21 @@ namespace Microsoft.PSharp.Actors
         private void InitOnEntry()
         {
             this.Target = (this.ReceivedEvent as InitEvent).Target;
-            this.Callback = (this.ReceivedEvent as InitEvent).Callback;
+            this.ReminderName = (this.ReceivedEvent as InitEvent).ReminderName;
             this.CallbackState = (this.ReceivedEvent as InitEvent).CallbackState;
 
-            if (!ActorModel.RegisteredTimers.ContainsKey(this.Target))
+            if (!ActorModel.RegisteredReminders.ContainsKey(this.Target))
             {
-                ActorModel.RegisteredTimers.Add(this.Target, new HashSet<MachineId>());
+                ActorModel.RegisteredReminders.Add(this.Target,
+                    new HashSet<ReminderCancellationSource>());
             }
-            
-            ActorModel.RegisteredTimers[this.Target].Add(this.Id);
+
+            var cancellationSource = this.CreateReminderCancellationSource();
+            ActorModel.RegisteredReminders[this.Target].Add(
+                cancellationSource as ReminderCancellationSource);
+
+            this.Send((this.ReceivedEvent as InitEvent).ActorCompletionMachine,
+                new ActorCompletionMachine.SetResultRequest(cancellationSource));
 
             this.Goto(typeof(Active));
         }
@@ -116,9 +129,12 @@ namespace Microsoft.PSharp.Actors
         {
             if (this.Random())
             {
-                this.Send(this.Target, new TimeoutEvent(this.Id, this.Callback, this.CallbackState));
+                this.Send(this.Target, new RemindEvent(this.CancellationSource,
+                    this.ReminderName, this.CallbackState));
             }
         }
+
+        protected abstract object CreateReminderCancellationSource();
 
         #endregion
     }

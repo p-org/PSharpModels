@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="TimerCancellationSource.cs">
+// <copyright file="ReminderCancellationSource.cs">
 //      Copyright (c) Microsoft Corporation. All rights reserved.
 // 
 //      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -17,32 +17,32 @@ using System;
 namespace Microsoft.PSharp.Actors
 {
     /// <summary>
-    /// A time cancellation source.
+    /// A reminder cancellation source.
     /// </summary>
-    public class TimerCancellationSource : IDisposable
+    public class ReminderCancellationSource : IDisposable
     {
         private MachineId Actor;
-        public MachineId Timer { get; private set; }
+        public MachineId Reminder { get; private set; }
 
-        public TimerCancellationSource(MachineId actor, MachineId timer)
+        public ReminderCancellationSource(MachineId actor, MachineId reminder)
         {
             this.Actor = actor;
-            this.Timer = timer;
+            this.Reminder = reminder;
         }
 
         public void Dispose()
         {
             ActorModel.Assert(ActorModel.Runtime.GetCurrentMachine().Equals(this.Actor),
-                $"The timer can only be disposed by its owner, which is {this.Actor}." +
+                $"The reminder can only be disposed by its owner, which is {this.Actor}." +
                 $"Instead, {ActorModel.Runtime.GetCurrentMachine()} called Dispose().");
 
-            if (ActorModel.RegisteredTimers.ContainsKey(this.Actor) &&
-                ActorModel.RegisteredTimers[this.Actor].Contains(this.Timer))
+            if (ActorModel.RegisteredReminders.ContainsKey(this.Actor) &&
+                ActorModel.RegisteredReminders[this.Actor].Contains(this))
             {
                 ActorModel.Runtime.Log($"<ActorModelLog> Machine '{this.Actor.Name}' is " +
-                    $"unregistering timer '{this.Timer.Name}'.");
-                ActorModel.RegisteredTimers[this.Actor].Remove(this.Timer);
-                ActorModel.Runtime.SendEvent(this.Timer, new Halt());
+                    $"unregistering reminder '{this.Reminder.Name}'.");
+                ActorModel.RegisteredReminders[this.Actor].Remove(this);
+                ActorModel.Runtime.SendEvent(this.Reminder, new Halt());
             }
         }
     }

@@ -64,6 +64,8 @@
   <ItemGroup>
     <Compile Include="Configuration\ClusterConfiguration.cs" />
     <Compile Include="Core\Grain.cs" />
+    <Compile Include="Core\Interfaces\IRemindable.cs" />
+    <Compile Include="Model\GrainReminder.cs" />
     <Compile Include="Model\GrainState.cs" />
     <Compile Include="Core\Interfaces\IGrainIdentity.cs" />
     <Compile Include="Core\Interfaces\IGrainState.cs" />
@@ -82,11 +84,14 @@
     <Compile Include="Core\Interfaces\IGrainWithGuidKey.cs" />
     <Compile Include="Core\Interfaces\IGrainFactory.cs" />
     <Compile Include="Core\GrainClient.cs" />
+    <Compile Include="Model\GrainReminderMachine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Configuration\ClientConfiguration.cs" />
     <Compile Include="Providers\IProvider.cs" />
     <Compile Include="Model\GrainRuntime.cs" />
     <Compile Include="Runtime\IGrainRuntime.cs" />
+    <Compile Include="Runtime\IGrainReminder.cs" />
+    <Compile Include="Runtime\TickStatus.cs" />
     <Compile Include="Runtime\Silo.cs" />
     <Compile Include="Runtime\SiloHost.cs" />
     <Compile Include="Storage\MemoryStorage.cs" />

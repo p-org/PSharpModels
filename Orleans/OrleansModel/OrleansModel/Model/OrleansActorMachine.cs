@@ -18,6 +18,7 @@ using System.Reflection;
 using Microsoft.PSharp.Actors;
 
 using Orleans;
+using Orleans.Runtime;
 
 namespace OrleansModel
 {
@@ -57,6 +58,11 @@ namespace OrleansModel
             MethodInfo mo = typeof(Grain).GetMethod("OnDeactivateAsync",
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             mo.Invoke(base.WrappedActorInstance, new object[] { });
+        }
+
+        protected override void InvokeReminder(string reminderName, object callbackState)
+        {
+            ((IRemindable)base.WrappedActorInstance).ReceiveReminder(reminderName, new TickStatus());
         }
     }
 }

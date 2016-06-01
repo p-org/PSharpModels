@@ -72,6 +72,7 @@
     <Compile Include="ActorBase.cs" />
     <Compile Include="ActorExtensions.cs" />
     <Compile Include="ActorId.cs" />
+    <Compile Include="ActorTimer.cs" />
     <Compile Include="FabricActorMachine.cs" />
     <Compile Include="ActorProxy.cs" />
     <Compile Include="ActorStateManager.cs" />
