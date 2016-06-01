@@ -12,10 +12,12 @@ namespace BuggyOrleansApp
     /// </summary>
     public class Sender : Grain, ISender, IRemindable
     {
+
         public override Task OnActivateAsync()
         {
-            this.RegisterOrUpdateReminder("helloReminder", TimeSpan.FromSeconds(2),
+            var reminderTask = this.RegisterOrUpdateReminder("helloReminder", TimeSpan.FromSeconds(2),
                 TimeSpan.FromSeconds(0));
+            ActorModel.Wait(reminderTask);
             //this.Timer = this.RegisterTimer(HandleTimeout, null,
             //    TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0));
             return base.OnActivateAsync();

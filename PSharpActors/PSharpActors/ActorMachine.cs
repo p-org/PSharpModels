@@ -143,7 +143,7 @@ namespace Microsoft.PSharp.Actors
             }
             catch (TargetInvocationException ex)
             {
-                throw new ActorModelException(ex.ToString());
+                throw ex;
             }
             
             this.Goto(typeof(Active));
@@ -151,15 +151,7 @@ namespace Microsoft.PSharp.Actors
 
         private void ActiveOnEntry()
         {
-            try
-            {
-                this.Activate();
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw new ActorModelException(ex.ToString());
-            }
-
+            this.Activate();
             this.IsActive = true;
             
             if (this.BufferedEvent != null)
@@ -177,15 +169,7 @@ namespace Microsoft.PSharp.Actors
                 ActorModel.RegisteredTimers[this.Id].Clear();
             }
 
-            try
-            {
-                this.Deactivate();
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw new ActorModelException(ex.ToString());
-            }
-
+            this.Deactivate();
             this.IsActive = false;
         }
 
@@ -221,17 +205,9 @@ namespace Microsoft.PSharp.Actors
         private void ExecuteActorAction(ActorEvent actorEvent)
         {
             ActorModel.Runtime.Log($"<ActorModelLog> Machine '{base.Id.Name}' is invoking '{actorEvent.MethodName}'.");
-
             MethodInfo mi = actorEvent.MethodClass.GetMethod(actorEvent.MethodName);
-            try
-            {
-                object result = mi.Invoke(actorEvent.ClassInstance, actorEvent.Parameters);
-                this.Send(actorEvent.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(result));
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw new ActorModelException(ex.ToString());
-            }
+            object result = mi.Invoke(actorEvent.ClassInstance, actorEvent.Parameters);
+            this.Send(actorEvent.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(result));
         }
 
         private void HandleTimeout()

@@ -32,7 +32,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             {
                 MachineId mid = ActorModel.Runtime.GetCurrentMachine();
 
-                ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid}' is " +
+                ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' is " +
                     "waiting to receive a result.");
 
                 ActorModel.Runtime.SendEvent(this.ActorCompletionMachine,
@@ -61,7 +61,7 @@ namespace Microsoft.PSharp.Actors.Bridge
         {
             MachineId mid = ActorModel.Runtime.GetCurrentMachine();
 
-            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid}' is " +
+            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' is " +
                     "waiting for a task to complete.");
 
             ActorModel.Runtime.SendEvent(this.ActorCompletionMachine,
