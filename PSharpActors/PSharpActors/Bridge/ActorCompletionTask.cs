@@ -73,15 +73,12 @@ namespace Microsoft.PSharp.Actors.Bridge
             ActorModel.Runtime.SendEvent(this.ActorCompletionMachine,
                 new ActorCompletionMachine.GetResultRequest(mid));
 
-            //Event resultEvent = ActorModel.Runtime.Receive(mid,
-            //    typeof(ActorCompletionMachine.GetResultResponse));
-
             Event resultEvent = null;
             bool receivedResult = false;
             while (!receivedResult)
             {
-                resultEvent = ActorModel.Runtime.Receive(mid,
-                    Tuple.Create<Type, Func<Event, bool>>(typeof(ActorCompletionMachine.GetResultResponse), (Event e) =>
+                resultEvent = ActorModel.Runtime.Receive(
+                    Tuple.Create<Type, Func<Event, bool>, Action<Event>>(typeof(ActorCompletionMachine.GetResultResponse), (Event e) =>
                     {
                         if ((e as ActorCompletionMachine.GetResultResponse).Source.Equals(this.ActorCompletionMachine))
                         {
@@ -89,9 +86,23 @@ namespace Microsoft.PSharp.Actors.Bridge
                         }
 
                         return false;
-                    }));
+                    },
+                    (Event e) => { receivedResult = true; }),
+                    Tuple.Create<Type, Func<Event, bool>, Action<Event>>(typeof(ActorMachine.ActorEvent), (Event e) =>
+                    {
+                        if (ActorModel.Configuration.AllowReentrantCalls &&
+                            ActorModel.ReentrantActors.ContainsKey(mid) &&
+                            ActorModel.ReentrantActors[mid])
+                        {
+                            return true;
+                        }
 
-                receivedResult = true;
+                        return false;
+                    },
+                    (Event e) => {
+                        var handler = ActorModel.GetReentrantActionHandler(mid);
+                        handler(e as ActorMachine.ActorEvent);
+                    }));
             }
 
             return resultEvent;

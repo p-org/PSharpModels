@@ -64,5 +64,11 @@ namespace OrleansModel
         {
             ((IRemindable)base.WrappedActorInstance).ReceiveReminder(reminderName, new TickStatus());
         }
+
+        protected override bool IsReentrant()
+        {
+            // TODO
+            return true;
+        }
     }
 }

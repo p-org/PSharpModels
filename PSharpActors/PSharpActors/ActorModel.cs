@@ -13,6 +13,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -40,6 +41,17 @@ namespace Microsoft.PSharp.Actors
         internal static Configuration Configuration { get; private set; }
 
         /// <summary>
+        /// Map from actors to their reentrant action handlers.
+        /// </summary>
+        private static IDictionary<MachineId, Action<ActorMachine.ActorEvent>> ReentrantActionHandlers;
+
+        /// <summary>
+        /// Map of actors to a boolean specifying if the actor is
+        /// reentrant or not.
+        /// </summary>
+        internal static IDictionary<MachineId, bool> ReentrantActors;
+
+        /// <summary>
         /// Map from actors to sets of registered timers.
         /// </summary>
         internal static IDictionary<MachineId, ISet<MachineId>> RegisteredTimers;
@@ -65,8 +77,10 @@ namespace Microsoft.PSharp.Actors
         {
             ActorModel.Configuration = Configuration.Default();
 
-            ActorModel.RegisteredTimers = new Dictionary<MachineId, ISet<MachineId>>();
-            ActorModel.RegisteredReminders = new Dictionary<MachineId, ISet<ReminderCancellationSource>>();
+            ActorModel.ReentrantActors = new ConcurrentDictionary<MachineId, bool>();
+            ActorModel.ReentrantActionHandlers = new ConcurrentDictionary<MachineId, Action<ActorMachine.ActorEvent>>();
+            ActorModel.RegisteredTimers = new ConcurrentDictionary<MachineId, ISet<MachineId>>();
+            ActorModel.RegisteredReminders = new ConcurrentDictionary<MachineId, ISet<ReminderCancellationSource>>();
 
             var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             foreach (string file in Directory.GetFiles(path, "*_PSharpProxy.dll"))
@@ -110,6 +124,8 @@ namespace Microsoft.PSharp.Actors
             }
 
             ActorModel.Runtime = runtime;
+            ActorModel.ReentrantActionHandlers.Clear();
+            ActorModel.ReentrantActors.Clear();
             ActorModel.RegisteredTimers.Clear();
             ActorModel.RegisteredReminders.Clear();
 
@@ -153,6 +169,30 @@ namespace Microsoft.PSharp.Actors
             }
 
             return ActorModel.RegisteredReminders[mid];
+        }
+
+        /// <summary>
+        /// Registers the reentrant action handler for the
+        /// specified actor machine.
+        /// </summary>
+        /// <param name="machine">MachineId</param>
+        /// <param name="handler">Action</param>
+        internal static void RegisterActionHandler(MachineId machine,
+            Action<ActorMachine.ActorEvent> handler)
+        {
+            ActorModel.ReentrantActionHandlers.Add(machine, handler);
+        }
+
+        /// <summary>
+        /// Returns an actor handler, for handling reentrant events.
+        /// </summary>
+        /// <param name="machine">MachineId</param>
+        /// <returns>Action</returns>
+        internal static Action<ActorMachine.ActorEvent> GetReentrantActionHandler(MachineId machine)
+        {
+            ActorModel.Assert(ActorModel.ReentrantActors[machine],
+                $"{machine.Name} is not reentrant.");
+            return ActorModel.ReentrantActionHandlers[machine];
         }
 
         /// <summary>

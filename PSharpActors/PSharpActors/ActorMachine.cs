@@ -140,6 +140,15 @@ namespace Microsoft.PSharp.Actors
             try
             {
                 this.Initialize();
+                if (this.IsReentrant())
+                {
+                    ActorModel.ReentrantActors.Add(this.Id, true);
+                    ActorModel.RegisterActionHandler(this.Id, HandleActorEvent);
+                }
+                else
+                {
+                    ActorModel.ReentrantActors.Add(this.Id, false);
+                }
             }
             catch (TargetInvocationException ex)
             {
@@ -176,26 +185,24 @@ namespace Microsoft.PSharp.Actors
         private void OnActorEvent()
         {
             var actorEvent = (this.ReceivedEvent as ActorEvent);
+            this.HandleActorEvent(actorEvent);
+        }
 
+        private void HandleActorEvent(ActorEvent actorEvent)
+        {
             //For non-FIFO order.
-            if (!ActorModel.Configuration.UseFirstInFirstOutOrder && Random())               
+            if (ActorModel.Configuration.AllowOutOfOrderSends && Random())
             {
                 Send(this.Id, actorEvent);
             }
             else
             {
-                // If FIFO order is disabled and multiple sends are enabled,
-                // send nondeterministically a duplicate event to itself.
-                if (!ActorModel.Configuration.UseFirstInFirstOutOrder &&
-                    ActorModel.Configuration.DoMultipleSends && Random())
+                // If multiple sends are enabled, send nondeterministically
+                // a duplicate event to itself.
+                if (ActorModel.Configuration.DoMultipleSends && Random())
                 {
+                    // TODO: serialize
                     Send(this.Id, actorEvent);
-                }
-                // Otherwise, if only multiple sends are enabled, send
-                // nondeterministically a duplicate event to the executor.
-                else if (ActorModel.Configuration.DoMultipleSends && Random())
-                {
-                    this.ExecuteActorAction(actorEvent);
                 }
 
                 this.ExecuteActorAction(actorEvent);
@@ -256,12 +263,14 @@ namespace Microsoft.PSharp.Actors
         }
 
         protected abstract void Initialize();
-
+        
         protected abstract void Activate();
 
         protected abstract void Deactivate();
 
         protected abstract void InvokeReminder(string reminderName, object callbackState);
+
+        protected abstract bool IsReentrant();
 
         #endregion
     }

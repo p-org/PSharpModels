@@ -28,8 +28,10 @@ namespace Microsoft.PSharp.Actors
     public class Configuration
     {
         #region fields
+
+        internal bool AllowReentrantCalls;
         
-        internal bool UseFirstInFirstOutOrder;
+        internal bool AllowOutOfOrderSends;
 
         internal bool DoMultipleSends;
 
@@ -46,9 +48,10 @@ namespace Microsoft.PSharp.Actors
         /// </summary>
         private Configuration()
         {
+            this.AllowReentrantCalls = true;
             this.PerformSerialization = true;
             this.DoMultipleSends = true;
-            this.UseFirstInFirstOutOrder = false;
+            this.AllowOutOfOrderSends = true;
             this.DoLifetimeManagement = true;
         }
 
@@ -69,19 +72,21 @@ namespace Microsoft.PSharp.Actors
         /// Creates a P# actor model configuration
         /// with the specified options.
         /// </summary>
+        /// <param name="allowReentrantCalls">Allow reentrant calls</param>
         /// <param name="performSerialization">Perform serialization</param>
         /// <param name="doMultipleSends">Do multiple sends</param>
-        /// <param name="useFirstInFirstOutOrder">Use FIFO order</param>
+        /// <param name="allowOutOfOrderSends">Allow out of order sends</param>
         /// <param name="doLifetimeManagement">Do lifetime management</param>
         /// <returns>Configuration</returns>
-        public static Configuration Create(bool performSerialization, bool doMultipleSends,
-            bool useFirstInFirstOutOrder, bool doLifetimeManagement)
+        public static Configuration Create(bool allowReentrantCalls, bool performSerialization, bool doMultipleSends,
+            bool allowOutOfOrderSends, bool doLifetimeManagement)
         {
             var config = Configuration.Default();
 
+            config.AllowReentrantCalls = allowReentrantCalls;
             config.PerformSerialization = performSerialization;
             config.DoMultipleSends = doMultipleSends;
-            config.UseFirstInFirstOutOrder = useFirstInFirstOutOrder;
+            config.AllowOutOfOrderSends = allowOutOfOrderSends;
             config.DoLifetimeManagement = doLifetimeManagement;
 
             return config;
