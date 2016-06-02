@@ -186,10 +186,11 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             NamespaceDeclarationSyntax namespaceDecl = SyntaxFactory.NamespaceDeclaration(
                 SyntaxFactory.IdentifierName(actorType.Namespace + "_PSharpProxy"));
-
+            
             var usingDirectives = new List<UsingDirectiveSyntax>
             {
-                SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.PSharp.Actors"))
+                SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.PSharp.Actors")),
+                SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("Microsoft.PSharp.Actors.Utilities"))
             };
 
             foreach (var requiredNamespace in this.RequiredNamespaces)
@@ -230,11 +231,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             ConstructorDeclarationSyntax constructor = this.CreateProxyConstructor(
                 interfaceType, actorType, actorMachineType);
 
-            var baseTypes = new HashSet<BaseTypeSyntax>
-            {
-                SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(typeof(BaseActorProxy).FullName))
-            };
-
+            var baseTypes = new HashSet<BaseTypeSyntax>();
             var methodDecls = new List<MethodDeclarationSyntax>();
 
             foreach (var type in actorType.GetInterfaces().Where(
@@ -393,7 +390,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                             SyntaxFactory.EqualsValueClause(SyntaxFactory.InvocationExpression(
                                 SyntaxFactory.MemberAccessExpression(
                                     SyntaxKind.SimpleMemberAccessExpression,
-                                    SyntaxFactory.ThisExpression(),
+                                    SyntaxFactory.IdentifierName("Serialization"),
                                     SyntaxFactory.IdentifierName("Serialize")),
                                 SyntaxFactory.ArgumentList(
                                     SyntaxFactory.SeparatedList(payloadArguments)))))

@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="BaseActorProxy.cs">
+// <copyright file="Serialization.cs">
 //      Copyright (c) Microsoft Corporation. All rights reserved.
 // 
 //      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -13,24 +13,22 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Microsoft.PSharp.Actors.Bridge
+namespace Microsoft.PSharp.Actors.Utilities
 {
     /// <summary>
-    /// The base actor proxy.
+    /// Serialization utilities.
     /// </summary>
-    public abstract class BaseActorProxy : Machine
+    public static class Serialization
     {
         /// <summary>
         /// Serializes the specified payload.
         /// </summary>
         /// <param name="payload">Payload</param>
         /// <returns>Serialized payload</returns>
-        protected object[] Serialize(params object[] payload)
+        public static object[] Serialize(params object[] payload)
         {
             object[] serializedPayload = new object[payload.Length];
             for (int idx = 0; idx < payload.Length; idx++)
@@ -59,7 +57,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                 {
                     try
                     {
-                        serializedPayload[idx] = this.DeepClone(payload[idx]);
+                        serializedPayload[idx] = Serialization.DeepClone(payload[idx]);
                     }
                     catch
                     {
@@ -76,7 +74,7 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// </summary>
         /// <param name="obj">object</param>
         /// <returns>object</returns>
-        private object DeepClone(object obj)
+        private static object DeepClone(object obj)
         {
             Type objectType = obj.GetType();
             var instance = Activator.CreateInstance(objectType);
@@ -104,7 +102,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                         }
                         else
                         {
-                            propertyInfo.SetValue(instance, this.DeepClone(propertyValue), null);
+                            propertyInfo.SetValue(instance, Serialization.DeepClone(propertyValue), null);
                         }
                     }
                 }

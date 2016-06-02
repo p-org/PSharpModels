@@ -13,11 +13,10 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
 
 using Microsoft.PSharp.Actors.Bridge;
+using Microsoft.PSharp.Actors.Utilities;
 
 namespace Microsoft.PSharp.Actors
 {
@@ -201,8 +200,10 @@ namespace Microsoft.PSharp.Actors
                 // a duplicate event to itself.
                 if (ActorModel.Configuration.DoMultipleSends && Random())
                 {
-                    // TODO: serialize
-                    Send(this.Id, actorEvent);
+                    var duplicateEvent = new ActorEvent(actorEvent.MethodClass, actorEvent.MethodName,
+                        actorEvent.ClassInstance, Serialization.Serialize(actorEvent.Parameters),
+                        actorEvent.ActorCompletionMachine);
+                    Send(this.Id, duplicateEvent);
                 }
 
                 this.ExecuteActorAction(actorEvent);

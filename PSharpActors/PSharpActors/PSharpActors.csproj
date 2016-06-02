@@ -72,11 +72,11 @@
     <Compile Include="ActorRootMachine.cs" />
     <Compile Include="ActorModel.cs" />
     <Compile Include="ActorMachine.cs" />
-    <Compile Include="Bridge\BaseActorProxy.cs" />
     <Compile Include="Bridge\ActorCompletionMachine.cs" />
     <Compile Include="Bridge\ActorCompletionTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Bridge\ProxyFactory.cs" />
+    <Compile Include="Utilities\Serialization.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PSharpActors.snk" />
