@@ -15,6 +15,7 @@
 using System.Collections.Generic;
 
 using Microsoft.PSharp.Actors.Bridge;
+using System;
 
 namespace Microsoft.PSharp.Actors
 {
@@ -115,12 +116,12 @@ namespace Microsoft.PSharp.Actors
                     new HashSet<ReminderCancellationSource>());
             }
 
-            var cancellationSource = this.CreateReminderCancellationSource();
+            this.CancellationSource = (ReminderCancellationSource)this.CreateReminderCancellationSource();
             ActorModel.RegisteredReminders[this.Target].Add(
-                cancellationSource as ReminderCancellationSource);
+                this.CancellationSource as ReminderCancellationSource);
 
             this.Send((this.ReceivedEvent as InitEvent).ActorCompletionMachine,
-                new ActorCompletionMachine.SetResultRequest(cancellationSource));
+                new ActorCompletionMachine.SetResultRequest(this.CancellationSource));
 
             this.Goto(typeof(Active));
         }

@@ -14,7 +14,7 @@ namespace OrleansBuggyExample
         public Task DoSomething(int numberOfItems)
         {
             this.RegisterTimer(HandleTimeout, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0));
-
+            
             Console.WriteLine("DoSomething");
             var receiver = GrainClient.GrainFactory.GetGrain<IReceiver>(1);
             receiver.StartTransaction();

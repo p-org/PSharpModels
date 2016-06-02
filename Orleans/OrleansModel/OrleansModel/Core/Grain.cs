@@ -24,6 +24,7 @@ using Orleans.Core;
 using Orleans.Runtime;
 
 using OrleansModel;
+using System.Collections.Generic;
 
 namespace Orleans
 {
@@ -164,9 +165,63 @@ namespace Orleans
             return task;
         }
 
+        /// <summary>
+        /// Unregisters a reminder.
+        /// </summary>
+        /// <param name="reminder">IGrainReminder</param>
+        /// <returns>Task</returns>
+        protected virtual Task UnregisterReminder(IGrainReminder reminder)
+        {
+            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
+            var reminderToBeRemoved = reminders.SingleOrDefault(val
+                => ((GrainReminder)val).ReminderName.Equals(reminder.ReminderName));
+            if (reminderToBeRemoved != null)
+            {
+                reminderToBeRemoved.Dispose();
+            }
+
+            return Task.FromResult(true);
+        }
+
+        /// <summary>
+        /// Returns the reminder which has the name "reminderName"
+        /// </summary>
+        /// <param name="reminderName">string</param>
+        /// <returns>Task<IGrainReminder></returns>
+        protected virtual Task<IGrainReminder> GetReminder(string reminderName)
+        {
+            var task = new ActorCompletionTask<IGrainReminder>();
+            var actorCompletionMachine = task.ActorCompletionMachine;
+
+            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
+            var reminder = reminders.SingleOrDefault(val => ((GrainReminder)val).ReminderName.Equals(reminderName));
+            ActorModel.Runtime.SendEvent(actorCompletionMachine,
+                new ActorCompletionMachine.SetResultRequest(reminder));
+            return task;
+        }
+
+        /// <summary>
+        /// Returns all the reminders of this grain
+        /// </summary>
+        /// <returns>Task<List<IGrainReminder>></returns>
+        protected virtual Task<List<IGrainReminder>> GetReminders()
+        {
+            var task = new ActorCompletionTask<List<IGrainReminder>>();
+            var actorCompletionMachine = task.ActorCompletionMachine;
+
+            var reminders = new List<IGrainReminder>();
+            foreach (var reminder in ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine()))
+            {
+                reminders.Add(reminder as IGrainReminder);
+            }
+
+            ActorModel.Runtime.SendEvent(actorCompletionMachine,
+                new ActorCompletionMachine.SetResultRequest(reminders));
+            return task;
+        }
         #endregion
     }
-
+    
     /// <summary>
     /// The abstract base class for all grain classes
     /// with declared persistent state.

@@ -230,7 +230,7 @@ namespace Microsoft.PSharp.Actors
             var cancellationSource = (this.ReceivedEvent as ReminderMachine.RemindEvent).CancellationSource;
             var reminderName = (this.ReceivedEvent as ReminderMachine.RemindEvent).ReminderName;
             var callbackState = (this.ReceivedEvent as ReminderMachine.RemindEvent).CallbackState;
-
+            
             if (ActorModel.RegisteredReminders.ContainsKey(this.Id) &&
                 ActorModel.RegisteredReminders[this.Id].Contains(cancellationSource))
             {

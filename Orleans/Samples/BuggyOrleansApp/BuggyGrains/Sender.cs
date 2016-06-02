@@ -12,12 +12,13 @@ namespace BuggyOrleansApp
     /// </summary>
     public class Sender : Grain, ISender, IRemindable
     {
-
+        IGrainReminder myReminder;
         public override Task OnActivateAsync()
         {
             var reminderTask = this.RegisterOrUpdateReminder("helloReminder", TimeSpan.FromSeconds(2),
                 TimeSpan.FromSeconds(0));
-            ActorModel.Wait(reminderTask);
+            //ActorModel.Wait(reminderTask);
+            myReminder = ActorModel.GetResult<IGrainReminder>(reminderTask);
             //this.Timer = this.RegisterTimer(HandleTimeout, null,
             //    TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0));
             return base.OnActivateAsync();
@@ -37,7 +38,11 @@ namespace BuggyOrleansApp
 
         Task IRemindable.ReceiveReminder(string reminderName, TickStatus status)
         {
-            Console.WriteLine("HELLO FROM REMINDER");
+            UnregisterReminder(myReminder);
+            var getReminderTask = GetReminders();
+            var result = ActorModel.GetResult(getReminderTask);
+            ActorModel.Assert(result.Count == 0, "number of reminders: " + result.Count);
+            
             return Task.FromResult(true);
         }
 

@@ -39,8 +39,16 @@ namespace Microsoft.PSharp.Actors.Bridge
                     new ActorCompletionMachine.GetResultRequest(mid));
                 Event resultEvent = ActorModel.Runtime.Receive(mid,
                     typeof(ActorCompletionMachine.GetResultResponse));
-                return (TResult)((Task<TResult>)(resultEvent as
-                    ActorCompletionMachine.GetResultResponse).Result).Result;
+
+                var result = (resultEvent as ActorCompletionMachine.GetResultResponse).Result;
+                if (result is Task<TResult>)
+                {
+                    return (TResult)((Task<TResult>)result).Result;
+                }
+                else
+                {
+                    return (TResult)result;
+                }
             }
         }
 
