@@ -27,7 +27,10 @@ namespace BuggyOrleansApp
         public Task DoSomething(int numberOfItems)
         {
             var receiver = GrainClient.GrainFactory.GetGrain<IReceiver>(1);
-            receiver.StartTransaction();
+
+            var task = receiver.StartTransaction();
+            ActorModel.Wait(task);
+
             for (int i = 0; i < numberOfItems; i++)
                 receiver.TransmitData(new TransactionItems("xyz" + i));
 
@@ -46,6 +49,10 @@ namespace BuggyOrleansApp
             return Task.FromResult(true);
         }
 
+        public Task Dummy()
+        {
+            return Task.FromResult(true);
+        }
         //public Task HandleTimeout(object args)
         //{
         //    Console.WriteLine("Timed out");

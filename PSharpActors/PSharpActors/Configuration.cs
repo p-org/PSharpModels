@@ -29,7 +29,7 @@ namespace Microsoft.PSharp.Actors
     {
         #region fields
         
-        internal bool DisableFirstInFirstOutOrder;
+        internal bool UseFirstInFirstOutOrder;
 
         internal bool DoMultipleSends;
 
@@ -48,7 +48,7 @@ namespace Microsoft.PSharp.Actors
         {
             this.PerformSerialization = true;
             this.DoMultipleSends = true;
-            this.DisableFirstInFirstOutOrder = true;
+            this.UseFirstInFirstOutOrder = false;
             this.DoLifetimeManagement = true;
         }
 
@@ -69,19 +69,19 @@ namespace Microsoft.PSharp.Actors
         /// Creates a P# actor model configuration
         /// with the specified options.
         /// </summary>
-        /// <param name="performSerialization"></param>
-        /// <param name="doMultipleSends"></param>
-        /// <param name="disableFirstInFirstOutOrder"></param>
-        /// <param name="doLifetimeManagement"></param>
+        /// <param name="performSerialization">Perform serialization</param>
+        /// <param name="doMultipleSends">Do multiple sends</param>
+        /// <param name="useFirstInFirstOutOrder">Use FIFO order</param>
+        /// <param name="doLifetimeManagement">Do lifetime management</param>
         /// <returns>Configuration</returns>
         public static Configuration Create(bool performSerialization, bool doMultipleSends,
-            bool disableFirstInFirstOutOrder, bool doLifetimeManagement)
+            bool useFirstInFirstOutOrder, bool doLifetimeManagement)
         {
             var config = Configuration.Default();
 
             config.PerformSerialization = performSerialization;
             config.DoMultipleSends = doMultipleSends;
-            config.DisableFirstInFirstOutOrder = disableFirstInFirstOutOrder;
+            config.UseFirstInFirstOutOrder = useFirstInFirstOutOrder;
             config.DoLifetimeManagement = doLifetimeManagement;
 
             return config;

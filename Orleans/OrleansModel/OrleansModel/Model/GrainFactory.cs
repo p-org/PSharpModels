@@ -89,9 +89,6 @@ namespace OrleansModel
                 throw new InvalidOperationException("The P# runtime has not been initialized.");
             }
 
-            ActorModel.Runtime.Log("<ActorModelLog> Creating grain of type '{0}'.",
-                typeof(TGrainInterface).FullName);
-
             GrainClient.ProxyFactory.RegisterIgnoredInterfaceTypes(new HashSet<Type>
             {
                 typeof(IAddressable),
@@ -102,10 +99,12 @@ namespace OrleansModel
             Type proxyType = GrainClient.ProxyFactory.GetProxyType(typeof(TGrainInterface),
                 typeof(OrleansActorMachine), assemblyPath);
             var grain = (TGrainInterface)Activator.CreateInstance(proxyType);
-            GrainId newId = new GrainId(primaryKey, (IGrain)grain);
 
-            ActorModel.Runtime.Log("<ActorModelLog> Created grain of type '{0}'.",
-                typeof(TGrainInterface).FullName);
+            GrainId newId = new GrainId(primaryKey, (IGrain)grain);
+            GrainClient.GrainIds.Add(newId);
+
+            ActorModel.Runtime.Log("<ActorModelLog> Created grain of type " +
+                $"'{typeof(TGrainInterface).FullName}' with id '{newId.PrimaryKey}'.");
 
             return grain;
         }

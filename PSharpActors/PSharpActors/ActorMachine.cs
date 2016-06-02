@@ -178,7 +178,7 @@ namespace Microsoft.PSharp.Actors
             var actorEvent = (this.ReceivedEvent as ActorEvent);
 
             //For non-FIFO order.
-            if (ActorModel.Configuration.DisableFirstInFirstOutOrder && Random())               
+            if (!ActorModel.Configuration.UseFirstInFirstOutOrder && Random())               
             {
                 Send(this.Id, actorEvent);
             }
@@ -186,7 +186,7 @@ namespace Microsoft.PSharp.Actors
             {
                 // If FIFO order is disabled and multiple sends are enabled,
                 // send nondeterministically a duplicate event to itself.
-                if (ActorModel.Configuration.DisableFirstInFirstOutOrder &&
+                if (!ActorModel.Configuration.UseFirstInFirstOutOrder &&
                     ActorModel.Configuration.DoMultipleSends && Random())
                 {
                     Send(this.Id, actorEvent);

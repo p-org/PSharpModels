@@ -12,6 +12,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.PSharp.Actors.Bridge
@@ -30,15 +31,7 @@ namespace Microsoft.PSharp.Actors.Bridge
         {
             get
             {
-                MachineId mid = ActorModel.Runtime.GetCurrentMachine();
-
-                ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' is " +
-                    "waiting to receive a result.");
-
-                ActorModel.Runtime.SendEvent(this.ActorCompletionMachine,
-                    new ActorCompletionMachine.GetResultRequest(mid));
-                Event resultEvent = ActorModel.Runtime.Receive(mid,
-                    typeof(ActorCompletionMachine.GetResultResponse));
+                Event resultEvent = this.WaitOnEvent();
 
                 var result = (resultEvent as ActorCompletionMachine.GetResultResponse).Result;
                 if (result is Task<TResult>)
@@ -67,14 +60,41 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// </summary>
         public new void Wait()
         {
+            this.WaitOnEvent();
+        }
+
+        private Event WaitOnEvent()
+        {
             MachineId mid = ActorModel.Runtime.GetCurrentMachine();
 
             ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' is " +
-                    "waiting for a task to complete.");
+                "waiting to receive a result.");
 
             ActorModel.Runtime.SendEvent(this.ActorCompletionMachine,
                 new ActorCompletionMachine.GetResultRequest(mid));
-            ActorModel.Runtime.Receive(mid, typeof(ActorCompletionMachine.GetResultResponse));
+
+            //Event resultEvent = ActorModel.Runtime.Receive(mid,
+            //    typeof(ActorCompletionMachine.GetResultResponse));
+
+            Event resultEvent = null;
+            bool receivedResult = false;
+            while (!receivedResult)
+            {
+                resultEvent = ActorModel.Runtime.Receive(mid,
+                    Tuple.Create<Type, Func<Event, bool>>(typeof(ActorCompletionMachine.GetResultResponse), (Event e) =>
+                    {
+                        if ((e as ActorCompletionMachine.GetResultResponse).Source.Equals(this.ActorCompletionMachine))
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    }));
+
+                receivedResult = true;
+            }
+
+            return resultEvent;
         }
     }
 }

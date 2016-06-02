@@ -50,10 +50,12 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// </summary>
         public class GetResultResponse : Event
         {
+            public MachineId Source;
             public object Result;
 
-            public GetResultResponse(object result)
+            public GetResultResponse(MachineId source, object result)
             {
+                this.Source = source;
                 this.Result = result;
             }
         }
@@ -90,7 +92,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             this.Result = (this.ReceivedEvent as SetResultRequest).Result;
             if (this.Target != null)
             {
-                this.Send(this.Target, new GetResultResponse(this.Result));
+                this.Send(this.Target, new GetResultResponse(this.Id, this.Result));
                 this.Raise(new Halt());
             }
         }
@@ -103,7 +105,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             this.Target = (this.ReceivedEvent as GetResultRequest).Target;
             if (this.Result != null)
             {
-                this.Send(this.Target, new GetResultResponse(this.Result));
+                this.Send(this.Target, new GetResultResponse(this.Id, this.Result));
                 this.Raise(new Halt());
             }
         }
