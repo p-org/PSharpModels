@@ -13,16 +13,16 @@ namespace BuggyOrleansApp
     public class Sender : Grain, ISender, IRemindable
     {
         IGrainReminder myReminder;
-        public override Task OnActivateAsync()
-        {
-            var reminderTask = this.RegisterOrUpdateReminder("helloReminder", TimeSpan.FromSeconds(2),
-                TimeSpan.FromSeconds(0));
-            ActorModel.Wait(reminderTask);
-            myReminder = ActorModel.GetResult<IGrainReminder>(reminderTask);
-            ////this.Timer = this.RegisterTimer(HandleTimeout, null,
-            ////    TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0));
-            return base.OnActivateAsync();
-        }
+        //public override Task OnActivateAsync()
+        //{
+        //    var reminderTask = this.RegisterOrUpdateReminder("helloReminder", TimeSpan.FromSeconds(2),
+        //        TimeSpan.FromSeconds(0));
+        //    ActorModel.Wait(reminderTask);
+        //    myReminder = ActorModel.GetResult<IGrainReminder>(reminderTask);
+        //    ////this.Timer = this.RegisterTimer(HandleTimeout, null,
+        //    ////    TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0));
+        //    return base.OnActivateAsync();
+        //}
 
         public Task DoSomething(int numberOfItems)
         {
