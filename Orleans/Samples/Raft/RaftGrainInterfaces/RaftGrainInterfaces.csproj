@@ -7,8 +7,8 @@
     <ProjectGuid>{54F391EA-9952-4C74-A861-A22E335CFE48}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BasicOrleansApp</RootNamespace>
-    <AssemblyName>BasicGrainInterfaces</AssemblyName>
+    <RootNamespace>Raft</RootNamespace>
+    <AssemblyName>RaftGrainInterfaces</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -41,8 +41,8 @@
   <ItemGroup>
     <Compile Include="IClient.cs" />
     <Compile Include="IServer.cs" />
+    <Compile Include="IClusterManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\orleans.codegen.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -4,11 +4,11 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform>AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{54F391EA-9952-4C74-A861-A22E335CFE48}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{36359D1F-DE82-410D-987F-2F8E3119CCBD}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BasicOrleansApp</RootNamespace>
-    <AssemblyName>BasicGrainInterfaces</AssemblyName>
+    <RootNamespace>Raft</RootNamespace>
+    <AssemblyName>RaftHost</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -33,16 +33,45 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis">
+      <HintPath>..\..\..\..\PSharp\Binaries\Microsoft.CodeAnalysis.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp">
+      <HintPath>..\..\..\..\PSharp\Binaries\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
+      <HintPath>..\..\..\..\PSharpActors\Binaries\Microsoft.CodeAnalysis.CSharp.Workspaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.PSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c4566cf0a7f74012, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\PSharpActors\Binaries\Microsoft.PSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.PSharp.Actors, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5ab419457034fcfb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\PSharpActors\Binaries\Microsoft.PSharp.Actors.dll</HintPath>
+    </Reference>
     <Reference Include="OrleansModel">
       <HintPath>..\..\..\Binaries\OrleansModel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IClient.cs" />
-    <Compile Include="IServer.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="OrleansHostWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\orleans.codegen.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RaftGrainInterfaces\RaftGrainInterfaces.csproj">
+      <Project>{54f391ea-9952-4c74-a861-a22e335cfe48}</Project>
+      <Name>RaftGrainInterfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RaftGrains\RaftGrains.csproj">
+      <Project>{d567fa6d-132b-4de4-ae9f-70c0e087bc96}</Project>
+      <Name>RaftGrains</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
