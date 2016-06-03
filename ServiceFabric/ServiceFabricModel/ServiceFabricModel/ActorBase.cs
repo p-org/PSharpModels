@@ -14,7 +14,10 @@
 
 using Microsoft.PSharp;
 using Microsoft.PSharp.Actors;
+using Microsoft.PSharp.Actors.Bridge;
+using ServiceFabricModel;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.ServiceFabric.Actors.Runtime
@@ -112,7 +115,27 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         //     that represents the actor reminder that was registered.
         //[AsyncStateMachine(typeof(< RegisterReminderAsync > d__3))]
         //[DebuggerStepThrough]
-        //protected Task<IActorReminder> RegisterReminderAsync(string reminderName, byte[] state, TimeSpan dueTime, TimeSpan period);
+        protected Task<IActorReminder> RegisterReminderAsync(string reminderName, byte[] state, TimeSpan dueTime, TimeSpan period)
+        {
+            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
+            var reminder = reminders.SingleOrDefault(val => ((ActorReminder)val).Name.Equals(reminderName));
+
+            var task = new ActorCompletionTask<IActorReminder>();
+            var actorCompletionMachine = task.ActorCompletionMachine;
+            if (reminder != null)
+            {
+                ActorModel.Runtime.SendEvent(actorCompletionMachine,
+                    new ActorCompletionMachine.SetResultRequest(reminder));
+            }
+            else
+            {
+                ActorModel.Runtime.CreateMachine(typeof(ActorReminderMachine), reminderName,
+                    new ReminderMachine.InitEvent(ActorModel.Runtime.GetCurrentMachine(),
+                    actorCompletionMachine, reminderName, null));
+            }
+
+            return task;
+        }
         //
         // Summary:
         //     Registers a Timer for the actor.
@@ -139,6 +162,26 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
                 asyncCallback, state));
             return new ActorTimer(dueTime, period, ActorModel.Runtime.GetCurrentMachine(), timer);
         }
+
+        //
+        // Summary:
+        //     Gets the actor reminder with specified reminder name.
+        //
+        // Parameters:
+        //   reminderName:
+        //     Name of the reminder to get.
+        //
+        // Returns:
+        //     An Microsoft.ServiceFabric.Actors.Runtime.IActorReminder that represents an actor
+        //     reminder.
+        protected IActorReminder GetReminder(string reminderName)
+        {
+            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
+            var reminder = reminders.SingleOrDefault(val => ((ActorReminder)val).Name.Equals(reminderName));
+
+            return (IActorReminder)reminder;
+        }
+
         //
         // Summary:
         //     Unregisters the specified reminder with actor.
@@ -155,10 +198,22 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         //     When the specified reminder is not registered with actor.
         //[AsyncStateMachine(typeof(< UnregisterReminderAsync > d__0))]
         //[DebuggerStepThrough]
-        //protected Task UnregisterReminderAsync(IActorReminder reminder)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        protected Task UnregisterReminderAsync(IActorReminder reminder)
+        {
+            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
+            var reminderToBeRemoved = reminders.SingleOrDefault(val
+                => ((ActorReminder)val).Name.Equals(reminder.Name));
+            if (reminderToBeRemoved != null)
+            {
+                reminderToBeRemoved.Dispose();
+            }
+
+            var task = new ActorCompletionTask<object>();
+            var actorCompletionMachine = task.ActorCompletionMachine;
+            ActorModel.Runtime.SendEvent(actorCompletionMachine,
+                new ActorCompletionMachine.SetResultRequest(true));
+            return task;
+        }
         //
         // Summary:
         //     Unregisters a Timer previously set on this actor.

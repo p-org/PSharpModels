@@ -68,5 +68,16 @@ namespace ServiceFabricModel
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             mo.Invoke(base.WrappedActorInstance, new object[] { });
         }
+
+        protected override void InvokeReminder(string reminderName, object callbackState)
+        {
+            ((IRemindable)base.WrappedActorInstance).ReceiveReminderAsync(reminderName, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(3));
+        }
+
+        protected override bool IsReentrant()
+        {
+            // TODO
+            return true;
+        }
     }
 }

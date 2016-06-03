@@ -72,6 +72,8 @@
     <Compile Include="ActorBase.cs" />
     <Compile Include="ActorExtensions.cs" />
     <Compile Include="ActorId.cs" />
+    <Compile Include="ActorReminder.cs" />
+    <Compile Include="ActorReminderMachine.cs" />
     <Compile Include="ActorTimer.cs" />
     <Compile Include="FabricActorMachine.cs" />
     <Compile Include="ActorProxy.cs" />
@@ -79,8 +81,10 @@
     <Compile Include="ConditionalValue.cs" />
     <Compile Include="IActor.cs" />
     <Compile Include="IActorProxy.cs" />
+    <Compile Include="IActorReminder.cs" />
     <Compile Include="IActorStateManager.cs" />
     <Compile Include="IActorTimer.cs" />
+    <Compile Include="IRemindable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

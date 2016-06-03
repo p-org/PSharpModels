@@ -145,11 +145,11 @@ namespace Orleans
         protected virtual Task<IGrainReminder> RegisterOrUpdateReminder(string reminderName,
             TimeSpan dueTime, TimeSpan period)
         {
-            var task = new ActorCompletionTask<IGrainReminder>();
-            var actorCompletionMachine = task.ActorCompletionMachine;
-
             var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
             var reminder = reminders.SingleOrDefault(val => ((GrainReminder)val).ReminderName.Equals(reminderName));
+
+            var task = new ActorCompletionTask<IGrainReminder>();
+            var actorCompletionMachine = task.ActorCompletionMachine;
             if (reminder != null)
             {
                 ActorModel.Runtime.SendEvent(actorCompletionMachine,
@@ -180,7 +180,11 @@ namespace Orleans
                 reminderToBeRemoved.Dispose();
             }
 
-            return Task.FromResult(true);
+            var task = new ActorCompletionTask<object>();
+            var actorCompletionMachine = task.ActorCompletionMachine;
+            ActorModel.Runtime.SendEvent(actorCompletionMachine,
+                new ActorCompletionMachine.SetResultRequest(true));
+            return task;
         }
 
         /// <summary>
@@ -190,11 +194,11 @@ namespace Orleans
         /// <returns>Task<IGrainReminder></returns>
         protected virtual Task<IGrainReminder> GetReminder(string reminderName)
         {
-            var task = new ActorCompletionTask<IGrainReminder>();
-            var actorCompletionMachine = task.ActorCompletionMachine;
-
             var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
             var reminder = reminders.SingleOrDefault(val => ((GrainReminder)val).ReminderName.Equals(reminderName));
+
+            var task = new ActorCompletionTask<IGrainReminder>();
+            var actorCompletionMachine = task.ActorCompletionMachine;
             ActorModel.Runtime.SendEvent(actorCompletionMachine,
                 new ActorCompletionMachine.SetResultRequest(reminder));
             return task;
@@ -206,15 +210,14 @@ namespace Orleans
         /// <returns>Task<List<IGrainReminder>></returns>
         protected virtual Task<List<IGrainReminder>> GetReminders()
         {
-            var task = new ActorCompletionTask<List<IGrainReminder>>();
-            var actorCompletionMachine = task.ActorCompletionMachine;
-
             var reminders = new List<IGrainReminder>();
             foreach (var reminder in ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine()))
             {
                 reminders.Add(reminder as IGrainReminder);
             }
 
+            var task = new ActorCompletionTask<List<IGrainReminder>>();
+            var actorCompletionMachine = task.ActorCompletionMachine;
             ActorModel.Runtime.SendEvent(actorCompletionMachine,
                 new ActorCompletionMachine.SetResultRequest(reminders));
             return task;
