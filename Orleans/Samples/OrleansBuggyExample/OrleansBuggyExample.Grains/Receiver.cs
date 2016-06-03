@@ -27,6 +27,12 @@ namespace OrleansBuggyExample
 
         public Task StartTransaction()
         {
+            var sender = GrainClient.GrainFactory.GetGrain<ISender>(0);
+            Task t = sender.Dummy();
+            Console.WriteLine("Receiver waiting");
+            t.Wait();
+            Console.WriteLine("StartTransaction unblocked");
+
             this.State = 0;
             return this.WriteStateAsync();
         }

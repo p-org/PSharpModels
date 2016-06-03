@@ -68,6 +68,7 @@ namespace OrleansModel
         protected override bool IsReentrant()
         {
             var type = WrappedActorInstance.GetType();
+            Console.WriteLine(">>>>>> IS REENTRANT???" + (type.GetCustomAttributes(typeof(ReentrantAttribute), true).Length > 0));
             return type.GetCustomAttributes(typeof(ReentrantAttribute), true).Length > 0;
         }
     }

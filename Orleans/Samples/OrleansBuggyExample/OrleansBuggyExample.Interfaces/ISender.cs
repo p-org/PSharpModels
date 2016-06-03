@@ -9,5 +9,7 @@ namespace OrleansBuggyExample
 	public interface ISender : IGrainWithIntegerKey
     {
         Task DoSomething(int numberOfItems);
+
+        Task Dummy();
     }
 }

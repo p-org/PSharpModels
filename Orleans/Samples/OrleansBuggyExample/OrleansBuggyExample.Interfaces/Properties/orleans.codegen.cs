@@ -170,6 +170,8 @@ namespace OrleansBuggyExample
                     {
                         case 1847227850:
                             return "DoSomething";
+                        case -1376675763:
+                            return "Dummy";
                         default:
                             throw new global::System.NotImplementedException("interfaceId=" + -638123477 + ",methodId=" + @methodId);
                     }
@@ -182,6 +184,11 @@ namespace OrleansBuggyExample
         public global::System.Threading.Tasks.Task @DoSomething(global::System.Int32 @numberOfItems)
         {
             return base.@InvokeMethodAsync<global::System.Object>(1847227850, new global::System.Object[]{@numberOfItems});
+        }
+
+        public global::System.Threading.Tasks.Task @Dummy()
+        {
+            return base.@InvokeMethodAsync<global::System.Object>(-1376675763, null);
         }
     }
 
@@ -204,6 +211,8 @@ namespace OrleansBuggyExample
                         {
                             case 1847227850:
                                 return ((global::OrleansBuggyExample.ISender)@grain).@DoSomething((global::System.Int32)arguments[0]).@Box();
+                            case -1376675763:
+                                return ((global::OrleansBuggyExample.ISender)@grain).@Dummy().@Box();
                             default:
                                 throw new global::System.NotImplementedException("interfaceId=" + -638123477 + ",methodId=" + methodId);
                         }

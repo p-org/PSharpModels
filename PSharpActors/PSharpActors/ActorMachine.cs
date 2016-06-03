@@ -13,6 +13,8 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 using Microsoft.PSharp.Actors.Bridge;
@@ -58,6 +60,8 @@ namespace Microsoft.PSharp.Actors
             public object[] Parameters;
             public MachineId ActorCompletionMachine;
 
+            public List<MachineId> ExecutionContext;
+
             /// <summary>
             /// Constructor.
             /// </summary>
@@ -66,14 +70,28 @@ namespace Microsoft.PSharp.Actors
             /// <param name="classInstance">ClassInstance</param>
             /// <param name="parameters">Parameters</param>
             /// <param name="tcs">TaskCompletionSource</param>
+            /// <param name="incrementExecutionContext">Should increment the execution context</param>
             public ActorEvent(Type methodClass, string methodName, object classInstance,
-                object[] parameters, MachineId actorCompletionMachine)
+                object[] parameters, MachineId actorCompletionMachine, bool incrementExecutionContext = true)
             {
                 this.MethodClass = methodClass;
                 this.MethodName = methodName;
                 this.ClassInstance = classInstance;
                 this.Parameters = parameters;
                 this.ActorCompletionMachine = actorCompletionMachine;
+                this.ExecutionContext = new List<MachineId>();
+
+                if (incrementExecutionContext)
+                {
+                    MachineId id = ActorModel.Runtime.GetCurrentMachine();
+                    if (!ActorModel.ExecutionContext.ContainsKey(id))
+                    {
+                        ActorModel.ExecutionContext.Add(id, new List<MachineId>());
+                    }
+
+                    this.ExecutionContext = ActorModel.ExecutionContext[id].ToList();
+                    this.ExecutionContext.Add(id);
+                }
             }
         }
 
@@ -193,6 +211,7 @@ namespace Microsoft.PSharp.Actors
             if (ActorModel.Configuration.AllowOutOfOrderSends && Random())
             {
                 Send(this.Id, actorEvent);
+
             }
             else
             {
@@ -202,7 +221,7 @@ namespace Microsoft.PSharp.Actors
                 {
                     var duplicateEvent = new ActorEvent(actorEvent.MethodClass, actorEvent.MethodName,
                         actorEvent.ClassInstance, Serialization.Serialize(actorEvent.Parameters),
-                        actorEvent.ActorCompletionMachine);
+                        actorEvent.ActorCompletionMachine, false);
                     Send(this.Id, duplicateEvent);
                 }
 
@@ -212,9 +231,24 @@ namespace Microsoft.PSharp.Actors
 
         private void ExecuteActorAction(ActorEvent actorEvent)
         {
+            var id = ActorModel.Runtime.GetCurrentMachine();
+            if (!ActorModel.ExecutionContext.ContainsKey(id))
+            {
+                ActorModel.ExecutionContext.Add(id, new List<MachineId>());
+            }
+
+            ActorModel.ExecutionContext[id] = actorEvent.ExecutionContext.ToList();
+
+            Console.WriteLine("Number of machine IDs in the context for {0}: {1}", id, (actorEvent as ActorMachine.ActorEvent).ExecutionContext.Count);
+            foreach (var x in (actorEvent as ActorMachine.ActorEvent).ExecutionContext)
+            {
+                Console.WriteLine(" >> " + x.Name);
+            }
+
             ActorModel.Runtime.Log($"<ActorModelLog> Machine '{base.Id.Name}' is invoking '{actorEvent.MethodName}'.");
             MethodInfo mi = actorEvent.MethodClass.GetMethod(actorEvent.MethodName);
             object result = mi.Invoke(actorEvent.ClassInstance, actorEvent.Parameters);
+
             this.Send(actorEvent.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(result));
         }
 

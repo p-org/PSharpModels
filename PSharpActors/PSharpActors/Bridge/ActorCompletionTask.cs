@@ -90,6 +90,11 @@ namespace Microsoft.PSharp.Actors.Bridge
                     (Event e) => { receivedResult = true; }),
                     Tuple.Create<Type, Func<Event, bool>, Action<Event>>(typeof(ActorMachine.ActorEvent), (Event e) =>
                     {
+                        foreach (var x in (e as ActorMachine.ActorEvent).ExecutionContext)
+                        {
+                            Console.WriteLine(" >>>> " + x.Name);
+                        }
+
                         if (ActorModel.Configuration.AllowReentrantCalls &&
                             ActorModel.ReentrantActors.ContainsKey(mid) &&
                             ActorModel.ReentrantActors[mid])
@@ -97,11 +102,14 @@ namespace Microsoft.PSharp.Actors.Bridge
                             return true;
                         }
 
+                        ActorModel.Assert(!(e as ActorMachine.ActorEvent).ExecutionContext.Contains(mid),
+                            $"Deadlock detected. {mid.Name} is not reentrant.");
+
                         return false;
                     },
                     (Event e) => {
-                        var handler = ActorModel.GetReentrantActionHandler(mid);
-                        handler(e as ActorMachine.ActorEvent);
+                            var handler = ActorModel.GetReentrantActionHandler(mid);
+                            handler(e as ActorMachine.ActorEvent);
                     }));
             }
 

@@ -46,6 +46,11 @@ namespace Microsoft.PSharp.Actors
         private static IDictionary<MachineId, Action<ActorMachine.ActorEvent>> ReentrantActionHandlers;
 
         /// <summary>
+        /// Map from Machine ID to the latest calling context.
+        /// </summary>
+        internal static IDictionary<MachineId, List<MachineId>> ExecutionContext;
+
+        /// <summary>
         /// Map of actors to a boolean specifying if the actor is
         /// reentrant or not.
         /// </summary>
@@ -81,6 +86,7 @@ namespace Microsoft.PSharp.Actors
             ActorModel.ReentrantActionHandlers = new ConcurrentDictionary<MachineId, Action<ActorMachine.ActorEvent>>();
             ActorModel.RegisteredTimers = new ConcurrentDictionary<MachineId, ISet<MachineId>>();
             ActorModel.RegisteredReminders = new ConcurrentDictionary<MachineId, ISet<ReminderCancellationSource>>();
+            ActorModel.ExecutionContext = new ConcurrentDictionary<MachineId, List<MachineId>>();
 
             var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             foreach (string file in Directory.GetFiles(path, "*_PSharpProxy.dll"))
@@ -128,6 +134,7 @@ namespace Microsoft.PSharp.Actors
             ActorModel.ReentrantActors.Clear();
             ActorModel.RegisteredTimers.Clear();
             ActorModel.RegisteredReminders.Clear();
+            ActorModel.ExecutionContext.Clear();
 
             ActorModel.Runtime.CreateMachine(typeof(ActorRootMachine),
                 new ActorRootMachine.RunEvent(action));
