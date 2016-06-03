@@ -59,7 +59,7 @@ namespace Raft
         /// <summary>
         /// Candidate that received vote in current term (or null if none).
         /// </summary>
-        IServer VotedFor;
+        IServer VotedForCandidate;
 
         /// <summary>
         /// Log entries.
@@ -109,7 +109,7 @@ namespace Raft
             if (this.CurrentTerm == 0)
             {
                 this.Leader = null;
-                this.VotedFor = null;
+                this.VotedForCandidate = null;
 
                 this.Logs = new List<Log>();
 
@@ -136,17 +136,233 @@ namespace Raft
                 }
 
                 this.ClusterManager = GrainClient.GrainFactory.GetGrain<IClusterManager>(clusterId);
-
-                //this.ElectionTimer = this.CreateMachine(typeof(ElectionTimer));
-                //this.Send(this.ElectionTimer, new ElectionTimer.ConfigureEvent(this.Id));
-
-                //this.PeriodicTimer = this.CreateMachine(typeof(PeriodicTimer));
-                //this.Send(this.PeriodicTimer, new PeriodicTimer.ConfigureEvent(this.Id));
-
-                this.Role = Role.Follower;
+                
+                this.BecomeFollower();
             }
             
             return new Task(() => { });
+        }
+
+        private void BecomeFollower()
+        {
+            ActorModel.Log($"<RaftLog> Server {this.ServerId} became FOLLOWER.");
+            this.Role = Role.Follower;
+
+            this.Leader = null;
+            this.VotesReceived = 0;
+
+            if (this.ElectionTimer != null)
+            {
+                this.ElectionTimer.Dispose();
+            }
+
+            this.ElectionTimer = this.RegisterTimer(StartLeaderElection, null,
+                TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
+        }
+
+        private void BecomCandidate()
+        {
+            ActorModel.Log($"<RaftLog> Server {this.ServerId} became CANDIDATE.");
+            this.Role = Role.Candidate;
+
+            this.CurrentTerm++;
+            this.VotedForCandidate = GrainClient.GrainFactory.GetGrain<IServer>(this.ServerId);
+            this.VotesReceived = 1;
+
+            ActorModel.Log($"<RaftLog> Candidate {this.ServerId} | term {this.CurrentTerm} " +
+                $"| election votes {this.VotesReceived} | log {this.Logs.Count}.");
+
+            this.BroadcastVoteRequests();
+        }
+
+        private void BecomeLeader()
+        {
+            ActorModel.Log($"<RaftLog> Leader {this.ServerId} | term {this.CurrentTerm} " +
+                $"| election votes {this.VotesReceived} | log {this.Logs.Count}.");
+
+            this.VotesReceived = 0;
+            ActorModel.Assert(false);
+            //this.Monitor<SafetyMonitor>(new SafetyMonitor.NotifyLeaderElected(this.CurrentTerm));
+
+            this.ClusterManager.NotifyLeaderUpdate(this.ServerId, this.CurrentTerm);
+
+            var logIndex = this.Logs.Count;
+            var logTerm = this.GetLogTermForIndex(logIndex);
+
+            this.NextIndex.Clear();
+            this.MatchIndex.Clear();
+            foreach (var server in this.Servers)
+            {
+                if (server.Key == this.ServerId)
+                    continue;
+                this.NextIndex.Add(server.Value, logIndex + 1);
+                this.MatchIndex.Add(server.Value, 0);
+            }
+
+            foreach (var server in this.Servers)
+            {
+                if (server.Key == this.ServerId)
+                    continue;
+                //this.Send(this.Servers[idx], new AppendEntriesRequest(this.CurrentTerm, this.Id,
+                //    logIndex, logTerm, new List<Log>(), this.CommitIndex, null));
+            }
+        }
+
+        private void BroadcastVoteRequests()
+        {
+            // BUG: duplicate votes from same follower
+            //this.Send(this.PeriodicTimer, new PeriodicTimer.StartTimer());
+
+            foreach (var server in this.Servers)
+            {
+                if (server.Key == this.ServerId)
+                    continue;
+
+                var lastLogIndex = this.Logs.Count;
+                var lastLogTerm = this.GetLogTermForIndex(lastLogIndex);
+
+                ActorModel.Log($"<RaftLog> Server {this.ServerId} sending vote request " +
+                    $"to server {server.Key}.");
+                server.Value.VoteRequest(this.CurrentTerm, this.ServerId, lastLogIndex, lastLogTerm);
+            }
+        }
+
+        public Task VoteRequest(int term, int candidateId, int lastLogIndex, int lastLogTerm)
+        {
+            if (this.Role == Role.Follower)
+            {
+                if (term > this.CurrentTerm)
+                {
+                    this.CurrentTerm = term;
+                    this.VotedForCandidate = null;
+                }
+
+                this.ProcessVoteRequest(term, candidateId, lastLogIndex, lastLogTerm);
+            }
+            else if (this.Role == Role.Candidate)
+            {
+                if (term > this.CurrentTerm)
+                {
+                    this.CurrentTerm = term;
+                    this.VotedForCandidate = null;
+
+                    this.ProcessVoteRequest(term, candidateId, lastLogIndex, lastLogTerm);
+
+                    this.BecomeFollower();
+                }
+                else
+                {
+                    this.ProcessVoteRequest(term, candidateId, lastLogIndex, lastLogTerm);
+                }
+            }
+            else if (this.Role == Role.Leader)
+            {
+                if (term > this.CurrentTerm)
+                {
+                    this.CurrentTerm = term;
+                    this.VotedForCandidate = null;
+
+                    //this.RedirectLastClientRequestToClusterManager();
+                    this.ProcessVoteRequest(term, candidateId, lastLogIndex, lastLogTerm);
+
+                    this.BecomeFollower();
+                }
+                else
+                {
+                    this.ProcessVoteRequest(term, candidateId, lastLogIndex, lastLogTerm);
+                }
+            }
+
+            return new Task(() => { });
+        }
+
+        void ProcessVoteRequest(int term, int candidateId, int lastLogIndex, int lastLogTerm)
+        {
+            var candidate = GrainClient.GrainFactory.GetGrain<IServer>(candidateId);
+
+            if (term < this.CurrentTerm ||
+                (this.VotedForCandidate != null && this.VotedForCandidate != candidate) ||
+                this.Logs.Count > lastLogIndex ||
+                this.GetLogTermForIndex(this.Logs.Count) > lastLogTerm)
+            {
+                ActorModel.Log($"<RaftLog> Server {this.ServerId} | term {this.CurrentTerm} " +
+                    $"| log {this.Logs.Count} | vote granted {false}.");
+                candidate.VoteResponse(this.CurrentTerm, false);
+            }
+            else
+            {
+                this.VotedForCandidate = candidate;
+                this.Leader = null;
+
+                ActorModel.Log($"<RaftLog> Server {this.ServerId} | term {this.CurrentTerm} " +
+                    $"| log {this.Logs.Count} | vote granted {true}.");
+                candidate.VoteResponse(this.CurrentTerm, true);
+            }
+        }
+
+        public Task VoteResponse(int term, bool voteGranted)
+        {
+            if (this.Role == Role.Follower)
+            {
+                if (term > this.CurrentTerm)
+                {
+                    this.CurrentTerm = term;
+                    this.VotedForCandidate = null;
+                }
+            }
+            else if (this.Role == Role.Candidate)
+            {
+                if (term > this.CurrentTerm)
+                {
+                    this.CurrentTerm = term;
+                    this.VotedForCandidate = null;
+
+                    this.BecomeFollower();
+                }
+                else if (term != this.CurrentTerm)
+                {
+                    new Task(() => { });
+                }
+
+                if (voteGranted)
+                {
+                    this.VotesReceived++;
+                    if (this.VotesReceived >= (this.Servers.Count / 2) + 1)
+                    {
+                        this.BecomeLeader();
+                    }
+                }
+            }
+            else if (this.Role == Role.Leader)
+            {
+                if (term > this.CurrentTerm)
+                {
+                    this.CurrentTerm = term;
+                    this.VotedForCandidate = null;
+
+                    //this.RedirectLastClientRequestToClusterManager();
+                    this.BecomeFollower();
+                }
+            }
+
+            return new Task(() => { });
+        }
+
+        private Task StartLeaderElection(object args)
+        {
+            this.BecomCandidate();
+            return new Task(() => { });
+        }
+
+        int GetLogTermForIndex(int logIndex)
+        {
+            var logTerm = 0;
+            if (logIndex > 0)
+            {
+                logTerm = this.Logs[logIndex - 1].Term;
+            }
+
+            return logTerm;
         }
 
         #endregion

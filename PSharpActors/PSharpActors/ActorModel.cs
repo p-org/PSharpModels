@@ -196,14 +196,13 @@ namespace Microsoft.PSharp.Actors
         }
 
         /// <summary>
-        /// Registers a cleanup action, to execute at the
-        /// beginning of each testing iteration. Any static
-        /// fields should be reset in this action.
+        /// Logs the specified text.
         /// </summary>
-        /// <param name="action">Action</param>
-        public static void RegisterCleanUpAction(Action action)
+        /// <param name="s">Text</param>
+        /// <param name="args">Arguments</param>
+        public static void Log(string s, params object[] args)
         {
-            ActorModel.CleanUpActions.Add(action);
+            ActorModel.Runtime.Log(s, args);
         }
 
         /// <summary>
@@ -233,6 +232,17 @@ namespace Microsoft.PSharp.Actors
         public static void Wait<TResult>(Task<TResult> task)
         {
             ((ActorCompletionTask<TResult>)task).Wait();
+        }
+
+        /// <summary>
+        /// Registers a cleanup action, to execute at the
+        /// beginning of each testing iteration. Any static
+        /// fields should be reset in this action.
+        /// </summary>
+        /// <param name="action">Action</param>
+        public static void RegisterCleanUpAction(Action action)
+        {
+            ActorModel.CleanUpActions.Add(action);
         }
 
         #endregion

@@ -9,5 +9,7 @@ namespace Raft
 	public interface IClusterManager : IGrainWithIntegerKey
     {
         Task Configure();
+
+        Task NotifyLeaderUpdate(int leaderId, int term);
     }
 }

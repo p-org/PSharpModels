@@ -62,6 +62,17 @@ namespace Raft
             return new Task(() => { });
         }
 
+        public Task NotifyLeaderUpdate(int leaderId, int term)
+        {
+            if (this.LeaderTerm < term)
+            {
+                this.Leader = GrainClient.GrainFactory.GetGrain<IServer>(leaderId);
+                this.LeaderTerm = term;
+            }
+
+            return new Task(() => { });
+        }
+
         #endregion
     }
 }
