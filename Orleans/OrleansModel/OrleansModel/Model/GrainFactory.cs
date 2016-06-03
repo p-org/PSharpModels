@@ -81,6 +81,8 @@ namespace OrleansModel
             var id = GrainClient.GrainIds.SingleOrDefault(val => val.PrimaryKey.Equals(primaryKey));
             if (id != null)
             {
+                ActorModel.Runtime.Log("<ActorModelLog> Found grain of type " +
+                    $"'{typeof(TGrainInterface).FullName}' with id '{id.PrimaryKey}'.");
                 return (TGrainInterface)id.Grain;
             }
 

@@ -13,6 +13,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Linq;
 using System.Reflection;
 
@@ -35,12 +36,7 @@ namespace Microsoft.PSharp.Actors.Utilities
             {
                 Type type = payload[idx].GetType();
 
-                if (!ActorModel.Configuration.PerformSerialization ||
-                    type.IsPrimitive || type.IsEnum || type.Equals(typeof(string)))
-                {
-                    serializedPayload[idx] = payload[idx];
-                }
-                //else if (type.GetCustomAttribute(typeof(SerializableAttribute), false) != null)
+                //if (type.GetCustomAttribute(typeof(SerializableAttribute), false) != null)
                 //{
                 //    MemoryStream stream = new MemoryStream();
                 //    BinaryFormatter bf = new BinaryFormatter();
@@ -49,7 +45,7 @@ namespace Microsoft.PSharp.Actors.Utilities
                 //    stream.Seek(0, SeekOrigin.Begin);
                 //    serializedPayload[idx] = bf.Deserialize(stream);
                 //}
-                else if (type.GetInterfaces().Any(val => val == typeof(ICloneable)))
+                if (type.GetInterfaces().Any(val => val == typeof(ICloneable)))
                 {
                     serializedPayload[idx] = ((ICloneable)payload[idx]).Clone();
                 }
@@ -77,38 +73,58 @@ namespace Microsoft.PSharp.Actors.Utilities
         /// <returns>object</returns>
         private static object DeepClone(object obj)
         {
-            Type objectType = obj.GetType();
-            var instance = Activator.CreateInstance(objectType);
+            Type type = obj.GetType();
+            var instance = Activator.CreateInstance(type);
 
-            PropertyInfo[] propertyInfos = objectType.GetProperties(
+            if (!ActorModel.Configuration.PerformSerialization ||
+                type.IsPrimitive || type.IsEnum || type.Equals(typeof(string)))
+            {
+                instance = obj;
+            }
+            else if (type.GetInterface("ICollection") != null)
+            {
+                var collection = (ICollection)obj;
+                foreach (var item in collection)
+                {
+                    var clonedItem = Serialization.DeepClone(item);
+                    if (type.GetInterface("IList") != null)
+                    {
+                        ((IList)instance).Add(clonedItem);
+                    }
+                }
+            }
+            else
+            {
+                PropertyInfo[] propertyInfos = type.GetProperties(
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-            foreach (var propertyInfo in propertyInfos)
-            {
-                if (propertyInfo.CanWrite)
+                foreach (var propertyInfo in propertyInfos)
                 {
-                    object propertyValue = propertyInfo.GetValue(obj, null);
+                    if (propertyInfo.CanWrite)
+                    {
+                        object propertyValue = propertyInfo.GetValue(obj, null);
 
-                    if (propertyInfo.PropertyType.IsValueType ||
-                        propertyInfo.PropertyType.IsEnum ||
-                        propertyInfo.PropertyType.Equals(typeof(string)))
-                    {
-                        propertyInfo.SetValue(instance, propertyValue, null);
-                    }
-                    else
-                    {
-                        if (propertyValue == null)
+                        if (propertyInfo.PropertyType.IsValueType ||
+                            propertyInfo.PropertyType.IsEnum ||
+                            propertyInfo.PropertyType.Equals(typeof(string)))
                         {
-                            propertyInfo.SetValue(instance, null, null);
+                            propertyInfo.SetValue(instance, propertyValue, null);
                         }
                         else
                         {
-                            propertyInfo.SetValue(instance, Serialization.DeepClone(propertyValue), null);
+                            if (propertyValue == null)
+                            {
+                                propertyInfo.SetValue(instance, null, null);
+                            }
+                            else
+                            {
+                                propertyInfo.SetValue(instance, Serialization.DeepClone(propertyValue), null);
+                            }
                         }
                     }
                 }
             }
-
+            
             return instance;
         }
     }
