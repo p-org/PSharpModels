@@ -10,6 +10,7 @@ namespace BuggyOrleansApp
     /// <summary>
     /// Grain implementation class Sender.
     /// </summary>
+    [Reentrant]
     public class Sender : Grain, ISender, IRemindable
     {
         IGrainReminder myReminder;
