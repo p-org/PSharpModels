@@ -157,8 +157,11 @@ namespace Raft
                 this.ElectionTimer.Dispose();
             }
 
-            this.ElectionTimer = this.RegisterTimer(StartLeaderElection, null,
-                TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
+            if (ActorModel.Random())
+            {
+                this.ElectionTimer = this.RegisterTimer(StartLeaderElection, null,
+                    TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
+            }
         }
 
         private void BecomCandidate()
@@ -182,7 +185,7 @@ namespace Raft
                 $"| election votes {this.VotesReceived} | log {this.Logs.Count}.");
 
             this.VotesReceived = 0;
-            ActorModel.Assert(false);
+
             //this.Monitor<SafetyMonitor>(new SafetyMonitor.NotifyLeaderElected(this.CurrentTerm));
 
             this.ClusterManager.NotifyLeaderUpdate(this.ServerId, this.CurrentTerm);
