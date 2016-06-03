@@ -61,7 +61,8 @@ namespace Microsoft.PSharp.Actors.Utilities
                     }
                     catch
                     {
-                        ActorModel.Assert(false, "Payload cannot be serialized.");
+                        ActorModel.Assert(false, $"Payload of type '{type}' " +
+                            "cannot be serialized.");
                     }
                 }
             }
