@@ -157,6 +157,11 @@ namespace Raft
                 this.ElectionTimer.Dispose();
             }
 
+            if (this.PeriodicTimer != null)
+            {
+                this.PeriodicTimer.Dispose();
+            }
+
             if (ActorModel.Random())
             {
                 this.ElectionTimer = this.RegisterTimer(StartLeaderElection, null,
@@ -186,7 +191,7 @@ namespace Raft
 
             this.VotesReceived = 0;
 
-            //this.Monitor<SafetyMonitor>(new SafetyMonitor.NotifyLeaderElected(this.CurrentTerm));
+            ActorModel.Runtime.InvokeMonitor<SafetyMonitor>(new SafetyMonitor.NotifyLeaderElected(this.CurrentTerm));
 
             this.ClusterManager.NotifyLeaderUpdate(this.ServerId, this.CurrentTerm);
 
@@ -215,7 +220,16 @@ namespace Raft
         private void BroadcastVoteRequests()
         {
             // BUG: duplicate votes from same follower
-            //this.Send(this.PeriodicTimer, new PeriodicTimer.StartTimer());
+            //if (ActorModel.Random())
+            //{
+                if (this.PeriodicTimer != null)
+                {
+                    this.PeriodicTimer.Dispose();
+                }
+
+                this.PeriodicTimer = this.RegisterTimer(RebroadcastVoteRequests, null,
+                    TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
+            //}
 
             foreach (var server in this.Servers)
             {
@@ -355,6 +369,12 @@ namespace Raft
         private Task StartLeaderElection(object args)
         {
             this.BecomCandidate();
+            return new Task(() => { });
+        }
+
+        private Task RebroadcastVoteRequests(object args)
+        {
+            this.BroadcastVoteRequests();
             return new Task(() => { });
         }
 

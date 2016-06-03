@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaftGrains", "RaftGrains\Ra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaftHost", "RaftHost\RaftHost.csproj", "{36359D1F-DE82-410D-987F-2F8E3119CCBD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raft.Log", "Raft.Log\Raft.Log.csproj", "{3921052E-63F6-43EE-8D85-D93E13942489}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raft.Monitoring", "Raft.Monitoring\Raft.Monitoring.csproj", "{E28D2231-02BB-4528-A557-40B13364D228}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{36359D1F-DE82-410D-987F-2F8E3119CCBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36359D1F-DE82-410D-987F-2F8E3119CCBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36359D1F-DE82-410D-987F-2F8E3119CCBD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3921052E-63F6-43EE-8D85-D93E13942489}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3921052E-63F6-43EE-8D85-D93E13942489}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3921052E-63F6-43EE-8D85-D93E13942489}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3921052E-63F6-43EE-8D85-D93E13942489}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E28D2231-02BB-4528-A557-40B13364D228}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E28D2231-02BB-4528-A557-40B13364D228}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E28D2231-02BB-4528-A557-40B13364D228}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E28D2231-02BB-4528-A557-40B13364D228}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

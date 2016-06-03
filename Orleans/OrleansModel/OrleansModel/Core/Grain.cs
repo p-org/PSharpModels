@@ -130,6 +130,7 @@ namespace Orleans
             object state, TimeSpan dueTime, TimeSpan period)
         {
             MachineId timerMachine = ActorModel.Runtime.CreateMachine(typeof(TimerMachine),
+                asyncCallback.Method.Name,
                 new TimerMachine.InitEvent(ActorModel.Runtime.GetCurrentMachine(),
                 asyncCallback, state));
             return new TimerCancellationSource(ActorModel.Runtime.GetCurrentMachine(), timerMachine);

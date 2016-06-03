@@ -64,6 +64,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Raft.Monitoring\Raft.Monitoring.csproj">
+      <Project>{e28d2231-02bb-4528-a557-40b13364d228}</Project>
+      <Name>Raft.Monitoring</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RaftGrainInterfaces\RaftGrainInterfaces.csproj">
       <Project>{54f391ea-9952-4c74-a861-a22e335cfe48}</Project>
       <Name>RaftGrainInterfaces</Name>

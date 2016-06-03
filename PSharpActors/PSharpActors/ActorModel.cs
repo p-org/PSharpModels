@@ -172,30 +172,6 @@ namespace Microsoft.PSharp.Actors
         }
 
         /// <summary>
-        /// Registers the reentrant action handler for the
-        /// specified actor machine.
-        /// </summary>
-        /// <param name="machine">MachineId</param>
-        /// <param name="handler">Action</param>
-        internal static void RegisterActionHandler(MachineId machine,
-            Action<ActorMachine.ActorEvent> handler)
-        {
-            ActorModel.ReentrantActionHandlers.Add(machine, handler);
-        }
-
-        /// <summary>
-        /// Returns an actor handler, for handling reentrant events.
-        /// </summary>
-        /// <param name="machine">MachineId</param>
-        /// <returns>Action</returns>
-        internal static Action<ActorMachine.ActorEvent> GetReentrantActionHandler(MachineId machine)
-        {
-            ActorModel.Assert(ActorModel.ReentrantActors[machine],
-                $"{machine.Name} is not reentrant.");
-            return ActorModel.ReentrantActionHandlers[machine];
-        }
-
-        /// <summary>
         /// Returns a nondeterministic boolean choice, that
         /// can be controlled during analysis or testing.
         /// </summary>
@@ -253,6 +229,30 @@ namespace Microsoft.PSharp.Actors
         public static void RegisterCleanUpAction(Action action)
         {
             ActorModel.CleanUpActions.Add(action);
+        }
+
+        /// <summary>
+        /// Registers the reentrant action handler for the
+        /// specified actor machine.
+        /// </summary>
+        /// <param name="machine">MachineId</param>
+        /// <param name="handler">Action</param>
+        internal static void RegisterActionHandler(MachineId machine,
+            Action<ActorMachine.ActorEvent> handler)
+        {
+            ActorModel.ReentrantActionHandlers.Add(machine, handler);
+        }
+
+        /// <summary>
+        /// Returns an actor handler, for handling reentrant events.
+        /// </summary>
+        /// <param name="machine">MachineId</param>
+        /// <returns>Action</returns>
+        internal static Action<ActorMachine.ActorEvent> GetReentrantActionHandler(MachineId machine)
+        {
+            ActorModel.Assert(ActorModel.ReentrantActors[machine],
+                $"{machine.Name} is not reentrant.");
+            return ActorModel.ReentrantActionHandlers[machine];
         }
 
         #endregion

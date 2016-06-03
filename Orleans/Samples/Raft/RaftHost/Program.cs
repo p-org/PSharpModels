@@ -39,10 +39,13 @@ namespace Raft
         {
             Configuration conf = Configuration.Create(true, true, true, true, true);
             ActorModel.Configure(conf);
+            
             ActorModel.Start(runtime, () =>
             {
                 var config = ClientConfiguration.LocalhostSilo();
                 GrainClient.Initialize(config);
+
+                runtime.RegisterMonitor(typeof(SafetyMonitor));
 
                 var sender = GrainClient.GrainFactory.GetGrain<IClusterManager>(0);
                 Task configureTask = sender.Configure();
