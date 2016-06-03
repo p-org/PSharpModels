@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Configuration\ClusterConfiguration.cs" />
     <Compile Include="Core\Grain.cs" />
+    <Compile Include="Core\GrainAtrributes.cs" />
     <Compile Include="Core\Interfaces\IRemindable.cs" />
     <Compile Include="Model\GrainReminder.cs" />
     <Compile Include="Model\GrainState.cs" />

@@ -67,8 +67,8 @@ namespace OrleansModel
 
         protected override bool IsReentrant()
         {
-            // TODO
-            return true;
+            var type = WrappedActorInstance.GetType();
+            return type.GetCustomAttributes(typeof(ReentrantAttribute), true).Length > 0;
         }
     }
 }
