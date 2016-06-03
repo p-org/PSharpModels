@@ -11,6 +11,7 @@ namespace Raft
     /// <summary>
     /// Grain implementation class Server.
     /// </summary>
+    [Reentrant]
     public class Server : Grain<int>, IServer
     {
         #region fields

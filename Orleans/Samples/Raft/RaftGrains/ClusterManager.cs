@@ -12,6 +12,7 @@ namespace Raft
     /// <summary>
     /// Grain implementation class ClusterManager.
     /// </summary>
+    [Reentrant]
     public class ClusterManager : Grain, IClusterManager
     {
         #region fields

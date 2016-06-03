@@ -196,13 +196,13 @@ namespace Microsoft.PSharp.Actors
         }
 
         /// <summary>
-        /// Logs the specified text.
+        /// Returns a nondeterministic boolean choice, that
+        /// can be controlled during analysis or testing.
         /// </summary>
-        /// <param name="s">Text</param>
-        /// <param name="args">Arguments</param>
-        public static void Log(string s, params object[] args)
+        /// <returns></returns>
+        public static bool Random()
         {
-            ActorModel.Runtime.Log(s, args);
+            return ActorModel.Runtime.Random();
         }
 
         /// <summary>
@@ -232,6 +232,16 @@ namespace Microsoft.PSharp.Actors
         public static void Wait<TResult>(Task<TResult> task)
         {
             ((ActorCompletionTask<TResult>)task).Wait();
+        }
+
+        /// <summary>
+        /// Logs the specified text.
+        /// </summary>
+        /// <param name="s">Text</param>
+        /// <param name="args">Arguments</param>
+        public static void Log(string s, params object[] args)
+        {
+            ActorModel.Runtime.Log(s, args);
         }
 
         /// <summary>

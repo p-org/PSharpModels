@@ -10,6 +10,7 @@ namespace Raft
     /// <summary>
     /// Grain implementation class Client.
     /// </summary>
+    [Reentrant]
     public class Client : Grain<int>, IClient
     {
         #region fields
