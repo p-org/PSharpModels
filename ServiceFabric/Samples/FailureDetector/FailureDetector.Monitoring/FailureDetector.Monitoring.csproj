@@ -4,17 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2B72FFD5-926E-4E5F-8AEB-1E3CC3A8B455}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{E28D2231-02BB-4528-A557-40B13364D228}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>FailureDetector</RootNamespace>
-    <AssemblyName>FailureDetector.Actors</AssemblyName>
+    <AssemblyName>FailureDetector.Monitoring</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,10 +20,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\Binaries\</OutputPath>
@@ -38,33 +34,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\PSharpActors\Binaries\Microsoft.PSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.PSharp.Actors">
-      <HintPath>..\..\..\..\PSharpActors\Binaries\Microsoft.PSharp.Actors.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceFabricModel">
-      <HintPath>..\..\..\Binaries\ServiceFabricModel.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Node.cs" />
-    <Compile Include="FailureDetector.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Driver.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\FailureDetector.Interfaces\FailureDetector.Interfaces.csproj">
-      <Project>{d8d2c83c-c6e3-4a4d-b97b-b8d32af79d03}</Project>
-      <Name>FailureDetector.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FailureDetector.Monitoring\FailureDetector.Monitoring.csproj">
-      <Project>{e28d2231-02bb-4528-a557-40b13364d228}</Project>
-      <Name>FailureDetector.Monitoring</Name>
-    </ProjectReference>
+    <Compile Include="SafetyMonitor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

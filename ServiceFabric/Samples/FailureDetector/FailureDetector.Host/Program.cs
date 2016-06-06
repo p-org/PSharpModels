@@ -24,11 +24,8 @@ namespace FailureDetector
 
             ActorModel.Start(runtime, () =>
             {
-                //runtime.RegisterMonitor(typeof(SafetyMonitor));
-
+                runtime.RegisterMonitor(typeof(SafetyMonitor));
                 var senderProxy = ActorProxy.Create<IDriver>(new ActorId(0), "DriverProxy");
-                //Task t = senderProxy.DoSomething(10);
-                //ActorModel.Wait(t);
             });
         }
     }

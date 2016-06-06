@@ -45,6 +45,8 @@ namespace FailureDetector
                 var registerTask = this.FailureDetector.RegisterClient(0);
                 ActorModel.Wait(registerTask);
 
+                this.FailureDetector.Start();
+
                 this.Fail();
             }
 
@@ -56,6 +58,9 @@ namespace FailureDetector
             for (int idx = 0; idx < this.NumberOfNodes; idx++)
             {
                 var node = ActorProxy.Create<INode>(new ActorId(idx+2), "NodeProxy");
+                var configureTask = node.Configure(idx + 2);
+                ActorModel.Wait(configureTask);
+
                 this.Nodes.Add(idx + 2, node);
                 this.NodeMap.Add(node, true);
             }

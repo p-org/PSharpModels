@@ -9,6 +9,12 @@ namespace FailureDetector
     {
         Task Configure(List<int> nodeIds);
 
+        Task Start();
+
+        Task Pong(int senderId);
+
         Task RegisterClient(int clientId);
+
+        Task UnregisterClient(int clientId);
     }
 }
