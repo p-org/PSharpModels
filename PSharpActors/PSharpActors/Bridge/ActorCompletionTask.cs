@@ -15,9 +15,7 @@
 using System;
 using System.Threading.Tasks;
 
-using Microsoft.PSharp.Actors.Bridge;
-
-namespace Microsoft.PSharp.Actors
+namespace Microsoft.PSharp.Actors.Bridge
 {
     public class ActorCompletionTask<TResult> : Task<TResult>
     {

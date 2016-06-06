@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.PSharp.Actors;
@@ -15,7 +16,7 @@ namespace FailureDetector
 
         private IFailureDetector FailureDetector;
 
-        private List<INode> NodeSeq;
+        private Dictionary<int, INode> Nodes;
         private int NumberOfNodes;
 
         private Dictionary<INode, bool> NodeMap;
@@ -26,11 +27,11 @@ namespace FailureDetector
 
         protected override Task OnActivateAsync()
         {
-            if (this.NodeSeq == null)
+            if (this.Nodes == null)
             {
                 this.NumberOfNodes = 2;
 
-                this.NodeSeq = new List<INode>();
+                this.Nodes = new Dictionary<int, INode>();
                 this.NodeMap = new Dictionary<INode, bool>();
 
                 this.FailureDetector = ActorProxy.Create<IFailureDetector>(
@@ -38,8 +39,11 @@ namespace FailureDetector
 
                 this.Initialize();
 
-                //this.Send(this.FailureDetector, new FailureDetector.Config(this.NodeSeq));
-                //this.Send(this.FailureDetector, new RegisterClient(this.Id));
+                var configureTask = this.FailureDetector.Configure(this.Nodes.Keys.ToList());
+                ActorModel.Wait(configureTask);
+
+                var registerTask = this.FailureDetector.RegisterClient(0);
+                ActorModel.Wait(registerTask);
 
                 this.Fail();
             }
@@ -52,22 +56,17 @@ namespace FailureDetector
             for (int idx = 0; idx < this.NumberOfNodes; idx++)
             {
                 var node = ActorProxy.Create<INode>(new ActorId(idx+2), "NodeProxy");
-                this.NodeSeq.Add(node);
+                this.Nodes.Add(idx + 2, node);
                 this.NodeMap.Add(node, true);
             }
         }
 
         private void Fail()
         {
-            foreach (var node in this.NodeSeq)
+            foreach (var node in this.Nodes)
             {
-                ActorModel.Halt(node as IPSharpActor);
+                ActorModel.Halt(node.Value as IPSharpActor);
             }
-
-            //for (int i = 0; i < 2; i++)
-            //{
-            //    this.Send(this.NodeSeq[i], new Halt());
-            //}
         }
 
         #endregion
