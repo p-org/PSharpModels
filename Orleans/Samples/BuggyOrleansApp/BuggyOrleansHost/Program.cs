@@ -46,7 +46,6 @@ namespace BuggyOrleansApp
 
                 var sender = GrainClient.GrainFactory.GetGrain<ISender>(0);
                 Task t = sender.DoSomething(10);
-                ActorModel.Wait(t);
             });
         }
 

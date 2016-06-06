@@ -92,7 +92,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                     {
                         foreach (var x in (e as ActorMachine.ActorEvent).ExecutionContext)
                         {
-                            Console.WriteLine(" >>>> " + x.Name);
+                            Console.WriteLine(" >>>> " + x.Name + " " + (e as ActorMachine.ActorEvent).MethodName);
                         }
 
                         if (ActorModel.Configuration.AllowReentrantCalls &&
