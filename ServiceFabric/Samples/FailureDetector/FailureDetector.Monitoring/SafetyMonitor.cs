@@ -43,24 +43,27 @@ namespace FailureDetector
 
         void MPingAction()
         {
-            var sender = (this.ReceivedEvent as NotifyPing).SenderId;
+            var senderId = (this.ReceivedEvent as NotifyPing).SenderId;
 
-            if (!this.Pending.ContainsKey(sender))
+            if (!this.Pending.ContainsKey(senderId))
             {
-                this.Pending[sender] = 0;
+                this.Pending[senderId] = 0;
             }
 
-            this.Pending[sender] = this.Pending[sender] + 1;
-            this.Assert(this.Pending[sender] <= 3, "1");
+            this.Pending[senderId] = this.Pending[senderId] + 1;
+            this.Assert(this.Pending[senderId] <= 3, "Pending set " +
+                $"for '{senderId}' contains more than 3 requests.");
         }
 
         void MPongAction()
         {
-            var node = (this.ReceivedEvent as NotifyPong).NodeId;
+            var nodeId = (this.ReceivedEvent as NotifyPong).NodeId;
 
-            this.Assert(this.Pending.ContainsKey(node), "2");
-            this.Assert(this.Pending[node] > 0, "3");
-            this.Pending[node] = this.Pending[node] - 1;
+            this.Assert(this.Pending.ContainsKey(nodeId), "Pending " +
+                $"set does not contain '{nodeId}'.");
+            this.Assert(this.Pending[nodeId] > 0, "Pending set " +
+                $"for '{nodeId}' is empty.");
+            this.Pending[nodeId] = this.Pending[nodeId] - 1;
         }
     }
 }

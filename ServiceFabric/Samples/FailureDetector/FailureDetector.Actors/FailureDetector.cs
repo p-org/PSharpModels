@@ -15,7 +15,7 @@ namespace FailureDetector
 
         private int FailureDetectorId;
 
-        private List<INode> Nodes;
+        private Dictionary<int, INode> Nodes;
 
         private Dictionary<IDriver, bool> Clients;
         private int Attempts;
@@ -34,7 +34,7 @@ namespace FailureDetector
             if (this.Nodes == null)
             {
                 this.FailureDetectorId = 1;
-                this.Nodes = new List<INode>();
+                this.Nodes = new Dictionary<int, INode>();
                 this.Clients = new Dictionary<IDriver, bool>();
                 this.Alive = new Dictionary<INode, bool>();
                 this.Responses = new Dictionary<INode, bool>();
@@ -49,12 +49,13 @@ namespace FailureDetector
             {
                 foreach (var id in nodeIds)
                 {
-                    this.Nodes.Add(ActorProxy.Create<INode>(new ActorId(id), "NodeProxy"));
+                    this.Nodes.Add(id, ActorProxy.Create<INode>(
+                        new ActorId(id), "NodeProxy"));
                 }
 
                 foreach (var node in this.Nodes)
                 {
-                    this.Alive.Add(node, true);
+                    this.Alive.Add(node.Value, true);
                 }
             }
 
@@ -71,11 +72,12 @@ namespace FailureDetector
         {
             foreach (var node in this.Nodes)
             {
-                if (this.Alive.ContainsKey(node) && !this.Responses.ContainsKey(node))
+                if (this.Alive.ContainsKey(node.Value) &&
+                    !this.Responses.ContainsKey(node.Value))
                 {
                     ActorModel.Runtime.InvokeMonitor<SafetyMonitor>(
-                        new SafetyMonitor.NotifyPing(this.FailureDetectorId));
-                    node.Ping(this.FailureDetectorId);
+                        new SafetyMonitor.NotifyPing(node.Key));
+                    node.Value.Ping(this.FailureDetectorId);
                 }
             }
 
@@ -141,9 +143,10 @@ namespace FailureDetector
         {
             foreach (var node in this.Nodes)
             {
-                if (this.Alive.ContainsKey(node) && !this.Responses.ContainsKey(node))
+                if (this.Alive.ContainsKey(node.Value) &&
+                    !this.Responses.ContainsKey(node.Value))
                 {
-                    this.Alive.Remove(node);
+                    this.Alive.Remove(node.Value);
                 }
             }
         }
