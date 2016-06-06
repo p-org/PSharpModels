@@ -101,13 +101,8 @@ namespace Microsoft.PSharp.Actors
             this.Target = (this.ReceivedEvent as InitEvent).Target;
             this.Callback = (this.ReceivedEvent as InitEvent).Callback;
             this.CallbackState = (this.ReceivedEvent as InitEvent).CallbackState;
-
-            if (!ActorModel.RegisteredTimers.ContainsKey(this.Target))
-            {
-                ActorModel.RegisteredTimers.Add(this.Target, new HashSet<MachineId>());
-            }
             
-            ActorModel.RegisteredTimers[this.Target].Add(this.Id);
+            ActorModel.ActorMachineMap[this.Target].RegisteredTimers.Add(this.Id);
 
             this.Goto(typeof(Active));
         }

@@ -41,30 +41,15 @@ namespace Microsoft.PSharp.Actors
         internal static Configuration Configuration { get; private set; }
 
         /// <summary>
-        /// Map from actors to their reentrant action handlers.
+        /// Map from machine ids to actor machines.
         /// </summary>
-        private static IDictionary<MachineId, Action<ActorMachine.ActorEvent>> ReentrantActionHandlers;
-
-        /// <summary>
-        /// Map from Machine ID to the latest calling context.
-        /// </summary>
-        internal static IDictionary<MachineId, List<MachineId>> ExecutionContext;
+        internal static IDictionary<MachineId, ActorMachine> ActorMachineMap;
 
         /// <summary>
         /// Map of actors to a boolean specifying if the actor is
         /// reentrant or not.
         /// </summary>
         internal static IDictionary<MachineId, bool> ReentrantActors;
-
-        /// <summary>
-        /// Map from actors to sets of registered timers.
-        /// </summary>
-        internal static IDictionary<MachineId, ISet<MachineId>> RegisteredTimers;
-
-        /// <summary>
-        /// Map from actors to sets of registered reminders.
-        /// </summary>
-        internal static IDictionary<MachineId, ISet<ReminderCancellationSource>> RegisteredReminders;
 
         /// <summary>
         /// Set of cleanup actions to perform in each iteration.
@@ -82,11 +67,8 @@ namespace Microsoft.PSharp.Actors
         {
             ActorModel.Configuration = Configuration.Default();
 
+            ActorModel.ActorMachineMap = new ConcurrentDictionary<MachineId, ActorMachine>();
             ActorModel.ReentrantActors = new ConcurrentDictionary<MachineId, bool>();
-            ActorModel.ReentrantActionHandlers = new ConcurrentDictionary<MachineId, Action<ActorMachine.ActorEvent>>();
-            ActorModel.RegisteredTimers = new ConcurrentDictionary<MachineId, ISet<MachineId>>();
-            ActorModel.RegisteredReminders = new ConcurrentDictionary<MachineId, ISet<ReminderCancellationSource>>();
-            ActorModel.ExecutionContext = new ConcurrentDictionary<MachineId, List<MachineId>>();
 
             var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             foreach (string file in Directory.GetFiles(path, "*_PSharpProxy.dll"))
@@ -130,11 +112,8 @@ namespace Microsoft.PSharp.Actors
             }
 
             ActorModel.Runtime = runtime;
-            ActorModel.ReentrantActionHandlers.Clear();
+            ActorModel.ActorMachineMap.Clear();
             ActorModel.ReentrantActors.Clear();
-            ActorModel.RegisteredTimers.Clear();
-            ActorModel.RegisteredReminders.Clear();
-            ActorModel.ExecutionContext.Clear();
 
             ActorModel.Runtime.CreateMachine(typeof(ActorRootMachine),
                 new ActorRootMachine.RunEvent(action));
@@ -170,12 +149,7 @@ namespace Microsoft.PSharp.Actors
         /// <returns>ReminderCancellationSources</returns>
         public static ISet<ReminderCancellationSource> GetReminders(MachineId mid)
         {
-            if (!ActorModel.RegisteredReminders.ContainsKey(mid))
-            {
-                return new HashSet<ReminderCancellationSource>();
-            }
-
-            return ActorModel.RegisteredReminders[mid];
+            return ActorModel.ActorMachineMap[mid].RegisteredReminders;
         }
 
         /// <summary>
@@ -218,6 +192,16 @@ namespace Microsoft.PSharp.Actors
         }
 
         /// <summary>
+        /// Sends a message to halt the P# actor. Only used
+        /// during testing with P#.
+        /// </summary>
+        /// <param name="actor">IPSharpActor</param>
+        public static void Halt(IPSharpActor actor)
+        {
+            ActorModel.Runtime.SendEvent(actor.Id, new Halt());
+        }
+
+        /// <summary>
         /// Logs the specified text.
         /// </summary>
         /// <param name="s">Text</param>
@@ -239,18 +223,6 @@ namespace Microsoft.PSharp.Actors
         }
 
         /// <summary>
-        /// Registers the reentrant action handler for the
-        /// specified actor machine.
-        /// </summary>
-        /// <param name="machine">MachineId</param>
-        /// <param name="handler">Action</param>
-        internal static void RegisterActionHandler(MachineId machine,
-            Action<ActorMachine.ActorEvent> handler)
-        {
-            ActorModel.ReentrantActionHandlers.Add(machine, handler);
-        }
-
-        /// <summary>
         /// Returns an actor handler, for handling reentrant events.
         /// </summary>
         /// <param name="machine">MachineId</param>
@@ -259,7 +231,7 @@ namespace Microsoft.PSharp.Actors
         {
             ActorModel.Assert(ActorModel.ReentrantActors[machine],
                 $"{machine.Name} is not reentrant.");
-            return ActorModel.ReentrantActionHandlers[machine];
+            return ActorModel.ActorMachineMap[machine].ReentrantActionHandler;
         }
 
         #endregion

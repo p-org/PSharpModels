@@ -84,12 +84,8 @@ namespace Microsoft.PSharp.Actors
                 if (incrementExecutionContext)
                 {
                     MachineId id = ActorModel.Runtime.GetCurrentMachine();
-                    if (!ActorModel.ExecutionContext.ContainsKey(id))
-                    {
-                        ActorModel.ExecutionContext.Add(id, new List<MachineId>());
-                    }
-
-                    this.ExecutionContext = ActorModel.ExecutionContext[id].ToList();
+                    this.ExecutionContext = ActorModel.ActorMachineMap[id].
+                        LatestExecutionContext.ToList();
                     this.ExecutionContext.Add(id);
                 }
             }
@@ -121,6 +117,26 @@ namespace Microsoft.PSharp.Actors
         /// </summary>
         internal bool IsActive;
 
+        /// <summary>
+        /// Set of registered timers.
+        /// </summary>
+        internal ISet<MachineId> RegisteredTimers;
+
+        /// <summary>
+        ///Set of registered reminders.
+        /// </summary>
+        internal ISet<ReminderCancellationSource> RegisteredReminders;
+
+        /// <summary>
+        /// Latest calling context.
+        /// </summary>
+        internal List<MachineId> LatestExecutionContext;
+
+        /// <summary>
+        /// Reentrant action handler.
+        /// </summary>
+        internal Action<ActorMachine.ActorEvent> ReentrantActionHandler;
+
         #endregion
 
         #region states
@@ -150,17 +166,23 @@ namespace Microsoft.PSharp.Actors
         private void InitOnEntry()
         {
             var initEvent = this.ReceivedEvent as InitEvent;
-            
+
+            this.RegisteredTimers = new HashSet<MachineId>();
+            this.RegisteredReminders = new HashSet<ReminderCancellationSource>();
+            this.LatestExecutionContext = new List<MachineId>();
+
+            ActorModel.ActorMachineMap.Add(this.Id, this);
+
             this.WrappedActorInstance = initEvent.ClassInstance;
             this.WrappedActorType = initEvent.ActorType;
-
+            
             try
             {
                 this.Initialize();
                 if (this.IsReentrant())
                 {
                     ActorModel.ReentrantActors.Add(this.Id, true);
-                    ActorModel.RegisterActionHandler(this.Id, HandleActorEvent);
+                    this.ReentrantActionHandler = HandleActorEvent;
                 }
                 else
                 {
@@ -190,11 +212,7 @@ namespace Microsoft.PSharp.Actors
 
         private void InactiveOnEntry()
         {
-            if (ActorModel.RegisteredTimers.ContainsKey(this.Id))
-            {
-                ActorModel.RegisteredTimers[this.Id].Clear();
-            }
-
+            this.RegisteredTimers.Clear();
             this.Deactivate();
             this.IsActive = false;
         }
@@ -231,15 +249,10 @@ namespace Microsoft.PSharp.Actors
 
         private void ExecuteActorAction(ActorEvent actorEvent)
         {
-            var id = ActorModel.Runtime.GetCurrentMachine();
-            if (!ActorModel.ExecutionContext.ContainsKey(id))
-            {
-                ActorModel.ExecutionContext.Add(id, new List<MachineId>());
-            }
+            this.LatestExecutionContext = actorEvent.ExecutionContext.ToList();
 
-            ActorModel.ExecutionContext[id] = actorEvent.ExecutionContext.ToList();
-
-            Console.WriteLine("Number of machine IDs in the context for {0}: {1}", id, (actorEvent as ActorMachine.ActorEvent).ExecutionContext.Count);
+            Console.WriteLine("Number of machine IDs in the context for {0}: {1}", this.Id,
+                (actorEvent as ActorMachine.ActorEvent).ExecutionContext.Count);
             foreach (var x in (actorEvent as ActorMachine.ActorEvent).ExecutionContext)
             {
                 Console.WriteLine(" >> " + x.Name);
@@ -258,8 +271,7 @@ namespace Microsoft.PSharp.Actors
             var callback = (this.ReceivedEvent as TimerMachine.TimeoutEvent).Callback;
             var callbackState = (this.ReceivedEvent as TimerMachine.TimeoutEvent).CallbackState;
 
-            if (ActorModel.RegisteredTimers.ContainsKey(this.Id) &&
-                ActorModel.RegisteredTimers[this.Id].Contains(timer))
+            if (this.RegisteredTimers.Contains(timer))
             {
                 ActorModel.Runtime.Log($"<ActorModelLog> Machine '{this.Id.Name}' is " +
                     $"handling timeout from timer '{timer.Name}'.");
@@ -273,8 +285,7 @@ namespace Microsoft.PSharp.Actors
             var reminderName = (this.ReceivedEvent as ReminderMachine.RemindEvent).ReminderName;
             var callbackState = (this.ReceivedEvent as ReminderMachine.RemindEvent).CallbackState;
             
-            if (ActorModel.RegisteredReminders.ContainsKey(this.Id) &&
-                ActorModel.RegisteredReminders[this.Id].Contains(cancellationSource))
+            if (this.RegisteredReminders.Contains(cancellationSource))
             {
                 ActorModel.Runtime.Log($"<ActorModelLog> Machine '{this.Id.Name}' is " +
                     $"handling timeout from reminder '{cancellationSource.Reminder.Name}'.");

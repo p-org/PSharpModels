@@ -15,7 +15,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.PSharp.Actors.Bridge
+using Microsoft.PSharp.Actors.Bridge;
+
+namespace Microsoft.PSharp.Actors
 {
     public class ActorCompletionTask<TResult> : Task<TResult>
     {
@@ -36,7 +38,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                 var result = (resultEvent as ActorCompletionMachine.GetResultResponse).Result;
                 if (result is Task<TResult>)
                 {
-                    return (TResult)((Task<TResult>)result).Result;
+                    return ((Task<TResult>)result).Result;
                 }
                 else
                 {

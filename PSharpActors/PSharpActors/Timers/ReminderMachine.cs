@@ -109,15 +109,9 @@ namespace Microsoft.PSharp.Actors
             this.Target = (this.ReceivedEvent as InitEvent).Target;
             this.ReminderName = (this.ReceivedEvent as InitEvent).ReminderName;
             this.CallbackState = (this.ReceivedEvent as InitEvent).CallbackState;
-
-            if (!ActorModel.RegisteredReminders.ContainsKey(this.Target))
-            {
-                ActorModel.RegisteredReminders.Add(this.Target,
-                    new HashSet<ReminderCancellationSource>());
-            }
-
+            
             this.CancellationSource = (ReminderCancellationSource)this.CreateReminderCancellationSource();
-            ActorModel.RegisteredReminders[this.Target].Add(
+            ActorModel.ActorMachineMap[this.Target].RegisteredReminders.Add(
                 this.CancellationSource as ReminderCancellationSource);
 
             this.Send((this.ReceivedEvent as InitEvent).ActorCompletionMachine,

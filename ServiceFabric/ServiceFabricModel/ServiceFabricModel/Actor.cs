@@ -22,38 +22,31 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         public TState State { get; set; }
     }
 
-    //
-    // Summary:
-    //     Represents a actor that can have multiple reliable 'named' states associated
-    //     with it.
-    //
-    // Remarks:
-    //     The state is preserved across actor garbage collections and fail-overs. The storage
-    //     and retrieval of the state is provided by the actor state provider Microsoft.ServiceFabric.Actors.Runtime.IActorStateProvider.
+    /// <summary>
+    /// Service fabric actor.
+    /// </summary>
     public abstract class Actor : ActorBase
     {
-        //
-        // Summary:
-        //     Initializes a new instance of Microsoft.ServiceFabric.Actors.Runtime.Actor
+        /// <summary>
+        /// Constructor.
+        /// </summary>
         protected Actor()
         {
 
         }
 
-        //
-        // Summary:
-        //     Gets the state manager for Microsoft.ServiceFabric.Actors.Runtime.Actor which
-        //     can be used to get/add/update/remove named states.
+        /// <summary>
+        /// Gets the state manager that be used to
+        /// get/add/update/remove named states.
+        /// </summary>
         public IActorStateManager StateManager { get; set; }
 
-        //
-        // Summary:
-        //     Saves all the state changes (add/update/remove) that were made since last call
-        //     to Microsoft.ServiceFabric.Actors.Runtime.Actor.SaveStateAsync, to the actor
-        //     state provider associated with the actor.
-        //
-        // Returns:
-        //     A task that represents the asynchronous save operation.
+        /// <summary>
+        /// Saves all the state changes (add/update/remove) that were made since
+        /// last call to Microsoft.ServiceFabric.Actors.Runtime.Actor.SaveStateAsync,
+        /// to the actor state provider associated with the actor.
+        /// </summary>
+        /// <returns>Task that represents the asynchronous save operation.</returns>
         protected Task SaveStateAsync()
         {
             throw new NotImplementedException();
