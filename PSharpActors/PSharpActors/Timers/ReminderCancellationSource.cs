@@ -36,12 +36,11 @@ namespace Microsoft.PSharp.Actors
                 $"The reminder can only be disposed by its owner, which is {this.Actor}." +
                 $"Instead, {ActorModel.Runtime.GetCurrentMachine()} called Dispose().");
 
-            if (ActorModel.RegisteredReminders.ContainsKey(this.Actor) &&
-                ActorModel.RegisteredReminders[this.Actor].Contains(this))
+            if (ActorModel.ActorMachineMap[this.Actor].RegisteredReminders.Contains(this))
             {
                 ActorModel.Runtime.Log($"<ActorModelLog> Machine '{this.Actor.Name}' is " +
                     $"unregistering reminder '{this.Reminder.Name}'.");
-                ActorModel.RegisteredReminders[this.Actor].Remove(this);
+                ActorModel.ActorMachineMap[this.Actor].RegisteredReminders.Remove(this);
                 ActorModel.Runtime.SendEvent(this.Reminder, new Halt());
             }
         }

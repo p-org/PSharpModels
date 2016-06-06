@@ -36,7 +36,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                 var result = (resultEvent as ActorCompletionMachine.GetResultResponse).Result;
                 if (result is Task<TResult>)
                 {
-                    return (TResult)((Task<TResult>)result).Result;
+                    return ((Task<TResult>)result).Result;
                 }
                 else
                 {

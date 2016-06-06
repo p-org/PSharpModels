@@ -36,12 +36,11 @@ namespace Microsoft.PSharp.Actors
                 $"The timer can only be disposed by its owner, which is {this.Actor}." +
                 $"Instead, {ActorModel.Runtime.GetCurrentMachine()} called Dispose().");
 
-            if (ActorModel.RegisteredTimers.ContainsKey(this.Actor) &&
-                ActorModel.RegisteredTimers[this.Actor].Contains(this.Timer))
+            if (ActorModel.ActorMachineMap[this.Actor].RegisteredTimers.Contains(this.Timer))
             {
                 ActorModel.Runtime.Log($"<ActorModelLog> Machine '{this.Actor.Name}' is " +
                     $"unregistering timer '{this.Timer.Name}'.");
-                ActorModel.RegisteredTimers[this.Actor].Remove(this.Timer);
+                ActorModel.ActorMachineMap[this.Actor].RegisteredTimers.Remove(this.Timer);
                 ActorModel.Runtime.SendEvent(this.Timer, new Halt());
             }
         }

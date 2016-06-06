@@ -90,21 +90,13 @@ namespace Microsoft.PSharp.Actors
                 {
                     this.Sender = senderMachineId;
                 }
+
+                if (ActorModel.ActorMachineMap.ContainsKey(this.Sender))
+                {
+                    this.ExecutionContext = ActorModel.ActorMachineMap[this.Sender].LatestExecutionContext.ToList();
+                }
                 
-                if (!ActorModel.ExecutionContext.ContainsKey(this.Sender))
-                {
-                    Console.WriteLine("didnt find execution context for: " + this.Sender);
-                    ActorModel.ExecutionContext.Add(this.Sender, new List<MachineId>());
-                }
-
-                this.ExecutionContext = ActorModel.ExecutionContext[this.Sender].ToList();
                 this.ExecutionContext.Add(this.Sender);
-
-                Console.WriteLine("Current Execution context (before dequeue) : " + this.Sender.Name);
-                foreach(var ex in ExecutionContext)
-                {
-                    Console.WriteLine("|| " + ex.Name);
-                }
             }
         }
 
@@ -133,6 +125,27 @@ namespace Microsoft.PSharp.Actors
         /// Checks if the actor machine is active.
         /// </summary>
         internal bool IsActive;
+
+        /// <summary>
+        /// Set of registered timers.
+        /// </summary>
+        internal ISet<MachineId> RegisteredTimers;
+
+        /// <summary>
+        ///Set of registered reminders.
+        /// </summary>
+        internal ISet<ReminderCancellationSource> RegisteredReminders;
+
+        /// <summary>
+        /// Latest calling context.
+        /// </summary>
+        internal List<MachineId> LatestExecutionContext;
+
+        /// <summary>
+        /// Reentrant action handler.
+        /// </summary>
+        internal Action<ActorMachine.ActorEvent> ReentrantActionHandler;
+
         #endregion
 
         #region states
@@ -162,17 +175,23 @@ namespace Microsoft.PSharp.Actors
         private void InitOnEntry()
         {
             var initEvent = this.ReceivedEvent as InitEvent;
-            
+
+            this.RegisteredTimers = new HashSet<MachineId>();
+            this.RegisteredReminders = new HashSet<ReminderCancellationSource>();
+            this.LatestExecutionContext = new List<MachineId>();
+
+            ActorModel.ActorMachineMap.Add(this.Id, this);
+
             this.WrappedActorInstance = initEvent.ClassInstance;
             this.WrappedActorType = initEvent.ActorType;
-
+            
             try
             {
                 this.Initialize();
                 if (this.IsReentrant())
                 {
                     ActorModel.ReentrantActors.Add(this.Id, true);
-                    ActorModel.RegisterActionHandler(this.Id, HandleActorEvent);
+                    this.ReentrantActionHandler = HandleActorEvent;
                 }
                 else
                 {
@@ -202,11 +221,7 @@ namespace Microsoft.PSharp.Actors
 
         private void InactiveOnEntry()
         {
-            if (ActorModel.RegisteredTimers.ContainsKey(this.Id))
-            {
-                ActorModel.RegisteredTimers[this.Id].Clear();
-            }
-
+            this.RegisteredTimers.Clear();
             this.Deactivate();
             this.IsActive = false;
         }
@@ -243,24 +258,8 @@ namespace Microsoft.PSharp.Actors
 
         private void ExecuteActorAction(ActorEvent actorEvent)
         {
-            var id = ActorModel.Runtime.GetCurrentMachine();
-            if (!ActorModel.ExecutionContext.ContainsKey(id))
-            {
-                ActorModel.ExecutionContext.Add(id, new List<MachineId>());
-            }
-
-            ActorModel.ExecutionContext[id] = actorEvent.ExecutionContext.ToList();
-
-            Console.WriteLine("seriouly???" + id.Name + " " + ActorModel.ExecutionContext[id].ElementAt(ActorModel.ExecutionContext[id].Count - 1).Name);
-
-            Console.WriteLine("Actor Model Map for" + id.Name);
-
-            foreach (var a in ActorModel.ExecutionContext[id])
-            {
-                Console.WriteLine(a.Name);
-            }
-
-            Console.WriteLine("Number of machine IDs in the context for {0}: {1}", id, (actorEvent as ActorMachine.ActorEvent).ExecutionContext.Count);
+            this.LatestExecutionContext = actorEvent.ExecutionContext.ToList();
+            
             foreach (var x in (actorEvent as ActorMachine.ActorEvent).ExecutionContext)
             {
                 Console.WriteLine(" >> " + x.Name);
@@ -280,8 +279,7 @@ namespace Microsoft.PSharp.Actors
             var callback = (this.ReceivedEvent as TimerMachine.TimeoutEvent).Callback;
             var callbackState = (this.ReceivedEvent as TimerMachine.TimeoutEvent).CallbackState;
 
-            if (ActorModel.RegisteredTimers.ContainsKey(this.Id) &&
-                ActorModel.RegisteredTimers[this.Id].Contains(timer))
+            if (this.RegisteredTimers.Contains(timer))
             {
                 ActorModel.Runtime.Log($"<ActorModelLog> Machine '{this.Id.Name}' is " +
                     $"handling timeout from timer '{timer.Name}'.");
@@ -295,8 +293,7 @@ namespace Microsoft.PSharp.Actors
             var reminderName = (this.ReceivedEvent as ReminderMachine.RemindEvent).ReminderName;
             var callbackState = (this.ReceivedEvent as ReminderMachine.RemindEvent).CallbackState;
             
-            if (ActorModel.RegisteredReminders.ContainsKey(this.Id) &&
-                ActorModel.RegisteredReminders[this.Id].Contains(cancellationSource))
+            if (this.RegisteredReminders.Contains(cancellationSource))
             {
                 ActorModel.Runtime.Log($"<ActorModelLog> Machine '{this.Id.Name}' is " +
                     $"handling timeout from reminder '{cancellationSource.Reminder.Name}'.");

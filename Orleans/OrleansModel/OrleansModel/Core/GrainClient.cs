@@ -12,6 +12,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 using Microsoft.PSharp.Actors;
@@ -44,7 +45,7 @@ namespace Orleans
         /// <summary>
         /// Set of grain ids.
         /// </summary>
-        internal static ISet<GrainId> GrainIds;
+        internal static ConcurrentBag<GrainId> GrainIds;
 
         /// <summary>
         /// The client configuration.
@@ -63,11 +64,11 @@ namespace Orleans
             GrainClient.GrainFactory = new GrainFactory();
             GrainClient.Runtime = new GrainRuntime(GrainClient.GrainFactory);
             GrainClient.ProxyFactory = new ProxyFactory<Grain>(new HashSet<string> { });
-            GrainClient.GrainIds = new HashSet<GrainId>();
+            GrainClient.GrainIds = new ConcurrentBag<GrainId>();
 
             ActorModel.RegisterCleanUpAction(() =>
             {
-                GrainClient.GrainIds = new HashSet<GrainId>();
+                GrainClient.GrainIds = new ConcurrentBag<GrainId>();
             });
         }
 

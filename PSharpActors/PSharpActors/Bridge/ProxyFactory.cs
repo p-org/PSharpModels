@@ -169,7 +169,11 @@ namespace Microsoft.PSharp.Actors.Bridge
                 }
             }
 
-            return types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface).First();
+            var actorTypes = types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface);
+            ActorModel.Assert(actorTypes.Any(), "No implementation found for actor " +
+                $"type '{interfaceType}'.");
+
+            return actorTypes.First();
         }
 
         /// <summary>
@@ -223,15 +227,19 @@ namespace Microsoft.PSharp.Actors.Bridge
             ClassDeclarationSyntax classDecl = SyntaxFactory.ClassDeclaration(interfaceType.Name + "_PSharpProxy")
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
 
-            FieldDeclarationSyntax target = this.CreateProxyField(
-                interfaceType, "Target");
-            FieldDeclarationSyntax id = this.CreateProxyField(
-                typeof(MachineId), "Id");
-
+            PropertyDeclarationSyntax target = this.CreateProxyProperty(
+                interfaceType, "Target", SyntaxKind.PublicKeyword, SyntaxKind.PrivateKeyword);
+            PropertyDeclarationSyntax id = this.CreateProxyProperty(
+                typeof(MachineId), "Id", SyntaxKind.PublicKeyword, SyntaxKind.PrivateKeyword);
+            
             ConstructorDeclarationSyntax constructor = this.CreateProxyConstructor(
                 interfaceType, actorType, actorMachineType);
 
-            var baseTypes = new HashSet<BaseTypeSyntax>();
+            var baseTypes = new HashSet<BaseTypeSyntax>
+            {
+                SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(typeof(IPSharpActor).FullName))
+            };
+
             var methodDecls = new List<MethodDeclarationSyntax>();
 
             foreach (var type in actorType.GetInterfaces().Where(
@@ -338,18 +346,49 @@ namespace Microsoft.PSharp.Actors.Bridge
         }
 
         /// <summary>
-        /// Creates a proxy field declaration.
+        /// Creates a proxy property declaration.
         /// </summary>
         /// <param name="type">Type</param>
         /// <param name="identifier">Identifier</param>
-        /// <returns></returns>
-        private FieldDeclarationSyntax CreateProxyField(Type type, string identifier)
+        /// <param name="getModifierKeyword">SyntaxKind</param>
+        /// <param name="setModifierKeyword">SyntaxKind</param>
+        /// <returns>PropertyDeclarationSyntax</returns>
+        private PropertyDeclarationSyntax CreateProxyProperty(Type type, string identifier,
+            SyntaxKind getModifierKeyword, SyntaxKind setModifierKeyword)
         {
-            FieldDeclarationSyntax fieldDecl = SyntaxFactory.FieldDeclaration(SyntaxFactory.VariableDeclaration(
+            var getAccessor = SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).
+                WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+            if (getModifierKeyword == SyntaxKind.PrivateKeyword ||
+                getModifierKeyword == SyntaxKind.InternalKeyword)
+            {
+                getAccessor = getAccessor.WithModifiers(SyntaxFactory.TokenList(
+                    SyntaxFactory.Token(getModifierKeyword)));
+            }
+
+            var setAccessor = SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration).
+                WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+            if (setModifierKeyword == SyntaxKind.PrivateKeyword ||
+                setModifierKeyword == SyntaxKind.InternalKeyword)
+            {
+                setAccessor = setAccessor.WithModifiers(SyntaxFactory.TokenList(
+                    SyntaxFactory.Token(setModifierKeyword)));
+            }
+
+            var accessors = new List<AccessorDeclarationSyntax>()
+            {
+                getAccessor,
+                setAccessor
+            };
+
+            PropertyDeclarationSyntax propertyDecl = SyntaxFactory.PropertyDeclaration(
+                SyntaxFactory.List<AttributeListSyntax>(),
+                SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)),
                 this.GetTypeSyntax(type),
-                SyntaxFactory.SingletonSeparatedList(SyntaxFactory.VariableDeclarator(identifier))))
-                .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PrivateKeyword)));
-            return fieldDecl;
+                null,
+                SyntaxFactory.Identifier(identifier),
+                SyntaxFactory.AccessorList(
+                    SyntaxFactory.List(accessors)));
+            return propertyDecl;
         }
 
         /// <summary>

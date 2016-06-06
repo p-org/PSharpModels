@@ -13,10 +13,12 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
+using Microsoft.PSharp;
 using Microsoft.PSharp.Actors;
 using Microsoft.PSharp.Actors.Bridge;
 using Microsoft.ServiceFabric.Actors.Runtime;
@@ -28,13 +30,13 @@ namespace Microsoft.ServiceFabric.Actors
     public class ActorProxy
     {
         private static ProxyFactory<Actor> ProxyFactory;
-        private static Dictionary<ActorId, Object> IdMap;
+        private static ConcurrentDictionary<ActorId, Object> IdMap;
 
         static ActorProxy()
         {
             ActorProxy.ProxyFactory = new ProxyFactory<Actor>(
                 new HashSet<string> { "Microsoft.ServiceFabric.Actors" });
-            ActorProxy.IdMap = new Dictionary<ActorId, object>();
+            ActorProxy.IdMap = new ConcurrentDictionary<ActorId, object>();
 
             ActorModel.RegisterCleanUpAction(() =>
             {
@@ -63,7 +65,7 @@ namespace Microsoft.ServiceFabric.Actors
             Type proxyType = ProxyFactory.GetProxyType(typeof(TActorInterface),
                 typeof(FabricActorMachine), assemblyPath);
             var res = (TActorInterface)Activator.CreateInstance(proxyType);
-            IdMap.Add(actorId, res);
+            IdMap.TryAdd(actorId, res);
 
             ActorModel.Runtime.Log("<ActorModelLog> Created actor proxy of type '{0}'.",
                 typeof(TActorInterface).FullName);

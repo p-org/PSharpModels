@@ -64,6 +64,7 @@
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IPSharpActor.cs" />
     <Compile Include="Timers\ReminderCancellationSource.cs" />
     <Compile Include="Timers\TimerCancellationSource.cs" />
     <Compile Include="Timers\ReminderMachine.cs" />
