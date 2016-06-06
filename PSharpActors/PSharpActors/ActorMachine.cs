@@ -60,6 +60,7 @@ namespace Microsoft.PSharp.Actors
             public object[] Parameters;
             public MachineId ActorCompletionMachine;
 
+            public MachineId Sender;
             public List<MachineId> ExecutionContext;
 
             /// <summary>
@@ -70,9 +71,9 @@ namespace Microsoft.PSharp.Actors
             /// <param name="classInstance">ClassInstance</param>
             /// <param name="parameters">Parameters</param>
             /// <param name="tcs">TaskCompletionSource</param>
-            /// <param name="incrementExecutionContext">Should increment the execution context</param>
+            /// <param name="senderMachineId">Machine id of sender</param>
             public ActorEvent(Type methodClass, string methodName, object classInstance,
-                object[] parameters, MachineId actorCompletionMachine, bool incrementExecutionContext = true)
+                object[] parameters, MachineId actorCompletionMachine, MachineId senderMachineId = null)
             {
                 this.MethodClass = methodClass;
                 this.MethodName = methodName;
@@ -80,17 +81,29 @@ namespace Microsoft.PSharp.Actors
                 this.Parameters = parameters;
                 this.ActorCompletionMachine = actorCompletionMachine;
                 this.ExecutionContext = new List<MachineId>();
-
-                if (incrementExecutionContext)
+                
+                if (senderMachineId == null)
                 {
-                    MachineId id = ActorModel.Runtime.GetCurrentMachine();
-                    if (!ActorModel.ExecutionContext.ContainsKey(id))
-                    {
-                        ActorModel.ExecutionContext.Add(id, new List<MachineId>());
-                    }
+                    this.Sender = ActorModel.Runtime.GetCurrentMachine();
+                }
+                else
+                {
+                    this.Sender = senderMachineId;
+                }
+                
+                if (!ActorModel.ExecutionContext.ContainsKey(this.Sender))
+                {
+                    Console.WriteLine("didnt find execution context for: " + this.Sender);
+                    ActorModel.ExecutionContext.Add(this.Sender, new List<MachineId>());
+                }
 
-                    this.ExecutionContext = ActorModel.ExecutionContext[id].ToList();
-                    this.ExecutionContext.Add(id);
+                this.ExecutionContext = ActorModel.ExecutionContext[this.Sender].ToList();
+                this.ExecutionContext.Add(this.Sender);
+
+                Console.WriteLine("Current Execution context (before dequeue) : " + this.Sender.Name);
+                foreach(var ex in ExecutionContext)
+                {
+                    Console.WriteLine("|| " + ex.Name);
                 }
             }
         }
@@ -120,7 +133,6 @@ namespace Microsoft.PSharp.Actors
         /// Checks if the actor machine is active.
         /// </summary>
         internal bool IsActive;
-
         #endregion
 
         #region states
@@ -221,7 +233,7 @@ namespace Microsoft.PSharp.Actors
                 {
                     var duplicateEvent = new ActorEvent(actorEvent.MethodClass, actorEvent.MethodName,
                         actorEvent.ClassInstance, Serialization.Serialize(actorEvent.Parameters),
-                        actorEvent.ActorCompletionMachine, false);
+                        actorEvent.ActorCompletionMachine, actorEvent.Sender);
                     Send(this.Id, duplicateEvent);
                 }
 
@@ -239,6 +251,15 @@ namespace Microsoft.PSharp.Actors
 
             ActorModel.ExecutionContext[id] = actorEvent.ExecutionContext.ToList();
 
+            Console.WriteLine("seriouly???" + id.Name + " " + ActorModel.ExecutionContext[id].ElementAt(ActorModel.ExecutionContext[id].Count - 1).Name);
+
+            Console.WriteLine("Actor Model Map for" + id.Name);
+
+            foreach (var a in ActorModel.ExecutionContext[id])
+            {
+                Console.WriteLine(a.Name);
+            }
+
             Console.WriteLine("Number of machine IDs in the context for {0}: {1}", id, (actorEvent as ActorMachine.ActorEvent).ExecutionContext.Count);
             foreach (var x in (actorEvent as ActorMachine.ActorEvent).ExecutionContext)
             {
@@ -247,6 +268,7 @@ namespace Microsoft.PSharp.Actors
 
             ActorModel.Runtime.Log($"<ActorModelLog> Machine '{base.Id.Name}' is invoking '{actorEvent.MethodName}'.");
             MethodInfo mi = actorEvent.MethodClass.GetMethod(actorEvent.MethodName);
+
             object result = mi.Invoke(actorEvent.ClassInstance, actorEvent.Parameters);
 
             this.Send(actorEvent.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(result));

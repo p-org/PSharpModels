@@ -15,13 +15,11 @@ namespace BuggyOrleansApp
         public override Task OnActivateAsync()
         {
             this.State = 0;
-            this.WriteStateAsync().Wait();
             return base.OnActivateAsync();
         }
 
         public Task<int> GetCurrentCount()
         {
-            this.ReadStateAsync().Wait();
             return Task.FromResult(this.State);
         }
 
@@ -38,7 +36,6 @@ namespace BuggyOrleansApp
         public Task TransmitData(TransactionItems item)
         {
             Console.WriteLine(item.name);
-            this.ReadStateAsync().Wait();
             int count = this.State;
             count++;
             this.State = count;
