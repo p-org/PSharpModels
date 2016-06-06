@@ -95,7 +95,7 @@ namespace Microsoft.PSharp.Actors
                 {
                     this.ExecutionContext = ActorModel.ActorMachineMap[this.Sender].LatestExecutionContext.ToList();
                 }
-                
+
                 this.ExecutionContext.Add(this.Sender);
             }
         }
@@ -259,11 +259,6 @@ namespace Microsoft.PSharp.Actors
         private void ExecuteActorAction(ActorEvent actorEvent)
         {
             this.LatestExecutionContext = actorEvent.ExecutionContext.ToList();
-            
-            foreach (var x in (actorEvent as ActorMachine.ActorEvent).ExecutionContext)
-            {
-                Console.WriteLine(" >> " + x.Name);
-            }
 
             ActorModel.Runtime.Log($"<ActorModelLog> Machine '{base.Id.Name}' is invoking '{actorEvent.MethodName}'.");
             MethodInfo mi = actorEvent.MethodClass.GetMethod(actorEvent.MethodName);

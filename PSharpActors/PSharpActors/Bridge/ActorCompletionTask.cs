@@ -90,11 +90,6 @@ namespace Microsoft.PSharp.Actors.Bridge
                     (Event e) => { receivedResult = true; }),
                     Tuple.Create<Type, Func<Event, bool>, Action<Event>>(typeof(ActorMachine.ActorEvent), (Event e) =>
                     {
-                        foreach (var x in (e as ActorMachine.ActorEvent).ExecutionContext)
-                        {
-                            Console.WriteLine(" >>>> " + x.Name + " " + (e as ActorMachine.ActorEvent).MethodName);
-                        }
-
                         if (ActorModel.Configuration.AllowReentrantCalls &&
                             ActorModel.ReentrantActors.ContainsKey(mid) &&
                             ActorModel.ReentrantActors[mid])

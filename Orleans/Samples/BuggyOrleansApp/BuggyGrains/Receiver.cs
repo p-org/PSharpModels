@@ -25,10 +25,10 @@ namespace BuggyOrleansApp
 
         public Task StartTransaction()
         {
-            //var sender = GrainClient.GrainFactory.GetGrain<ISender>(0);
-            //ActorModel.Assert(sender != null, "sender proxy is null");
-            //Task t = sender.Dummy();
-            //ActorModel.Wait(t);
+            var sender = GrainClient.GrainFactory.GetGrain<ISender>(0);
+            ActorModel.Assert(sender != null, "sender proxy is null");
+            Task t = sender.Dummy();
+            ActorModel.Wait(t);
             this.State = 0;
             return this.WriteStateAsync();
         }

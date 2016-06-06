@@ -30,12 +30,12 @@ namespace BuggyOrleansApp
             var receiver = GrainClient.GrainFactory.GetGrain<IReceiver>(1);
 
             var task = receiver.StartTransaction();
-            //ActorModel.Wait(task);
+            ActorModel.Wait(task);
 
             for (int i = 0; i < numberOfItems; i++)
                 receiver.TransmitData(new TransactionItems("xyz" + i));
 
-            //int transmitted = ActorModel.GetResult<int>(receiver.GetCurrentCount());
+            int transmitted = ActorModel.GetResult<int>(receiver.GetCurrentCount());
             //ActorModel.Assert(transmitted <= numberOfItems, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
             return Task.FromResult(true);
         }

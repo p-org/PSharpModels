@@ -33,7 +33,6 @@ namespace OrleansModel
             if (genericTypes.Length == 1)
             {
                 var grainStateType = Type.GetType($"OrleansModel.GrainState`1[{genericTypes[0]}]");
-                Console.WriteLine(grainStateType);
                 var grainState = Activator.CreateInstance(grainStateType);
                 FieldInfo field = base.WrappedActorInstance.GetType().GetField("GrainState",
                     BindingFlags.Public | BindingFlags.Instance);
