@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="FabricFailureDetectorType" ApplicationTypeVersion="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+   <Parameters>
+      <Parameter Name="FailureDetectorActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="FailureDetectorActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="FailureDetectorActorService_TargetReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="NodeActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="NodeActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="NodeActorService_TargetReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="DriverActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="DriverActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="DriverActorService_TargetReplicaSetSize" DefaultValue="1" />
+   </Parameters>
+   <ServiceManifestImport>
+      <ServiceManifestRef ServiceManifestName="FailureDetector.ActorsPkg" ServiceManifestVersion="1.0.0" />
+   </ServiceManifestImport>
+   <DefaultServices>
+      <Service Name="FailureDetectorActorService" GeneratedIdRef="ba218d33-1569-4f6a-81da-2f763980a65d|None">
+         <StatefulService ServiceTypeName="FailureDetectorActorServiceType" TargetReplicaSetSize="[FailureDetectorActorService_TargetReplicaSetSize]" MinReplicaSetSize="[FailureDetectorActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[FailureDetectorActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+      <Service Name="NodeActorService" GeneratedIdRef="caff5725-6a55-4a8a-b620-b3def0af2cb6|None">
+         <StatefulService ServiceTypeName="NodeActorServiceType" TargetReplicaSetSize="[NodeActorService_TargetReplicaSetSize]" MinReplicaSetSize="[NodeActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[NodeActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+      <Service Name="DriverActorService" GeneratedIdRef="05fec18d-dcb2-40f4-99e7-592f8a3a00b7|None">
+         <StatefulService ServiceTypeName="DriverActorServiceType" TargetReplicaSetSize="[DriverActorService_TargetReplicaSetSize]" MinReplicaSetSize="[DriverActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[DriverActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+   </DefaultServices>
+</ApplicationManifest>

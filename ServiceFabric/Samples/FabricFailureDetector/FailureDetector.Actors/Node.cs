@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-
-using Microsoft.PSharp.Actors;
-
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
+using Microsoft.ServiceFabric.Actors.Client;
 
-namespace FailureDetector
+using FailureDetector.Interfaces;
+
+namespace FailureDetector.Actors
 {
     public class Node : Actor, INode
     {
         #region methods
 
         private int NodeId;
+
+        private bool IsHalted;
 
         private HashSet<ulong> ProcessedPingIds;
 
@@ -26,6 +30,7 @@ namespace FailureDetector
             if (this.ProcessedPingIds == null)
             {
                 this.NodeId = id;
+                this.IsHalted = false;
                 this.ProcessedPingIds = new HashSet<ulong>();
             }
 
@@ -34,7 +39,7 @@ namespace FailureDetector
 
         public Task Ping(ulong pingId, int senderId)
         {
-            if (this.ProcessedPingIds.Contains(pingId))
+            if (this.IsHalted || this.ProcessedPingIds.Contains(pingId))
             {
                 return new Task(() => { });
             }
@@ -44,10 +49,16 @@ namespace FailureDetector
             var sender = ActorProxy.Create<IFailureDetector>(
                 new ActorId(senderId), "FailureDetectorProxy");
 
-            ActorModel.Runtime.InvokeMonitor<SafetyMonitor>(new SafetyMonitor.NotifyPong(this.NodeId));
+            //ActorModel.Runtime.InvokeMonitor<SafetyMonitor>(new SafetyMonitor.NotifyPong(this.NodeId));
 
             sender.Pong(this.NodeId);
 
+            return new Task(() => { });
+        }
+
+        public Task Halt()
+        {
+            this.IsHalted = true;
             return new Task(() => { });
         }
 

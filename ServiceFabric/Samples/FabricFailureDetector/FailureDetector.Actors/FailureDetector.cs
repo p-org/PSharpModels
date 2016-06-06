@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-
-using Microsoft.PSharp.Actors;
-
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
+using Microsoft.ServiceFabric.Actors.Client;
 
-namespace FailureDetector
+using FailureDetector.Interfaces;
+
+namespace FailureDetector.Actors
 {
     public class FailureDetector : Actor, IFailureDetector
     {
@@ -78,14 +80,14 @@ namespace FailureDetector
                 if (this.Alive.ContainsKey(node.Value) &&
                     !this.Responses.ContainsKey(node.Value))
                 {
-                    ActorModel.Runtime.InvokeMonitor<SafetyMonitor>(
-                        new SafetyMonitor.NotifyPing(node.Key));
+                    //ActorModel.Runtime.InvokeMonitor<SafetyMonitor>(
+                    //    new SafetyMonitor.NotifyPing(node.Key));
                     node.Value.Ping(PingCounter++, this.FailureDetectorId);
                 }
             }
 
             this.Timer = this.RegisterTimer(HandleTimeout, null,
-                TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0));
+                TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(2));
         }
 
         public Task Pong(int senderId)
