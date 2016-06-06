@@ -45,14 +45,17 @@ namespace FailureDetector
 
         public Task Configure(List<int> nodeIds)
         {
-            foreach (var id in nodeIds)
+            if (this.Nodes.Count == 0)
             {
-                this.Nodes.Add(ActorProxy.Create<INode>(new ActorId(id), "NodeProxy"));
-            }
-            
-            foreach (var node in this.Nodes)
-            {
-                this.Alive.Add(node, true);
+                foreach (var id in nodeIds)
+                {
+                    this.Nodes.Add(ActorProxy.Create<INode>(new ActorId(id), "NodeProxy"));
+                }
+
+                foreach (var node in this.Nodes)
+                {
+                    this.Alive.Add(node, true);
+                }
             }
 
             return new Task(() => { });
