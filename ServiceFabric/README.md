@@ -1,5 +1,5 @@
-# ServiceFabricModel
-Model of Azure Service Fabric in [P#](https://github.com/p-org/PSharp).
+# Testing Actor services of Azure Service Fabric
+We provide a model (or a *mock*) of Azure Service Fabric written using [P#](https://github.com/p-org/PSharp). The model exposes the same APIs as Service Fabric. To use it, one must redirect the application to build against the model DLL instead of the actual Fabric DLLs. The model currently only covers the [Actor programming model](https://azure.microsoft.com/en-in/documentation/articles/service-fabric-reliable-actors-introduction/).
 
 ## How to build
 To build ServiceFabricModel do the following:
