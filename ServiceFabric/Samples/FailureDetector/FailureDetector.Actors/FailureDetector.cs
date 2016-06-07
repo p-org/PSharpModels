@@ -25,6 +25,7 @@ namespace FailureDetector
 
         private HashSet<ulong> ProcessedRequests;
         private ulong PingCounter;
+        private bool HasStarted;
 
         private IActorTimer Timer;
 
@@ -43,6 +44,7 @@ namespace FailureDetector
                 this.Responses = new Dictionary<INode, bool>();
                 this.ProcessedRequests = new HashSet<ulong>();
                 this.PingCounter = 0;
+                this.HasStarted = false;
             }
 
             return base.OnActivateAsync();
@@ -69,7 +71,12 @@ namespace FailureDetector
 
         public Task Start()
         {
-            this.SendPings();
+            if (!this.HasStarted)
+            {
+                this.SendPings();
+                this.HasStarted = true;
+            }
+            
             return new Task(() => { });
         }
 

@@ -19,9 +19,6 @@ namespace FailureDetector
         [Microsoft.PSharp.Test]
         public static void Execute(PSharpRuntime runtime)
         {
-            Configuration conf = Configuration.Create(true, true, false, true, true);
-            ActorModel.Configure(conf);
-
             ActorModel.Start(runtime, () =>
             {
                 runtime.RegisterMonitor(typeof(SafetyMonitor));
