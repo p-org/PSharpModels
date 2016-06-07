@@ -13,9 +13,9 @@ cd PSharp
 
 Open `PSharp.sln` in Visual Studio and build it.
 
-## How to build and use OrleansModel
+## Testing Orleans Applications
 Follow the instructions [here](https://github.com/p-org/PSharpModels/tree/master/Orleans).
 
 
-## How to build and use ServiceFabricModel
+## Testing Actor services of Azure Service Fabric
 Follow the instructions [here](https://github.com/p-org/PSharpModels/tree/master/ServiceFabric).
