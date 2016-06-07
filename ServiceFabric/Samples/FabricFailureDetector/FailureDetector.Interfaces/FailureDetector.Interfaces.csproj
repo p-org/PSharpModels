@@ -67,6 +67,7 @@
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ISafetyMonitor.cs" />
     <Compile Include="IFailureDetector.cs" />
     <Compile Include="INode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

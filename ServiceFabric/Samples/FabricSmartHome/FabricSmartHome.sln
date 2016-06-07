@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "FabricSmartHome", "FabricSmartHome\FabricSmartHome.sfproj", "{045E70DD-0BE0-4D82-90E8-5B908800B212}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartHome.Interfaces", "SmartHome.Interfaces\SmartHome.Interfaces.csproj", "{F831D120-0CBD-4BC7-A78D-BC78C578C725}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartHome.Actors", "SmartHome.Actors\SmartHome.Actors.csproj", "{CABC63F3-E63F-47F5-AF0B-682CC2B33C30}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartHome.Client", "SmartHome.Client\SmartHome.Client.csproj", "{220115E5-07DF-4991-8113-428C408F8720}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{045E70DD-0BE0-4D82-90E8-5B908800B212}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{045E70DD-0BE0-4D82-90E8-5B908800B212}.Debug|x64.ActiveCfg = Debug|x64
+		{045E70DD-0BE0-4D82-90E8-5B908800B212}.Debug|x64.Build.0 = Debug|x64
+		{045E70DD-0BE0-4D82-90E8-5B908800B212}.Debug|x64.Deploy.0 = Debug|x64
+		{045E70DD-0BE0-4D82-90E8-5B908800B212}.Release|Any CPU.ActiveCfg = Release|x64
+		{045E70DD-0BE0-4D82-90E8-5B908800B212}.Release|x64.ActiveCfg = Release|x64
+		{045E70DD-0BE0-4D82-90E8-5B908800B212}.Release|x64.Build.0 = Release|x64
+		{045E70DD-0BE0-4D82-90E8-5B908800B212}.Release|x64.Deploy.0 = Release|x64
+		{F831D120-0CBD-4BC7-A78D-BC78C578C725}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{F831D120-0CBD-4BC7-A78D-BC78C578C725}.Debug|x64.ActiveCfg = Debug|x64
+		{F831D120-0CBD-4BC7-A78D-BC78C578C725}.Debug|x64.Build.0 = Debug|x64
+		{F831D120-0CBD-4BC7-A78D-BC78C578C725}.Release|Any CPU.ActiveCfg = Release|x64
+		{F831D120-0CBD-4BC7-A78D-BC78C578C725}.Release|x64.ActiveCfg = Release|x64
+		{F831D120-0CBD-4BC7-A78D-BC78C578C725}.Release|x64.Build.0 = Release|x64
+		{CABC63F3-E63F-47F5-AF0B-682CC2B33C30}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{CABC63F3-E63F-47F5-AF0B-682CC2B33C30}.Debug|x64.ActiveCfg = Debug|x64
+		{CABC63F3-E63F-47F5-AF0B-682CC2B33C30}.Debug|x64.Build.0 = Debug|x64
+		{CABC63F3-E63F-47F5-AF0B-682CC2B33C30}.Release|Any CPU.ActiveCfg = Release|x64
+		{CABC63F3-E63F-47F5-AF0B-682CC2B33C30}.Release|x64.ActiveCfg = Release|x64
+		{CABC63F3-E63F-47F5-AF0B-682CC2B33C30}.Release|x64.Build.0 = Release|x64
+		{220115E5-07DF-4991-8113-428C408F8720}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{220115E5-07DF-4991-8113-428C408F8720}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{220115E5-07DF-4991-8113-428C408F8720}.Debug|x64.ActiveCfg = Debug|x64
+		{220115E5-07DF-4991-8113-428C408F8720}.Debug|x64.Build.0 = Debug|x64
+		{220115E5-07DF-4991-8113-428C408F8720}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{220115E5-07DF-4991-8113-428C408F8720}.Release|Any CPU.Build.0 = Release|Any CPU
+		{220115E5-07DF-4991-8113-428C408F8720}.Release|x64.ActiveCfg = Release|x64
+		{220115E5-07DF-4991-8113-428C408F8720}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

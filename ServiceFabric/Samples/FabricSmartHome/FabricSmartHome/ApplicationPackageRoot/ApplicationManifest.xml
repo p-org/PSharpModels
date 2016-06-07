@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="FabricSmartHomeType" ApplicationTypeVersion="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+   <Parameters>
+      <Parameter Name="EnvironmentActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="EnvironmentActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="EnvironmentActorService_TargetReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="KitchenActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="KitchenActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="KitchenActorService_TargetReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="BedroomActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="BedroomActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="BedroomActorService_TargetReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="GardenActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="GardenActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="GardenActorService_TargetReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="ThiefActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="ThiefActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="ThiefActorService_TargetReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="PersonActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="PersonActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="PersonActorService_TargetReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="HouseActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="HouseActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="HouseActorService_TargetReplicaSetSize" DefaultValue="1" />
+   </Parameters>
+   <ServiceManifestImport>
+      <ServiceManifestRef ServiceManifestName="SmartHome.ActorsPkg" ServiceManifestVersion="1.0.0" />
+   </ServiceManifestImport>
+   <DefaultServices>
+      <Service Name="EnvironmentActorService" GeneratedIdRef="dda6ee7c-80e3-4b36-b651-50c906ac0082|None">
+         <StatefulService ServiceTypeName="EnvironmentActorServiceType" TargetReplicaSetSize="[EnvironmentActorService_TargetReplicaSetSize]" MinReplicaSetSize="[EnvironmentActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[EnvironmentActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+      <Service Name="KitchenActorService" GeneratedIdRef="66c3909b-4a4c-45e5-a3b2-5db8a721f6d0|None">
+         <StatefulService ServiceTypeName="KitchenActorServiceType" TargetReplicaSetSize="[KitchenActorService_TargetReplicaSetSize]" MinReplicaSetSize="[KitchenActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[KitchenActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+      <Service Name="BedroomActorService" GeneratedIdRef="a4fec311-bd3e-4c5b-9bce-3eefb2d3e6d8|None">
+         <StatefulService ServiceTypeName="BedroomActorServiceType" TargetReplicaSetSize="[BedroomActorService_TargetReplicaSetSize]" MinReplicaSetSize="[BedroomActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[BedroomActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+      <Service Name="GardenActorService" GeneratedIdRef="a4d65c8e-1faa-4192-8076-d549a8ab3926|None">
+         <StatefulService ServiceTypeName="GardenActorServiceType" TargetReplicaSetSize="[GardenActorService_TargetReplicaSetSize]" MinReplicaSetSize="[GardenActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[GardenActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+      <Service Name="ThiefActorService" GeneratedIdRef="d0709ad2-d53c-4f16-b992-899990ade84c|None">
+         <StatefulService ServiceTypeName="ThiefActorServiceType" TargetReplicaSetSize="[ThiefActorService_TargetReplicaSetSize]" MinReplicaSetSize="[ThiefActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[ThiefActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+      <Service Name="PersonActorService" GeneratedIdRef="80efae72-a02d-44c1-b7ef-1d0dc838160a|None">
+         <StatefulService ServiceTypeName="PersonActorServiceType" TargetReplicaSetSize="[PersonActorService_TargetReplicaSetSize]" MinReplicaSetSize="[PersonActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[PersonActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+      <Service Name="HouseActorService" GeneratedIdRef="9581f5ca-4494-4dbb-9e5f-bec0de2ebbc7|None">
+         <StatefulService ServiceTypeName="HouseActorServiceType" TargetReplicaSetSize="[HouseActorService_TargetReplicaSetSize]" MinReplicaSetSize="[HouseActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[HouseActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+   </DefaultServices>
+</ApplicationManifest>

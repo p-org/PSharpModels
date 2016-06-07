@@ -11,7 +11,7 @@ namespace FailureDetector.Interfaces
 
         Task Start();
 
-        Task Pong(int senderId);
+        Task Pong(ulong requestId, int senderId);
 
         Task RegisterClient(int clientId);
 

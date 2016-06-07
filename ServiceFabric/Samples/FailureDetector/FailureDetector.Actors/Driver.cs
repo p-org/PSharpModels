@@ -47,7 +47,7 @@ namespace FailureDetector
 
                 this.FailureDetector.Start();
 
-                this.Fail();
+                //this.Fail();
             }
 
             return base.OnActivateAsync();

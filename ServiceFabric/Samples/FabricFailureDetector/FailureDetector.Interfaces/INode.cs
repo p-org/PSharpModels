@@ -8,7 +8,7 @@ namespace FailureDetector.Interfaces
     {
         Task Configure(int id);
 
-        Task Ping(ulong pingId, int senderId);
+        Task Ping(ulong requestId, int senderId);
 
         Task Halt();
     }

@@ -25,123 +25,171 @@ namespace FailureDetector.Actors
         private Dictionary<INode, bool> Alive;
         private Dictionary<INode, bool> Responses;
 
+        private HashSet<ulong> ProcessedRequests;
+        private ulong SendCounter;
         private ulong PingCounter;
+        private bool HasStarted;
 
         private IActorTimer Timer;
+
+        private ISafetyMonitor SafetyMonitor;
 
         #endregion
 
         #region methods
 
-        protected override Task OnActivateAsync()
+        protected override async Task OnActivateAsync()
         {
             if (this.Nodes == null)
             {
-                this.FailureDetectorId = 1;
+                this.FailureDetectorId = 2;
                 this.Nodes = new Dictionary<int, INode>();
                 this.Clients = new Dictionary<IDriver, bool>();
                 this.Alive = new Dictionary<INode, bool>();
                 this.Responses = new Dictionary<INode, bool>();
+                this.ProcessedRequests = new HashSet<ulong>();
                 this.PingCounter = 0;
+                this.HasStarted = false;
+
+                this.SafetyMonitor = ActorProxy.Create<ISafetyMonitor>(new ActorId(1), "fabric:/FabricFailureDetector");
             }
 
-            return base.OnActivateAsync();
+            await base.OnActivateAsync();
         }
 
-        public Task Configure(List<int> nodeIds)
+        public async Task Configure(List<int> nodeIds)
         {
-            if (this.Nodes.Count == 0)
+            await Task.Run(() =>
             {
-                foreach (var id in nodeIds)
-                {
-                    this.Nodes.Add(id, ActorProxy.Create<INode>(
-                        new ActorId(id), "NodeProxy"));
-                }
+                ActorEventSource.Current.ActorMessage(this, "[FailureDetector] Creating {0} new nodes. Currently have {1} nodes.",
+                    nodeIds.Count, this.Nodes.Count);
 
-                foreach (var node in this.Nodes)
+                if (this.Nodes.Count == 0)
                 {
-                    this.Alive.Add(node.Value, true);
-                }
-            }
+                    foreach (var id in nodeIds)
+                    {
+                        ActorEventSource.Current.ActorMessage(this, "[FailureDetector] Creating new node {0}", id);
+                        this.Nodes.Add(id, ActorProxy.Create<INode>(new ActorId(id), "fabric:/FabricFailureDetector"));
+                    }
 
-            return new Task(() => { });
+                    foreach (var node in this.Nodes)
+                    {
+                        this.Alive.Add(node.Value, true);
+                    }
+                }
+            });
         }
 
-        public Task Start()
+        public async Task Start()
         {
-            this.SendPings();
-            return new Task(() => { });
+            await Task.Run(async () =>
+            {
+                ActorEventSource.Current.ActorMessage(this, "[FailureDetector] Starting");
+                if (!this.HasStarted)
+                {
+                    this.HasStarted = true;
+                    await this.SendPings();
+                    ActorEventSource.Current.ActorMessage(this, "[FailureDetector] Started");
+                }
+            });
         }
 
-        private void SendPings()
+        private async Task SendPings()
         {
+            this.SendCounter++;
+
+            ActorEventSource.Current.ActorMessage(this, "[FailureDetector] Wants to send some pings");
             foreach (var node in this.Nodes)
             {
+                ActorEventSource.Current.ActorMessage(this, "[FailureDetector] Wants to send ping to node {0}", node.Key);
+                ActorEventSource.Current.ActorMessage(this, "[FailureDetector] Alive {0}", this.Alive.ContainsKey(node.Value));
+                ActorEventSource.Current.ActorMessage(this, "[FailureDetector] Responses {0}", this.Responses.ContainsKey(node.Value));
                 if (this.Alive.ContainsKey(node.Value) &&
                     !this.Responses.ContainsKey(node.Value))
                 {
-                    //ActorModel.Runtime.InvokeMonitor<SafetyMonitor>(
-                    //    new SafetyMonitor.NotifyPing(node.Key));
-                    node.Value.Ping(PingCounter++, this.FailureDetectorId);
+                    ActorEventSource.Current.ActorMessage(this, "[FailureDetector] Sending ping to node {0}", node.Key);
+
+                    ActorEventSource.Current.ActorMessage(this, "[Monitor] Notifies ping to node {0}", node.Key);
+                    await SafetyMonitor.NotifyPing(node.Key);
+
+                    await node.Value.Ping(PingCounter++, this.FailureDetectorId);
                 }
             }
 
             this.Timer = this.RegisterTimer(HandleTimeout, null,
-                TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(2));
+                TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2));
         }
 
-        public Task Pong(int senderId)
+        public async Task Pong(ulong requestId, int senderId)
         {
-            var node = ActorProxy.Create<INode>(
-                new ActorId(senderId), "NodeProxy");
-
-            if (this.Alive.ContainsKey(node))
+            await Task.Run(() =>
             {
-                this.Responses[node] = true;
-                if (this.Responses.Count == this.Alive.Count)
+                if (this.ProcessedRequests.Contains(requestId))
+                {
+                    return;
+                }
+
+                this.ProcessedRequests.Add(requestId);
+
+                var node = ActorProxy.Create<INode>(new ActorId(senderId), "fabric:/FabricFailureDetector");
+
+                ActorEventSource.Current.ActorMessage(this, "[FailureDetector] Received pong {0}", requestId);
+
+                if (this.Alive.ContainsKey(node))
+                {
+                    this.Responses[node] = true;
+                    if (this.Responses.Count == this.Alive.Count)
+                    {
+                        this.UnregisterTimer(this.Timer);
+                    }
+                }
+            });
+        }
+
+        public async Task RegisterClient(int clientId)
+        {
+            await Task.Run(() =>
+            {
+                var client = ActorProxy.Create<IDriver>(new ActorId(clientId), "fabric:/FabricFailureDetector");
+                this.Clients[client] = true;
+            });
+        }
+
+        public async Task UnregisterClient(int clientId)
+        {
+            await Task.Run(() =>
+            {
+                var client = ActorProxy.Create<IDriver>(new ActorId(clientId), "fabric:/FabricFailureDetector");
+                if (this.Clients.ContainsKey(client))
+                {
+                    this.Clients.Remove(client);
+                }
+            });
+        }
+
+        public async Task HandleTimeout(object args)
+        {
+            await Task.Run(async () =>
+            {
+                if (this.SendCounter > 5)
                 {
                     this.UnregisterTimer(this.Timer);
+                    return;
                 }
-            }
-            
-            return new Task(() => { });
-        }
 
-        public Task RegisterClient(int clientId)
-        {
-            var client = ActorProxy.Create<IDriver>(new ActorId(clientId), "DriverProxy");
-            this.Clients[client] = true;
-
-            return new Task(() => { });
-        }
-
-        public Task UnregisterClient(int clientId)
-        {
-            var client = ActorProxy.Create<IDriver>(new ActorId(clientId), "DriverProxy");
-            if (this.Clients.ContainsKey(client))
-            {
-                this.Clients.Remove(client);
-            }
-
-            return new Task(() => { });
-        }
-
-        public Task HandleTimeout(object args)
-        {
-            this.Attempts++;
-            if (this.Responses.Count < this.Alive.Count && this.Attempts < 2)
-            {
-                this.SendPings();
-            }
-            else
-            {
-                this.CheckAliveSet();
-                this.Attempts = 0;
-                this.Responses.Clear();
-                this.SendPings();
-            }
-
-            return Task.FromResult(true);
+                this.Attempts++;
+                if (this.Responses.Count < this.Alive.Count && this.Attempts < 2)
+                {
+                    await this.SendPings();
+                }
+                else
+                {
+                    //this.CheckAliveSet();
+                    this.Attempts = 0;
+                    this.Responses.Clear();
+                    await this.SendPings();
+                }
+            });
         }
 
         private void CheckAliveSet()
@@ -154,6 +202,17 @@ namespace FailureDetector.Actors
                     this.Alive.Remove(node.Value);
                 }
             }
+        }
+
+        protected override async Task OnDeactivateAsync()
+        {
+            if (this.Timer != null)
+            {
+                this.UnregisterTimer(this.Timer);
+                this.Timer = null;
+            }
+
+            await base.OnDeactivateAsync();
         }
 
         #endregion

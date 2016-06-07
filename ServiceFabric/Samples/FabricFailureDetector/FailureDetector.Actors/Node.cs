@@ -19,47 +19,59 @@ namespace FailureDetector.Actors
 
         private bool IsHalted;
 
-        private HashSet<ulong> ProcessedPingIds;
+        private HashSet<ulong> ProcessedRequests;
+
+        private ISafetyMonitor SafetyMonitor;
 
         #endregion
 
         #region methods
 
-        public Task Configure(int id)
+        public async Task Configure(int id)
         {
-            if (this.ProcessedPingIds == null)
+            await Task.Run(() =>
             {
-                this.NodeId = id;
-                this.IsHalted = false;
-                this.ProcessedPingIds = new HashSet<ulong>();
-            }
+                if (this.ProcessedRequests == null)
+                {
+                    this.NodeId = id;
+                    this.IsHalted = false;
+                    this.ProcessedRequests = new HashSet<ulong>();
 
-            return new Task(() => { });
+                    this.SafetyMonitor = ActorProxy.Create<ISafetyMonitor>(
+                        new ActorId(1), "fabric:/FabricFailureDetector");
+                }
+            });
         }
 
-        public Task Ping(ulong pingId, int senderId)
+        public async Task Ping(ulong requestId, int senderId)
         {
-            if (this.IsHalted || this.ProcessedPingIds.Contains(pingId))
+            await Task.Run(async () =>
             {
-                return new Task(() => { });
-            }
+                if (this.IsHalted || this.ProcessedRequests.Contains(requestId))
+                {
+                    return;
+                }
 
-            this.ProcessedPingIds.Add(pingId);
+                this.ProcessedRequests.Add(requestId);
 
-            var sender = ActorProxy.Create<IFailureDetector>(
-                new ActorId(senderId), "FailureDetectorProxy");
+                var sender = ActorProxy.Create<IFailureDetector>(
+                    new ActorId(senderId), "fabric:/FabricFailureDetector");
 
-            //ActorModel.Runtime.InvokeMonitor<SafetyMonitor>(new SafetyMonitor.NotifyPong(this.NodeId));
+                ActorEventSource.Current.ActorMessage(this, "[Node] Received ping {0}", requestId);
 
-            sender.Pong(this.NodeId);
+                ActorEventSource.Current.ActorMessage(this, "[Monitor] Notifies pong from node {0}", this.NodeId);
+                await SafetyMonitor.NotifyPong(this.NodeId);
 
-            return new Task(() => { });
+                await sender.Pong(requestId, this.NodeId);
+            });
         }
 
-        public Task Halt()
+        public async Task Halt()
         {
-            this.IsHalted = true;
-            return new Task(() => { });
+            await Task.Run(() =>
+            {
+                this.IsHalted = true;
+            });
         }
 
         #endregion

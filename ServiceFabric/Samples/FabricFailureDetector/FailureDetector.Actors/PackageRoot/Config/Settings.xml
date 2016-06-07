@@ -21,4 +21,11 @@
    <Section Name="DriverActorServiceReplicatorSecurityConfig">
       <Parameter Name="CredentialType" Value="None" />
    </Section>
+   <Section Name="SafetyMonitorActorServiceReplicatorConfig">
+      <Parameter Name="ReplicatorEndpoint" Value="SafetyMonitorActorServiceReplicatorEndpoint" />
+      <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
+   </Section>
+   <Section Name="SafetyMonitorActorServiceReplicatorSecurityConfig">
+      <Parameter Name="CredentialType" Value="None" />
+   </Section>
 </Settings>

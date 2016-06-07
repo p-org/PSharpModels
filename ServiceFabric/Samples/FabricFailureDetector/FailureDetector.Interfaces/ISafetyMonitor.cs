@@ -4,8 +4,10 @@ using Microsoft.ServiceFabric.Actors;
 
 namespace FailureDetector.Interfaces
 {
-    public interface IDriver : IActor
+    public interface ISafetyMonitor : IActor
     {
-        Task Start();
+        Task NotifyPing(int nodeId);
+
+        Task NotifyPong(int nodeId);
     }
 }

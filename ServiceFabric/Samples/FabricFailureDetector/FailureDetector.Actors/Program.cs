@@ -27,6 +27,8 @@ namespace FailureDetector.Actors
                    (context, actorType) => new ActorService(context, actorType, () => new FailureDetector())).GetAwaiter().GetResult();
                 ActorRuntime.RegisterActorAsync<Node>(
                    (context, actorType) => new ActorService(context, actorType, () => new Node())).GetAwaiter().GetResult();
+                ActorRuntime.RegisterActorAsync<SafetyMonitor>(
+                   (context, actorType) => new ActorService(context, actorType, () => new SafetyMonitor())).GetAwaiter().GetResult();
 
                 Thread.Sleep(Timeout.Infinite);
             }

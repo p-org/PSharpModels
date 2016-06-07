@@ -10,6 +10,9 @@
       <Parameter Name="DriverActorService_PartitionCount" DefaultValue="10" />
       <Parameter Name="DriverActorService_MinReplicaSetSize" DefaultValue="1" />
       <Parameter Name="DriverActorService_TargetReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="SafetyMonitorActorService_PartitionCount" DefaultValue="10" />
+      <Parameter Name="SafetyMonitorActorService_MinReplicaSetSize" DefaultValue="1" />
+      <Parameter Name="SafetyMonitorActorService_TargetReplicaSetSize" DefaultValue="1" />
    </Parameters>
    <ServiceManifestImport>
       <ServiceManifestRef ServiceManifestName="FailureDetector.ActorsPkg" ServiceManifestVersion="1.0.0" />
@@ -28,6 +31,11 @@
       <Service Name="DriverActorService" GeneratedIdRef="05fec18d-dcb2-40f4-99e7-592f8a3a00b7|None">
          <StatefulService ServiceTypeName="DriverActorServiceType" TargetReplicaSetSize="[DriverActorService_TargetReplicaSetSize]" MinReplicaSetSize="[DriverActorService_MinReplicaSetSize]">
             <UniformInt64Partition PartitionCount="[DriverActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+         </StatefulService>
+      </Service>
+      <Service Name="SafetyMonitorActorService" GeneratedIdRef="107130bc-9bd5-491a-9bde-85266f03a2c9|None">
+         <StatefulService ServiceTypeName="SafetyMonitorActorServiceType" TargetReplicaSetSize="[SafetyMonitorActorService_TargetReplicaSetSize]" MinReplicaSetSize="[SafetyMonitorActorService_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[SafetyMonitorActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
          </StatefulService>
       </Service>
    </DefaultServices>

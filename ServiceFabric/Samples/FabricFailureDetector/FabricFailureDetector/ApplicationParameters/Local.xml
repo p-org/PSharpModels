@@ -4,5 +4,6 @@
       <Parameter Name="FailureDetectorActorService_PartitionCount" Value="1" />
       <Parameter Name="NodeActorService_PartitionCount" Value="1" />
       <Parameter Name="DriverActorService_PartitionCount" Value="1" />
+      <Parameter Name="SafetyMonitorActorService_PartitionCount" Value="1" />
    </Parameters>
 </Application>

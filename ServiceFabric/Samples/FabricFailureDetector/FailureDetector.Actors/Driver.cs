@@ -15,6 +15,7 @@ namespace FailureDetector.Actors
     {
         #region fields
 
+        private ISafetyMonitor SafetyMonitor;
         private IFailureDetector FailureDetector;
 
         private Dictionary<int, INode> Nodes;
@@ -22,12 +23,16 @@ namespace FailureDetector.Actors
 
         private Dictionary<INode, bool> NodeMap;
 
+        private IActorTimer Timer;
+
         #endregion
 
         #region methods
 
-        protected override Task OnActivateAsync()
+        public async Task Start()
         {
+            ActorEventSource.Current.ActorMessage(this, "[Driver] is starting");
+
             if (this.Nodes == null)
             {
                 this.NumberOfNodes = 2;
@@ -35,44 +40,58 @@ namespace FailureDetector.Actors
                 this.Nodes = new Dictionary<int, INode>();
                 this.NodeMap = new Dictionary<INode, bool>();
 
-                this.FailureDetector = ActorProxy.Create<IFailureDetector>(
-                    new ActorId(1), "FailureDetectorProxy");
+                this.SafetyMonitor = ActorProxy.Create<ISafetyMonitor>(new ActorId(1), "fabric:/FabricFailureDetector");
+                this.FailureDetector = ActorProxy.Create<IFailureDetector>(new ActorId(2), "fabric:/FabricFailureDetector");
 
-                this.Initialize();
+                await this.Initialize();
 
-                var configureTask = this.FailureDetector.Configure(this.Nodes.Keys.ToList());
-                configureTask.Wait();
+                await this.FailureDetector.Configure(this.Nodes.Keys.ToList());
+                await this.FailureDetector.RegisterClient(0);
+                await this.FailureDetector.Start();
 
-                var registerTask = this.FailureDetector.RegisterClient(0);
-                registerTask.Wait();
-
-                this.FailureDetector.Start();
-
-                this.Fail();
+                //this.Fail();
             }
-
-            return base.OnActivateAsync();
         }
 
-        private void Initialize()
+        private async Task Initialize()
         {
             for (int idx = 0; idx < this.NumberOfNodes; idx++)
             {
-                var node = ActorProxy.Create<INode>(new ActorId(idx+2), "NodeProxy");
-                var configureTask = node.Configure(idx + 2);
-                configureTask.Wait();
+                var node = ActorProxy.Create<INode>(new ActorId(idx + 3), "fabric:/FabricFailureDetector");
+                await node.Configure(idx + 3);
 
-                this.Nodes.Add(idx + 2, node);
+                this.Nodes.Add(idx + 3, node);
                 this.NodeMap.Add(node, true);
             }
         }
 
         private void Fail()
         {
-            foreach (var node in this.Nodes)
+            this.Timer = this.RegisterTimer(HandleTimeout, null,
+                TimeSpan.FromSeconds(new Random().Next(10) + 5),
+                TimeSpan.FromSeconds(new Random().Next(10) + 10));
+        }
+
+        public async Task HandleTimeout(object args)
+        {
+            await Task.Run(() =>
             {
-                node.Value.Halt();
+                foreach (var node in this.Nodes)
+                {
+                    node.Value.Halt();
+                }
+            });
+        }
+
+        protected override async Task OnDeactivateAsync()
+        {
+            if (this.Timer != null)
+            {
+                this.UnregisterTimer(this.Timer);
+                this.Timer = null;
             }
+
+            await base.OnDeactivateAsync();
         }
 
         #endregion

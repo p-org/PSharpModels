@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ServiceManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="SmartHome.ActorsPkg" Version="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+   <ServiceTypes>
+      <StatefulServiceType ServiceTypeName="EnvironmentActorServiceType">
+         <Extensions>
+            <Extension Name="__GeneratedServiceType__" GeneratedId="dda6ee7c-80e3-4b36-b651-50c906ac0082|None">
+               <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
+                  <DefaultService Name="EnvironmentActorService" />
+                  <ServiceEndpoint Name="EnvironmentActorServiceEndpoint" />
+                  <ReplicatorEndpoint Name="EnvironmentActorServiceReplicatorEndpoint" />
+                  <ReplicatorConfigSection Name="EnvironmentActorServiceReplicatorConfig" />
+                  <ReplicatorSecurityConfigSection Name="EnvironmentActorServiceReplicatorSecurityConfig" />
+                  <StoreConfigSection Name="EnvironmentActorServiceLocalStoreConfig" />
+               </GeneratedNames>
+            </Extension>
+         </Extensions>
+      </StatefulServiceType>
+      <StatefulServiceType ServiceTypeName="KitchenActorServiceType">
+         <Extensions>
+            <Extension Name="__GeneratedServiceType__" GeneratedId="66c3909b-4a4c-45e5-a3b2-5db8a721f6d0|None">
+               <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
+                  <DefaultService Name="KitchenActorService" />
+                  <ServiceEndpoint Name="KitchenActorServiceEndpoint" />
+                  <ReplicatorEndpoint Name="KitchenActorServiceReplicatorEndpoint" />
+                  <ReplicatorConfigSection Name="KitchenActorServiceReplicatorConfig" />
+                  <ReplicatorSecurityConfigSection Name="KitchenActorServiceReplicatorSecurityConfig" />
+                  <StoreConfigSection Name="KitchenActorServiceLocalStoreConfig" />
+               </GeneratedNames>
+            </Extension>
+         </Extensions>
+      </StatefulServiceType>
+      <StatefulServiceType ServiceTypeName="BedroomActorServiceType">
+         <Extensions>
+            <Extension Name="__GeneratedServiceType__" GeneratedId="a4fec311-bd3e-4c5b-9bce-3eefb2d3e6d8|None">
+               <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
+                  <DefaultService Name="BedroomActorService" />
+                  <ServiceEndpoint Name="BedroomActorServiceEndpoint" />
+                  <ReplicatorEndpoint Name="BedroomActorServiceReplicatorEndpoint" />
+                  <ReplicatorConfigSection Name="BedroomActorServiceReplicatorConfig" />
+                  <ReplicatorSecurityConfigSection Name="BedroomActorServiceReplicatorSecurityConfig" />
+                  <StoreConfigSection Name="BedroomActorServiceLocalStoreConfig" />
+               </GeneratedNames>
+            </Extension>
+         </Extensions>
+      </StatefulServiceType>
+      <StatefulServiceType ServiceTypeName="GardenActorServiceType">
+         <Extensions>
+            <Extension Name="__GeneratedServiceType__" GeneratedId="a4d65c8e-1faa-4192-8076-d549a8ab3926|None">
+               <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
+                  <DefaultService Name="GardenActorService" />
+                  <ServiceEndpoint Name="GardenActorServiceEndpoint" />
+                  <ReplicatorEndpoint Name="GardenActorServiceReplicatorEndpoint" />
+                  <ReplicatorConfigSection Name="GardenActorServiceReplicatorConfig" />
+                  <ReplicatorSecurityConfigSection Name="GardenActorServiceReplicatorSecurityConfig" />
+                  <StoreConfigSection Name="GardenActorServiceLocalStoreConfig" />
+               </GeneratedNames>
+            </Extension>
+         </Extensions>
+      </StatefulServiceType>
+      <StatefulServiceType ServiceTypeName="ThiefActorServiceType">
+         <Extensions>
+            <Extension Name="__GeneratedServiceType__" GeneratedId="d0709ad2-d53c-4f16-b992-899990ade84c|None">
+               <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
+                  <DefaultService Name="ThiefActorService" />
+                  <ServiceEndpoint Name="ThiefActorServiceEndpoint" />
+                  <ReplicatorEndpoint Name="ThiefActorServiceReplicatorEndpoint" />
+                  <ReplicatorConfigSection Name="ThiefActorServiceReplicatorConfig" />
+                  <ReplicatorSecurityConfigSection Name="ThiefActorServiceReplicatorSecurityConfig" />
+                  <StoreConfigSection Name="ThiefActorServiceLocalStoreConfig" />
+               </GeneratedNames>
+            </Extension>
+         </Extensions>
+      </StatefulServiceType>
+      <StatefulServiceType ServiceTypeName="PersonActorServiceType">
+         <Extensions>
+            <Extension Name="__GeneratedServiceType__" GeneratedId="80efae72-a02d-44c1-b7ef-1d0dc838160a|None">
+               <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
+                  <DefaultService Name="PersonActorService" />
+                  <ServiceEndpoint Name="PersonActorServiceEndpoint" />
+                  <ReplicatorEndpoint Name="PersonActorServiceReplicatorEndpoint" />
+                  <ReplicatorConfigSection Name="PersonActorServiceReplicatorConfig" />
+                  <ReplicatorSecurityConfigSection Name="PersonActorServiceReplicatorSecurityConfig" />
+                  <StoreConfigSection Name="PersonActorServiceLocalStoreConfig" />
+               </GeneratedNames>
+            </Extension>
+         </Extensions>
+      </StatefulServiceType>
+      <StatefulServiceType ServiceTypeName="HouseActorServiceType">
+         <Extensions>
+            <Extension Name="__GeneratedServiceType__" GeneratedId="9581f5ca-4494-4dbb-9e5f-bec0de2ebbc7|None">
+               <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
+                  <DefaultService Name="HouseActorService" />
+                  <ServiceEndpoint Name="HouseActorServiceEndpoint" />
+                  <ReplicatorEndpoint Name="HouseActorServiceReplicatorEndpoint" />
+                  <ReplicatorConfigSection Name="HouseActorServiceReplicatorConfig" />
+                  <ReplicatorSecurityConfigSection Name="HouseActorServiceReplicatorSecurityConfig" />
+                  <StoreConfigSection Name="HouseActorServiceLocalStoreConfig" />
+               </GeneratedNames>
+            </Extension>
+         </Extensions>
+      </StatefulServiceType>
+   </ServiceTypes>
+   <CodePackage Name="Code" Version="1.0.0">
+      <EntryPoint>
+         <ExeHost>
+            <Program>SmartHome.Actors.exe</Program>
+         </ExeHost>
+      </EntryPoint>
+   </CodePackage>
+   <ConfigPackage Name="Config" Version="1.0.0" />
+   <Resources>
+      <Endpoints>
+         <Endpoint Name="EnvironmentActorServiceEndpoint" />
+         <Endpoint Name="EnvironmentActorServiceReplicatorEndpoint" />
+         <Endpoint Name="KitchenActorServiceEndpoint" />
+         <Endpoint Name="KitchenActorServiceReplicatorEndpoint" />
+         <Endpoint Name="BedroomActorServiceEndpoint" />
+         <Endpoint Name="BedroomActorServiceReplicatorEndpoint" />
+         <Endpoint Name="GardenActorServiceEndpoint" />
+         <Endpoint Name="GardenActorServiceReplicatorEndpoint" />
+         <Endpoint Name="ThiefActorServiceEndpoint" />
+         <Endpoint Name="ThiefActorServiceReplicatorEndpoint" />
+         <Endpoint Name="PersonActorServiceEndpoint" />
+         <Endpoint Name="PersonActorServiceReplicatorEndpoint" />
+         <Endpoint Name="HouseActorServiceEndpoint" />
+         <Endpoint Name="HouseActorServiceReplicatorEndpoint" />
+      </Endpoints>
+   </Resources>
+</ServiceManifest>

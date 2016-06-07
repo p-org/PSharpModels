@@ -6,16 +6,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using FailureDetector.Interfaces;
+using SmartHome.Interfaces;
 
-namespace FailureDetector.Client
+namespace FabricBuggyExample.Client
 {
     class Program
     {
         static void Main(string[] args)
         {
-            var senderProxy = ActorProxy.Create<IDriver>(new ActorId(0), "fabric:/FabricFailureDetector");
-            var t = senderProxy.Start();
+            var environment = ActorProxy.Create<IEnvironment>(new ActorId(0), "fabric:/FabricSmartHome");
+            Task t = environment.Start();
             t.Wait();
             Console.WriteLine("DONE!!!");
         }

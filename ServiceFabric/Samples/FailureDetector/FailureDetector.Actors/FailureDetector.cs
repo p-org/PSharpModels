@@ -73,8 +73,8 @@ namespace FailureDetector
         {
             if (!this.HasStarted)
             {
-                this.SendPings();
                 this.HasStarted = true;
+                this.SendPings();
             }
             
             return new Task(() => { });
