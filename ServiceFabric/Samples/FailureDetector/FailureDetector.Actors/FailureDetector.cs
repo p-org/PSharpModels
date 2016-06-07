@@ -23,6 +23,7 @@ namespace FailureDetector
         private Dictionary<INode, bool> Alive;
         private Dictionary<INode, bool> Responses;
 
+        private HashSet<ulong> ProcessedRequests;
         private ulong PingCounter;
 
         private IActorTimer Timer;
@@ -40,6 +41,7 @@ namespace FailureDetector
                 this.Clients = new Dictionary<IDriver, bool>();
                 this.Alive = new Dictionary<INode, bool>();
                 this.Responses = new Dictionary<INode, bool>();
+                this.ProcessedRequests = new HashSet<ulong>();
                 this.PingCounter = 0;
             }
 
@@ -88,8 +90,15 @@ namespace FailureDetector
                 TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0));
         }
 
-        public Task Pong(int senderId)
+        public Task Pong(ulong requestId, int senderId)
         {
+            if (this.ProcessedRequests.Contains(requestId))
+            {
+                return new Task(() => { });
+            }
+
+            this.ProcessedRequests.Add(requestId);
+
             var node = ActorProxy.Create<INode>(
                 new ActorId(senderId), "NodeProxy");
 

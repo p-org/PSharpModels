@@ -15,7 +15,7 @@ namespace FailureDetector
 
         private int NodeId;
 
-        private HashSet<ulong> ProcessedPingIds;
+        private HashSet<ulong> ProcessedRequests;
 
         #endregion
 
@@ -23,30 +23,30 @@ namespace FailureDetector
 
         public Task Configure(int id)
         {
-            if (this.ProcessedPingIds == null)
+            if (this.ProcessedRequests == null)
             {
                 this.NodeId = id;
-                this.ProcessedPingIds = new HashSet<ulong>();
+                this.ProcessedRequests = new HashSet<ulong>();
             }
 
             return new Task(() => { });
         }
 
-        public Task Ping(ulong pingId, int senderId)
+        public Task Ping(ulong requestId, int senderId)
         {
-            if (this.ProcessedPingIds.Contains(pingId))
+            if (this.ProcessedRequests.Contains(requestId))
             {
                 return new Task(() => { });
             }
 
-            this.ProcessedPingIds.Add(pingId);
+            this.ProcessedRequests.Add(requestId);
 
             var sender = ActorProxy.Create<IFailureDetector>(
                 new ActorId(senderId), "FailureDetectorProxy");
 
             ActorModel.Runtime.InvokeMonitor<SafetyMonitor>(new SafetyMonitor.NotifyPong(this.NodeId));
 
-            sender.Pong(this.NodeId);
+            sender.Pong(requestId, this.NodeId);
 
             return new Task(() => { });
         }
