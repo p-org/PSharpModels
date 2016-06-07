@@ -81,6 +81,7 @@ namespace SmartHome.Actors
 
             if (isSafeOpen && numOfPeople == 0)
             {
+                ActorEventSource.Current.ActorMessage(this, "[LOG] Thief stole the money.");
                 throw new InvalidOperationException("Thief stole the money.");
             }
             
