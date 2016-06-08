@@ -60,8 +60,7 @@ namespace SmartHome.Actors
                 var task = this.Bedroom.TryEnterRoom();
                 canEnter = ActorModel.GetResult<bool>(task);
             }
-            else if (previousLocation == Location.Garden &&
-                location == Location.Kitchen)
+            else if (location == Location.Kitchen)
             {
                 var task = this.Bedroom.TryEnterRoom();
                 canEnter = ActorModel.GetResult<bool>(task);

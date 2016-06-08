@@ -26,12 +26,11 @@ namespace SmartHome.Actors
 
         public Task<Location> GotoRoom()
         {
-            var roomId = new Random().Next(3);
-            if (roomId == 0)
+            if (ActorModel.Random())
             {
                 return Task.FromResult(Location.Garden);
             }
-            else if (roomId == 0)
+            else if (ActorModel.Random())
             {
                 return Task.FromResult(Location.Kitchen);
             }
