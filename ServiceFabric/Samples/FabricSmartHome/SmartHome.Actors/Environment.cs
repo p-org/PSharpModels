@@ -29,11 +29,12 @@ namespace SmartHome.Actors
 
                     this.Thief = ActorProxy.Create<IThief>(new ActorId(1), "fabric:/FabricSmartHome");
 
-                    this.People.Add(ActorProxy.Create<IPerson>(new ActorId(2), "fabric:/FabricSmartHome"));
-                    this.People.Add(ActorProxy.Create<IPerson>(new ActorId(3), "fabric:/FabricSmartHome"));
-                    this.People.Add(ActorProxy.Create<IPerson>(new ActorId(4), "fabric:/FabricSmartHome"));
+                    for (int idx = 2; idx < 9; idx++)
+                    {
+                        this.People.Add(ActorProxy.Create<IPerson>(new ActorId(idx), "fabric:/FabricSmartHome"));
+                    }
 
-                    ActorProxy.Create<IHouse>(new ActorId(5), "fabric:/FabricSmartHome");
+                    ActorProxy.Create<IHouse>(new ActorId(100), "fabric:/FabricSmartHome");
 
                     ActorEventSource.Current.ActorMessage(this, "[LOG] Environment started.");
 

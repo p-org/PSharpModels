@@ -30,10 +30,10 @@ namespace SmartHome.Actors
                 this.StateManager.AddStateAsync("CurrentLocation", Location.Outside);
             }
 
-            this.House = ActorProxy.Create<IHouse>(new ActorId(5), "fabric:/FabricSmartHome");
-            this.Garden = ActorProxy.Create<IGarden>(new ActorId(6), "fabric:/FabricSmartHome");
-            this.Kitchen = ActorProxy.Create<IKitchen>(new ActorId(7), "fabric:/FabricSmartHome");
-            this.Bedroom = ActorProxy.Create<IBedroom>(new ActorId(8), "fabric:/FabricSmartHome");
+            this.House = ActorProxy.Create<IHouse>(new ActorId(100), "fabric:/FabricSmartHome");
+            this.Garden = ActorProxy.Create<IGarden>(new ActorId(101), "fabric:/FabricSmartHome");
+            this.Kitchen = ActorProxy.Create<IKitchen>(new ActorId(102), "fabric:/FabricSmartHome");
+            this.Bedroom = ActorProxy.Create<IBedroom>(new ActorId(103), "fabric:/FabricSmartHome");
 
             this.MovementTimer = this.RegisterTimer(HandleMovementTimeout, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
             this.ActionTimer = this.RegisterTimer(HandleActionTimeout, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1));

@@ -15,9 +15,9 @@ namespace SmartHome.Actors
     {
         protected override async Task OnActivateAsync()
         {
-            ActorProxy.Create<IGarden>(new ActorId(6), "fabric:/FabricSmartHome");
-            ActorProxy.Create<IKitchen>(new ActorId(7), "fabric:/FabricSmartHome");
-            ActorProxy.Create<IBedroom>(new ActorId(8), "fabric:/FabricSmartHome");
+            ActorProxy.Create<IGarden>(new ActorId(101), "fabric:/FabricSmartHome");
+            ActorProxy.Create<IKitchen>(new ActorId(102), "fabric:/FabricSmartHome");
+            ActorProxy.Create<IBedroom>(new ActorId(103), "fabric:/FabricSmartHome");
 
             await base.OnActivateAsync();
         }
@@ -31,7 +31,7 @@ namespace SmartHome.Actors
                 {
                     return Location.Garden;
                 }
-                else if (roomId == 0)
+                else if (roomId == 1)
                 {
                     return Location.Kitchen;
                 }

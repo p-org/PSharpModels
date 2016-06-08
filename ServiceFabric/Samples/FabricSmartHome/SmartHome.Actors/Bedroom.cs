@@ -84,8 +84,6 @@ namespace SmartHome.Actors
                 ActorEventSource.Current.ActorMessage(this, "[LOG] Thief stole the money.");
                 throw new InvalidOperationException("Thief stole the money.");
             }
-            
-            //Contract.Assert(!isSafeOpen && numOfPeople > 0, "Thief stole the money.");
         }
     }
 }
