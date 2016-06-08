@@ -1,13 +1,12 @@
 using System;
 using System.Threading.Tasks;
 
-using Microsoft.PSharp;
-using Microsoft.PSharp.Actors;
-
 using Orleans;
 using Orleans.Runtime.Configuration;
 
-namespace Raft
+using Raft.Interfaces;
+
+namespace OrleansRaft
 {
     /// <summary>
     /// Orleans test silo host
@@ -25,32 +24,17 @@ namespace Raft
                 AppDomainInitializerArguments = args,
             });
 
-            var runtime = PSharpRuntime.Create();
-            Program.Execute(runtime);
+            var config = ClientConfiguration.LocalhostSilo();
+            GrainClient.Initialize(config);
+
+            var clusterManager = GrainClient.GrainFactory.GetGrain<IClusterManager>(0);
+            Task configureTask = clusterManager.Configure();
+            configureTask.Wait();
 
             Console.WriteLine("Orleans Silo is running.\nPress Enter to terminate...");
             Console.ReadLine();
 
             hostDomain.DoCallBack(ShutdownSilo);
-        }
-
-        [Microsoft.PSharp.Test]
-        public static void Execute(PSharpRuntime runtime)
-        {
-            Configuration conf = Configuration.Create(true, true, true, true, true);
-            ActorModel.Configure(conf);
-            
-            ActorModel.Start(runtime, () =>
-            {
-                var config = ClientConfiguration.LocalhostSilo();
-                GrainClient.Initialize(config);
-
-                runtime.RegisterMonitor(typeof(SafetyMonitor));
-
-                var clusterManager = GrainClient.GrainFactory.GetGrain<IClusterManager>(0);
-                Task configureTask = clusterManager.Configure();
-                ActorModel.Wait(configureTask);
-            });
         }
 
         static void InitSilo(string[] args)
