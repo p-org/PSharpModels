@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 using Orleans;
 using Orleans.Concurrency;
+using Orleans.Runtime;
 
 using Raft.Interfaces;
 
@@ -13,7 +14,7 @@ namespace Raft.Grains
     /// Grain implementation class Server.
     /// </summary>
     [Reentrant]
-    public class Server : Grain<int>, IServer
+    public class Server : Grain<int>, IServer, IRemindable
     {
         #region fields
 
@@ -45,12 +46,22 @@ namespace Raft.Grains
         /// <summary>
         /// The election timer of this server.
         /// </summary>
-        IDisposable ElectionTimer;
+        //IDisposable ElectionTimer;
+
+        /// <summary>
+        /// The election timer of this server.
+        /// </summary>
+        IGrainReminder ElectionReminder;
 
         /// <summary>
         /// The periodic timer of this server.
         /// </summary>
-        IDisposable PeriodicTimer;
+        //IDisposable PeriodicTimer;
+
+        /// <summary>
+        /// The periodic timer of this server.
+        /// </summary>
+        IGrainReminder PeriodicReminder;
 
         /// <summary>
         /// Latest term server has seen (initialized to 0 on
@@ -137,7 +148,7 @@ namespace Raft.Grains
 
         public async Task Configure(int id, List<int> serverIds, int clusterId)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 if (this.Servers.Count == 0)
                 {
@@ -152,12 +163,12 @@ namespace Raft.Grains
 
                     this.ClusterManager = this.GrainFactory.GetGrain<IClusterManager>(clusterId);
 
-                    this.BecomeFollower();
+                    await this.BecomeFollower();
                 }
             });
         }
 
-        private void BecomeFollower()
+        private async Task BecomeFollower()
         {
             Console.WriteLine($"<RaftLog> Server {this.ServerId} became FOLLOWER.");
             this.Role = Role.Follower;
@@ -165,24 +176,38 @@ namespace Raft.Grains
             this.Leader = null;
             this.VotesReceived = 0;
 
-            if (this.ElectionTimer != null)
+            //if (this.ElectionTimer != null)
+            //{
+            //    this.ElectionTimer.Dispose();
+            //}
+
+            //if (this.PeriodicTimer != null)
+            //{
+            //    this.PeriodicTimer.Dispose();
+            //}
+
+            if (this.ElectionReminder != null)
             {
-                this.ElectionTimer.Dispose();
+                await this.UnregisterReminder(this.ElectionReminder);
+                this.ElectionReminder = null;
             }
 
-            if (this.PeriodicTimer != null)
+            if (this.PeriodicReminder != null)
             {
-                this.PeriodicTimer.Dispose();
+                await this.UnregisterReminder(this.PeriodicReminder);
+                this.PeriodicReminder = null;
             }
 
             //if (ActorModel.Random())
             //{
-                this.ElectionTimer = this.RegisterTimer(StartLeaderElection, null,
-                    TimeSpan.FromSeconds(2 + this.Random.Next(10)), TimeSpan.FromSeconds(2 + this.Random.Next(10)));
+            //this.ElectionTimer = this.RegisterTimer(StartLeaderElection, null,
+            //        TimeSpan.FromSeconds(2 + this.Random.Next(10)), TimeSpan.FromSeconds(2 + this.Random.Next(10)));
+            this.ElectionReminder = await this.RegisterOrUpdateReminder("StartLeaderElection",
+                    TimeSpan.FromMinutes(2 + this.Random.Next(10)), TimeSpan.FromMinutes(2 + this.Random.Next(10)));
             //}
         }
 
-        private void BecomCandidate()
+        private async Task BecomeCandidate()
         {
             Console.WriteLine($"<RaftLog> Server {this.ServerId} became CANDIDATE.");
             this.Role = Role.Candidate;
@@ -194,7 +219,7 @@ namespace Raft.Grains
             Console.WriteLine($"<RaftLog> Candidate {this.ServerId} | term {this.CurrentTerm} " +
                 $"| election votes {this.VotesReceived} | log {this.Logs.Count}.");
 
-            this.BroadcastVoteRequests();
+            await this.BroadcastVoteRequests();
         }
 
         private void BecomeLeader()
@@ -230,18 +255,27 @@ namespace Raft.Grains
             }
         }
 
-        private void BroadcastVoteRequests()
+        private async Task BroadcastVoteRequests()
         {
             // BUG: duplicate votes from same follower
             //if (ActorModel.Random())
             //{
-                if (this.PeriodicTimer != null)
-                {
-                    this.PeriodicTimer.Dispose();
-                }
+            //if (this.PeriodicTimer != null)
+            //{
+            //    this.PeriodicTimer.Dispose();
+            //}
 
-                this.PeriodicTimer = this.RegisterTimer(RebroadcastVoteRequests, null,
-                    TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
+            if (this.PeriodicReminder != null)
+            {
+                await this.UnregisterReminder(this.PeriodicReminder);
+                this.PeriodicReminder = null;
+            }
+
+            this.PeriodicReminder = await this.RegisterOrUpdateReminder("RebroadcastVoteRequests",
+                TimeSpan.FromMinutes(2 + this.Random.Next(10)), TimeSpan.FromMinutes(2 + this.Random.Next(10)));
+
+            //this.PeriodicTimer = this.RegisterTimer(RebroadcastVoteRequests, null,
+            //        TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
             //}
 
             foreach (var server in this.Servers)
@@ -254,13 +288,13 @@ namespace Raft.Grains
 
                 Console.WriteLine($"<RaftLog> Server {this.ServerId} sending vote request " +
                     $"to server {server.Key}.");
-                server.Value.VoteRequest(this.CurrentTerm, this.ServerId, lastLogIndex, lastLogTerm);
+                await server.Value.VoteRequest(this.CurrentTerm, this.ServerId, lastLogIndex, lastLogTerm);
             }
         }
 
         public async Task VoteRequest(int term, int candidateId, int lastLogIndex, int lastLogTerm)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 if (this.Role == Role.Follower)
                 {
@@ -281,7 +315,7 @@ namespace Raft.Grains
 
                         this.ProcessVoteRequest(term, candidateId, lastLogIndex, lastLogTerm);
 
-                        this.BecomeFollower();
+                        await this.BecomeFollower();
                     }
                     else
                     {
@@ -298,7 +332,7 @@ namespace Raft.Grains
                         //this.RedirectLastClientRequestToClusterManager();
                         this.ProcessVoteRequest(term, candidateId, lastLogIndex, lastLogTerm);
 
-                        this.BecomeFollower();
+                        await this.BecomeFollower();
                     }
                     else
                     {
@@ -334,7 +368,7 @@ namespace Raft.Grains
 
         public async Task VoteResponse(int term, bool voteGranted)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 if (this.Role == Role.Follower)
                 {
@@ -351,7 +385,7 @@ namespace Raft.Grains
                         this.CurrentTerm = term;
                         this.VotedForCandidate = null;
 
-                        this.BecomeFollower();
+                        await this.BecomeFollower();
                     }
                     else if (term != this.CurrentTerm)
                     {
@@ -375,23 +409,35 @@ namespace Raft.Grains
                         this.VotedForCandidate = null;
 
                         //this.RedirectLastClientRequestToClusterManager();
-                        this.BecomeFollower();
+                        await this.BecomeFollower();
                     }
                 }
             });
         }
 
-        private Task StartLeaderElection(object args)
+        //private Task StartLeaderElection(object args)
+        //{
+        //    this.BecomeCandidate();
+        //    return TaskDone.Done;
+        //}
+
+        public async Task ReceiveReminder(string reminderName, TickStatus status)
         {
-            this.BecomCandidate();
-            return TaskDone.Done;
+            if (reminderName.Equals("StartLeaderElection"))
+            {
+                await this.BecomeCandidate();
+            }
+            else if (reminderName.Equals("RebroadcastVoteRequests"))
+            {
+                await this.BroadcastVoteRequests();
+            }
         }
 
-        private Task RebroadcastVoteRequests(object args)
-        {
-            this.BroadcastVoteRequests();
-            return TaskDone.Done;
-        }
+        //private Task RebroadcastVoteRequests(object args)
+        //{
+        //    this.BroadcastVoteRequests();
+        //    return TaskDone.Done;
+        //}
 
         int GetLogTermForIndex(int logIndex)
         {
