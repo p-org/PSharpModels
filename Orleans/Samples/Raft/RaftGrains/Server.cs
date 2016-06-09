@@ -169,7 +169,7 @@ namespace Raft
             }
         }
 
-        private void BecomCandidate()
+        private void BecomeCandidate()
         {
             ActorModel.Log($"<RaftLog> Server {this.ServerId} became CANDIDATE.");
             this.Role = Role.Candidate;
@@ -368,7 +368,7 @@ namespace Raft
 
         private Task StartLeaderElection(object args)
         {
-            this.BecomCandidate();
+            this.BecomeCandidate();
             return new Task(() => { });
         }
 
