@@ -18,24 +18,33 @@ namespace Raft.Grains
 
         private IClusterManager ClusterManager;
 
+        /// <summary>
+        /// Random number generator.
+        /// </summary>
+        private Random Random;
+
         private int LatestCommand;
-        private int Counter;
+
+        /// <summary>
+        /// The request timer.
+        /// </summary>
+        IDisposable RequestTimer;
 
         #endregion
 
         #region methods
 
-        public override Task OnActivateAsync()
+        public override async Task OnActivateAsync()
         {
             Console.WriteLine($"<RaftLog> Client is activating.");
 
             if (this.LatestCommand <= 0)
             {
+                this.Random = new Random(DateTime.Now.Millisecond);
                 this.LatestCommand = -1;
-                this.Counter = 0;
             }
 
-            return base.OnActivateAsync();
+            await base.OnActivateAsync();
         }
 
         public Task Configure(int clusterId)
@@ -44,11 +53,37 @@ namespace Raft.Grains
             {
                 Console.WriteLine($"<RaftLog> Client is configuring.");
 
-                this.ClusterManager = GrainClient.GrainFactory.
-                GetGrain<IClusterManager>(clusterId);
+                this.ClusterManager = this.GrainFactory.GetGrain<IClusterManager>(clusterId);
+
+                this.RequestTimer = this.RegisterTimer(PumpRequest, null,
+                    TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
             }
+
+            return TaskDone.Done;
+        }
+
+        private Task PumpRequest(object args)
+        {
+            this.RequestTimer.Dispose();
+            this.RequestTimer = null;
+
+            this.LatestCommand = new Random().Next(100);
+
+            Console.WriteLine($"<RaftLog> Client is sending new request {this.LatestCommand}.");
+
+            this.ClusterManager.RelayClientRequest(6, this.LatestCommand);
+
+            return TaskDone.Done;
+        }
+
+        public Task ProcessResponse()
+        {
+            Console.WriteLine($"<RaftLog> Client received a response.");
+
+            this.RequestTimer = this.RegisterTimer(PumpRequest, null,
+                TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
             
-            return new Task(() => { });
+            return TaskDone.Done;
         }
 
         #endregion

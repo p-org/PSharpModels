@@ -9,5 +9,7 @@ namespace Raft.Interfaces
 	public interface IClient : IGrainWithIntegerKey
     {
         Task Configure(int clusterId);
+
+        Task ProcessResponse();
     }
 }

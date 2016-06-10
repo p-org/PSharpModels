@@ -28,8 +28,7 @@ namespace OrleansRaft
             GrainClient.Initialize(config);
 
             var clusterManager = GrainClient.GrainFactory.GetGrain<IClusterManager>(0);
-            Task configureTask = clusterManager.Configure();
-            configureTask.Wait();
+            clusterManager.Configure();
 
             Console.WriteLine("Orleans Silo is running.\nPress Enter to terminate...");
             Console.ReadLine();

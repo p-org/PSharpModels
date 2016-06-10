@@ -1,4 +1,4 @@
-﻿namespace Raft.Grains
+﻿namespace Raft.Interfaces
 {
     public class Log
     {
