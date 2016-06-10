@@ -44,7 +44,7 @@ namespace OrleansModel
         /// <summary>
         /// The grain.
         /// </summary>
-        internal readonly IGrain Grain;
+        internal IGrain Grain;
 
         #endregion
 

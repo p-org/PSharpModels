@@ -50,7 +50,7 @@ namespace Orleans
         /// </summary>
         protected IGrainFactory GrainFactory
         {
-            get { return Runtime.GrainFactory; }
+            get { return GrainClient.GrainFactory; }
         }
 
         /// <summary>

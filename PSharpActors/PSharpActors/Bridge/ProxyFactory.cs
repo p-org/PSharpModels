@@ -277,7 +277,17 @@ namespace Microsoft.PSharp.Actors.Bridge
         {
             ConstructorDeclarationSyntax constructor = SyntaxFactory.ConstructorDeclaration(
                 interfaceType.Name + "_PSharpProxy")
-                //.WithParameterList(null)
+                .WithParameterList(SyntaxFactory.ParameterList(
+                    SyntaxFactory.SeparatedList(
+                        new List<ParameterSyntax>
+                        {
+                            SyntaxFactory.Parameter(
+                                SyntaxFactory.List<AttributeListSyntax>(),
+                                SyntaxFactory.TokenList(),
+                                this.GetTypeSyntax(typeof(Guid)),
+                                SyntaxFactory.Identifier("primaryKey"),
+                                null)
+                        })))
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
 
             ExpressionStatementSyntax targetConstruction = SyntaxFactory.ExpressionStatement(
@@ -306,6 +316,8 @@ namespace Microsoft.PSharp.Actors.Bridge
                 SyntaxFactory.SeparatedList(
                     new List<ArgumentSyntax>
                     {
+                        SyntaxFactory.Argument(SyntaxFactory.ThisExpression()),
+                        SyntaxFactory.Argument(SyntaxFactory.IdentifierName("primaryKey")),
                         SyntaxFactory.Argument(SyntaxFactory.MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
                             SyntaxFactory.ThisExpression(),

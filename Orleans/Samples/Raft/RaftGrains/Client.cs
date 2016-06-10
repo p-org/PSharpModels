@@ -17,19 +17,30 @@ namespace Raft
 
         private IClusterManager ClusterManager;
 
+        /// <summary>
+        /// Random number generator.
+        /// </summary>
+        private Random Random;
+
         private int LatestCommand;
-        private int Counter;
+
+        /// <summary>
+        /// The request timer.
+        /// </summary>
+        IDisposable RequestTimer;
 
         #endregion
 
         #region methods
-
+        
         public override Task OnActivateAsync()
         {
+            ActorModel.Log($"<RaftLog> Client is activating.");
+
             if (this.LatestCommand <= 0)
             {
+                this.Random = new Random(DateTime.Now.Millisecond);
                 this.LatestCommand = -1;
-                this.Counter = 0;
             }
 
             return base.OnActivateAsync();
@@ -39,11 +50,48 @@ namespace Raft
         {
             if (this.ClusterManager == null)
             {
-                this.ClusterManager = GrainClient.GrainFactory.
-                GetGrain<IClusterManager>(clusterId);
+                ActorModel.Log($"<RaftLog> Client is configuring.");
+
+                this.ClusterManager = this.GrainFactory.GetGrain<IClusterManager>(clusterId);
+
+                this.RequestTimer = this.RegisterTimer(PumpRequest, null,
+                    TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
             }
-            
-            return new Task(() => { });
+
+            return TaskDone.Done;
+        }
+
+        private Task PumpRequest(object args)
+        {
+            if (this.RequestTimer != null)
+            {
+                this.RequestTimer.Dispose();
+                this.RequestTimer = null;
+            }
+
+            this.LatestCommand = new Random().Next(100);
+
+            ActorModel.Log($"<RaftLog> Client is sending new request {this.LatestCommand}.");
+
+            this.ClusterManager.RelayClientRequest(6, this.LatestCommand);
+
+            return TaskDone.Done;
+        }
+
+        public Task ProcessResponse()
+        {
+            ActorModel.Log($"<RaftLog> Client received a response.");
+
+            if (this.RequestTimer != null)
+            {
+                this.RequestTimer.Dispose();
+                this.RequestTimer = null;
+            }
+
+            this.RequestTimer = this.RegisterTimer(PumpRequest, null,
+                TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+
+            return TaskDone.Done;
         }
 
         #endregion

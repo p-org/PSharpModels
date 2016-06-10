@@ -42,6 +42,7 @@
     <Compile Include="IClient.cs" />
     <Compile Include="IServer.cs" />
     <Compile Include="IClusterManager.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

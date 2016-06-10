@@ -34,16 +34,22 @@ namespace Microsoft.PSharp.Actors
         /// </summary>
         public class InitEvent : Event
         {
+            public object ProxyInstance;
+            public Guid PrimaryKey;
             public object ClassInstance;
             public Type ActorType;
 
             /// <summary>
             /// Constructor.
             /// </summary>
+            /// <param name="proxyInstance">ProxyInstance</param>
+            /// <param name="primaryKey">Guid</param>
             /// <param name="classInstance">ClassInstance</param>
             /// <param name="actorType">Type</param>
-            public InitEvent(object classInstance, Type actorType)
+            public InitEvent(object proxyInstance, Guid primaryKey, object classInstance, Type actorType)
             {
+                this.ProxyInstance = proxyInstance;
+                this.PrimaryKey = primaryKey;
                 this.ClassInstance = classInstance;
                 this.ActorType = actorType;
             }
@@ -103,6 +109,16 @@ namespace Microsoft.PSharp.Actors
         #endregion
 
         #region fields
+
+        /// <summary>
+        /// The proxy instance.
+        /// </summary>
+        protected object ProxyInstance;
+
+        /// <summary>
+        /// The primary key of the wrapped actor.
+        /// </summary>
+        protected Guid PrimaryKey;
 
         /// <summary>
         /// The wrapped actor instance.
@@ -182,6 +198,8 @@ namespace Microsoft.PSharp.Actors
 
             ActorModel.ActorMachineMap.Add(this.Id, this);
 
+            this.ProxyInstance = initEvent.ProxyInstance;
+            this.PrimaryKey = initEvent.PrimaryKey;
             this.WrappedActorInstance = initEvent.ClassInstance;
             this.WrappedActorType = initEvent.ActorType;
             

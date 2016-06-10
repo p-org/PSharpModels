@@ -48,8 +48,7 @@ namespace Raft
                 runtime.RegisterMonitor(typeof(SafetyMonitor));
 
                 var clusterManager = GrainClient.GrainFactory.GetGrain<IClusterManager>(0);
-                Task configureTask = clusterManager.Configure();
-                ActorModel.Wait(configureTask);
+                clusterManager.Configure();
             });
         }
 

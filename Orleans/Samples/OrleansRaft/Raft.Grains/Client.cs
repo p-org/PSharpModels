@@ -64,8 +64,11 @@ namespace Raft.Grains
 
         private Task PumpRequest(object args)
         {
-            this.RequestTimer.Dispose();
-            this.RequestTimer = null;
+            if (this.RequestTimer != null)
+            {
+                this.RequestTimer.Dispose();
+                this.RequestTimer = null;
+            }
 
             this.LatestCommand = new Random().Next(100);
 
@@ -79,6 +82,12 @@ namespace Raft.Grains
         public Task ProcessResponse()
         {
             Console.WriteLine($"<RaftLog> Client received a response.");
+
+            if (this.RequestTimer != null)
+            {
+                this.RequestTimer.Dispose();
+                this.RequestTimer = null;
+            }
 
             this.RequestTimer = this.RegisterTimer(PumpRequest, null,
                 TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));

@@ -22,24 +22,21 @@ namespace SmartHome.Actors
             await base.OnActivateAsync();
         }
 
-        async Task<Location> IHouse.GotoRoom()
+        Task<Location> IHouse.GotoRoom()
         {
-            return await Task.Run(() =>
+            var roomId = new Random().Next(3);
+            if (roomId == 0)
             {
-                var roomId = new Random().Next(3);
-                if (roomId == 0)
-                {
-                    return Location.Garden;
-                }
-                else if (roomId == 1)
-                {
-                    return Location.Kitchen;
-                }
-                else
-                {
-                    return Location.Bedroom;
-                }
-            });
+                return Task.FromResult(Location.Garden);
+            }
+            else if (roomId == 1)
+            {
+                return Task.FromResult(Location.Kitchen);
+            }
+            else
+            {
+                return Task.FromResult(Location.Bedroom);
+            }
         }
     }
 }
