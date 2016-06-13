@@ -1,7 +1,7 @@
 # Testing Actor services of Azure Service Fabric
 We provide a model (or a *mock*) of Azure Service Fabric written using [P#](https://github.com/p-org/PSharp). The model exposes the same APIs as Service Fabric. To use it, one must redirect the application to build against the model DLL instead of the actual Fabric DLLs. The model currently only covers the [Actor programming model](https://azure.microsoft.com/en-in/documentation/articles/service-fabric-reliable-actors-introduction/).
 
-## How to build
+## How to build the P# model
 To build ServiceFabricModel do the following:
 
 ```
@@ -11,7 +11,11 @@ cd ServiceFabricModel
 ```
 Open `ServiceFabricModel.sln` in Visual Studio and build it.
 
-## How to build and run the buggy SmartHome application on Service Fabric
+## Sample: SmartHome
+
+To showcase the effectiveness of P# for testing Service Fabric applications, we created the SmartHome sample. SmartHome contains a bug that is hard to find on the actual Service Fabric runtime, but it is easy to find when testing with P#.
+
+### How to build and run SmartHome application on Service Fabric
 ```
 cd ${PSHARP_MODELS_DIR}\ServiceFabric\Samples\FabricSmartHome
 FabricSmartHome.sln
@@ -21,7 +25,7 @@ Compile with Visual Studio, and run as you would a normal Azure Service Fabric a
 
 There is a bug in this application, but its hard to manifest on the actual Service Fabric runtime.
 
-## How to build and test SmartHome using P# #
+### How to build and test SmartHome using P# #
 First you need to build the example using the P# compiler. The example uses ServiceFabricModel, instead of the original Azure Service Fabric dlls. This allows P# to take control of nondeterminism during testing.
 
 ```
