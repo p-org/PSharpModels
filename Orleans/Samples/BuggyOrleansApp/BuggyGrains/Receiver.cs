@@ -10,6 +10,7 @@ namespace BuggyOrleansApp
     /// Grain implementation class Receiver.
     /// </summary>
     //[StorageProvider(ProviderName = "DevStore")]
+    [Reentrant]
     public class Receiver : Grain<int>, IReceiver
     {
         public override async Task OnActivateAsync()
