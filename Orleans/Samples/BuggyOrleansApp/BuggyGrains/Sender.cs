@@ -11,54 +11,49 @@ namespace BuggyOrleansApp
     /// Grain implementation class Sender.
     /// </summary>
     [Reentrant]
-    public class Sender : Grain, ISender, IRemindable
+    public class Sender : Grain, ISender//, IRemindable
     {
-        IGrainReminder myReminder;
-        //public override Task OnActivateAsync()
+        //IGrainReminder myReminder;
+        //public override async Task OnActivateAsync()
         //{
-        //    var reminderTask = this.RegisterOrUpdateReminder("helloReminder", TimeSpan.FromSeconds(2),
-        //        TimeSpan.FromSeconds(0));
-        //    ActorModel.Wait(reminderTask);
-        //    myReminder = ActorModel.GetResult<IGrainReminder>(reminderTask);
-        //    ////this.Timer = this.RegisterTimer(HandleTimeout, null,
-        //    ////    TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0));
-        //    return base.OnActivateAsync();
+            //var reminderTask = this.RegisterOrUpdateReminder("helloReminder", TimeSpan.FromSeconds(2),
+            //    TimeSpan.FromSeconds(0));
+            //ActorModel.Wait(reminderTask);
+            //myReminder = ActorModel.GetResult<IGrainReminder>(reminderTask);
+            ////this.Timer = this.RegisterTimer(HandleTimeout, null,
+            ////    TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0));
+        //    await base.OnActivateAsync();
         //}
 
-        public Task DoSomething(int numberOfItems)
+        public async Task DoSomething(int numberOfItems)
         {
             var receiver = GrainClient.GrainFactory.GetGrain<IReceiver>(1);
 
-            var task = receiver.StartTransaction();
-            ActorModel.Wait(task);
+            await receiver.StartTransaction();
 
             for (int i = 0; i < numberOfItems; i++)
-                receiver.TransmitData(new TransactionItems("xyz" + i));
+                await receiver.TransmitData(new TransactionItems("xyz" + i));
 
-            int transmitted = ActorModel.GetResult<int>(receiver.GetCurrentCount());
-            //ActorModel.Assert(transmitted <= numberOfItems, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
-            return Task.FromResult(true);
+            int transmitted = await receiver.GetCurrentCount();
+            ActorModel.Assert(transmitted <= numberOfItems, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
         }
 
-        Task IRemindable.ReceiveReminder(string reminderName, TickStatus status)
-        {
-            UnregisterReminder(myReminder);
-            var getReminderTask = GetReminders();
-            var result = ActorModel.GetResult(getReminderTask);
-            ActorModel.Assert(result.Count == 0, "number of reminders: " + result.Count);
-            
-            return Task.FromResult(true);
-        }
+        //async Task IRemindable.ReceiveReminder(string reminderName, TickStatus status)
+        //{
+        //    await UnregisterReminder(myReminder);
+        //    var result = await GetReminders();
+        //    ActorModel.Assert(result.Count == 0, "number of reminders: " + result.Count);
+        //}
 
         public Task Dummy()
         {
             return Task.FromResult(true);
         }
 
-        //public Task HandleTimeout(object args)
-        //{
-        //    Console.WriteLine("Timed out");
-        //    return Task.FromResult(true);
-        //}
+        public Task HandleTimeout(object args)
+        {
+            Console.WriteLine("Timed out");
+            return Task.FromResult(true);
+        }
     }
 }

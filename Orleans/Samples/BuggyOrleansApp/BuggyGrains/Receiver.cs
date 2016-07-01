@@ -12,10 +12,10 @@ namespace BuggyOrleansApp
     //[StorageProvider(ProviderName = "DevStore")]
     public class Receiver : Grain<int>, IReceiver
     {
-        public override Task OnActivateAsync()
+        public override async Task OnActivateAsync()
         {
             this.State = 0;
-            return base.OnActivateAsync();
+            await base.OnActivateAsync();
         }
 
         public Task<int> GetCurrentCount()
@@ -23,14 +23,13 @@ namespace BuggyOrleansApp
             return Task.FromResult(this.State);
         }
 
-        public Task StartTransaction()
+        public async Task StartTransaction()
         {
             var sender = GrainClient.GrainFactory.GetGrain<ISender>(0);
             ActorModel.Assert(sender != null, "sender proxy is null");
-            Task t = sender.Dummy();
-            ActorModel.Wait(t);
+            await sender.Dummy();
             this.State = 0;
-            return this.WriteStateAsync();
+            await this.WriteStateAsync();
         }
 
         public Task TransmitData(TransactionItems item)

@@ -59,20 +59,21 @@ namespace Raft
             return base.OnActivateAsync();
         }
 
-        public Task Configure()
+        public async Task Configure()
         {
             var serverIds = new List<int>(this.Servers.Keys);
             for (int idx = 0; idx < this.NumberOfServers; idx++)
             {
                 Console.WriteLine($"<RaftLog> ClusterManager is configuring server {idx+2}.");
                 var serverTask = this.Servers[idx+2].Configure(idx+2, serverIds, 0);
-                ActorModel.Wait(serverTask);
+                //ActorModel.Wait(serverTask);
+                await serverTask;
             }
 
             var clientTask = this.Client.Configure(0);
-            ActorModel.Wait(clientTask);
+            await clientTask;
 
-            return TaskDone.Done;
+            //ActorModel.Wait(clientTask);
         }
 
         public Task NotifyLeaderUpdate(int leaderId, int term)

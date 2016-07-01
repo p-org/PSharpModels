@@ -78,17 +78,6 @@ namespace OrleansModel
         /// <returns>TGrainInterface</returns>
         private TGrainInterface GetOrCreateGrain<TGrainInterface>(Guid primaryKey)
         {
-            Console.WriteLine(" TRYING TO FIND 1 " + primaryKey);
-            Console.WriteLine(" TRYING TO FIND 2 " + primaryKey.ToString());
-            foreach (var g in GrainClient.GrainIds)
-            {
-                Console.WriteLine(" >>> " + g.PrimaryKey);
-                if (primaryKey.Equals(g.PrimaryKey))
-                    Console.WriteLine(" EQUALS 1 " + primaryKey);
-                if (primaryKey.ToString().Equals(g.PrimaryKey.ToString()))
-                    Console.WriteLine(" EQUALS 2 " + primaryKey);
-            }
-
             var id = GrainClient.GrainIds.SingleOrDefault(val => val.PrimaryKey.ToString().Equals(primaryKey.ToString()));
             if (id != null)
             {
@@ -112,11 +101,6 @@ namespace OrleansModel
             Type proxyType = GrainClient.ProxyFactory.GetProxyType(typeof(TGrainInterface),
                 typeof(OrleansActorMachine), assemblyPath);
             var grain = (TGrainInterface)Activator.CreateInstance(proxyType, primaryKey);
-
-            foreach (var g in GrainClient.GrainIds)
-            {
-                Console.WriteLine(" >>>>>> " + g.PrimaryKey);
-            }
 
             return grain;
         }

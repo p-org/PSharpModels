@@ -17,24 +17,24 @@ namespace Sender
     {
         IActorTimer myTimer;
         IActorReminder myReminder;
-        protected override Task OnActivateAsync()
+        protected override async Task OnActivateAsync()
         {
             //myTimer = this.RegisterTimer(HandleTimeout, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0));
             Task<IActorReminder> rem = RegisterReminderAsync("helloReminder", null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
-            myReminder = ActorModel.GetResult(rem);
-            return base.OnActivateAsync();
+            myReminder = await rem;// ActorModel.GetResult(rem);
+            ActorModel.Wait(rem);
+            await base.OnActivateAsync();
         }
 
-        public Task DoSomething(int numberOfItems)
+        public async Task DoSomething(int numberOfItems)
         {
             var receiverProxy = ActorProxy.Create<IReceiver>(new ActorId(1), "ReceiverProxy");
-            receiverProxy.StartTransaction();
+            await receiverProxy.StartTransaction();
             for (int i = 0; i < numberOfItems; i++)
-                receiverProxy.TransmitData("xyz" + i);
+                await receiverProxy.TransmitData("xyz" + i);
 
-            int transmitted = ActorModel.GetResult<int>(receiverProxy.GetCurrentCount());
+            int transmitted = await receiverProxy.GetCurrentCount(); //ActorModel.GetResult<int>(receiverProxy.GetCurrentCount());
             //ActorModel.Assert(transmitted <= numberOfItems, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
-            return Task.FromResult(true);
         }
 
         public Task HandleTimeout(object args)

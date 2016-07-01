@@ -170,7 +170,14 @@ namespace Microsoft.PSharp.Actors
         /// <returns>TResult</returns>
         public static TResult GetResult<TResult>(Task<TResult> task)
         {
-            return ((ActorCompletionTask<TResult>)task).Result;
+            if (task is ActorCompletionTask<TResult>)
+            {
+                return ((ActorCompletionTask<TResult>)task).Result;
+            }
+            else
+            {
+                return task.Result;
+            }
         }
 
         /// <summary>
@@ -179,7 +186,14 @@ namespace Microsoft.PSharp.Actors
         /// <param name="task">Task</param>
         public static void Wait(Task task)
         {
-            ((ActorCompletionTask<object>)task).Wait();
+            if (task is ActorCompletionTask<object>)
+            {
+                ((ActorCompletionTask<object>)task).Wait();
+            }
+            else
+            {
+                task.Wait();
+            }
         }
 
         /// <summary>
@@ -188,7 +202,14 @@ namespace Microsoft.PSharp.Actors
         /// <param name="task">Task</param>
         public static void Wait<TResult>(Task<TResult> task)
         {
-            ((ActorCompletionTask<TResult>)task).Wait();
+            if (task is ActorCompletionTask<TResult>)
+            {
+                ((ActorCompletionTask<TResult>)task).Wait();
+            }
+            else
+            {
+                task.Wait();
+            }
         }
 
         /// <summary>
