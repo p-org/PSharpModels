@@ -219,6 +219,7 @@ namespace Microsoft.PSharp.Actors
         /// <param name="actor">IPSharpActor</param>
         public static void Halt(IPSharpActor actor)
         {
+            ActorModel.Runtime.Log($"<ActorModelLog> Halt invoked on '{actor.Id}'.");
             ActorModel.Runtime.SendEvent(actor.Id, new Halt());
         }
 
