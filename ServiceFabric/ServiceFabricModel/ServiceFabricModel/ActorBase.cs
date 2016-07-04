@@ -159,6 +159,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         /// <returns>Task</returns>
         protected Task UnregisterReminderAsync(IActorReminder reminder)
         {
+            ActorModel.Assert(reminder != null, "Cannot unregister a 'null' reminder.");
             var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
             var reminderToBeRemoved = reminders.SingleOrDefault(val
                 => ((ActorReminder)val).Name.Equals(reminder.Name));

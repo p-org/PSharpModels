@@ -284,7 +284,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                             SyntaxFactory.Parameter(
                                 SyntaxFactory.List<AttributeListSyntax>(),
                                 SyntaxFactory.TokenList(),
-                                this.GetTypeSyntax(typeof(Guid)),
+                                this.GetTypeSyntax(typeof(object)),
                                 SyntaxFactory.Identifier("primaryKey"),
                                 null)
                         })))

@@ -17,6 +17,7 @@ using System.Linq;
 using System.Reflection;
 
 using Microsoft.PSharp.Actors;
+using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace ServiceFabricModel
@@ -26,24 +27,10 @@ namespace ServiceFabricModel
     /// </summary>
     public class FabricActorMachine : ActorMachine
     {
-        //protected override void Initialize(InitEvent initEvent)
-        //{
-        //    ConstructorInfo sm = typeof(ActorStateManager).GetConstructors().Single();
-        //    var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
-        //    PropertyInfo prop = initEvent.ClassInstance.GetType().GetProperty("StateManager",
-        //        BindingFlags.Public | BindingFlags.Instance);
-        //    if (null != prop && prop.CanWrite)
-        //    {
-        //        prop.SetValue(initEvent.ClassInstance, stateManager, null);
-        //    }
-
-        //    MethodInfo mo = typeof(ActorBase).GetMethod("OnActivateAsync",
-        //        BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        //    mo.Invoke(initEvent.ClassInstance, new object[] { });
-        //}
-
         protected override void Initialize()
         {
+            ActorProxy.IdMap.TryAdd((ActorId)base.PrimaryKey, base.ProxyInstance);
+
             ConstructorInfo sm = typeof(ActorStateManager).GetConstructors().Single();
             var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
             PropertyInfo prop = base.WrappedActorType.GetProperty("StateManager",
@@ -52,7 +39,6 @@ namespace ServiceFabricModel
             {
                 prop.SetValue(base.WrappedActorInstance, stateManager, null);
             }
-
         }
 
         protected override void Activate()

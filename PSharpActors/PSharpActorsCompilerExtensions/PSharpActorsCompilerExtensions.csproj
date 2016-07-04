@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{94065FA9-C6CB-41BC-B3A8-FC003D4BD77C}</ProjectGuid>
+    <ProjectGuid>{DDD2ECF8-6599-432C-8B2C-987BD080EBA7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.PSharp.Actors</RootNamespace>

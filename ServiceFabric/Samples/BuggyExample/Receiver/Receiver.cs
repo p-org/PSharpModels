@@ -12,7 +12,7 @@ namespace Receiver
     {
         protected override Task OnActivateAsync()
         {
-            this.StateManager.AddStateAsync<int>("itemCount", 0);
+            this.StateManager.TryAddStateAsync<int>("itemCount", 0);
             return base.OnActivateAsync();
         }
 

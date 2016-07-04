@@ -30,7 +30,7 @@ namespace Microsoft.ServiceFabric.Actors
     public class ActorProxy
     {
         private static ProxyFactory<Actor> ProxyFactory;
-        private static ConcurrentDictionary<ActorId, Object> IdMap;
+        internal static ConcurrentDictionary<ActorId, object> IdMap;
 
         static ActorProxy()
         {
@@ -64,8 +64,7 @@ namespace Microsoft.ServiceFabric.Actors
 
             Type proxyType = ProxyFactory.GetProxyType(typeof(TActorInterface),
                 typeof(FabricActorMachine), assemblyPath);
-            var res = (TActorInterface)Activator.CreateInstance(proxyType);
-            IdMap.TryAdd(actorId, res);
+            var res = (TActorInterface)Activator.CreateInstance(proxyType, actorId);
 
             ActorModel.Runtime.Log("<ActorModelLog> Created actor proxy of type '{0}'.",
                 typeof(TActorInterface).FullName);

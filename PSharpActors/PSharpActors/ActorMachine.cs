@@ -35,7 +35,7 @@ namespace Microsoft.PSharp.Actors
         public class InitEvent : Event
         {
             public object ProxyInstance;
-            public Guid PrimaryKey;
+            public object PrimaryKey;
             public object ClassInstance;
             public Type ActorType;
 
@@ -43,10 +43,10 @@ namespace Microsoft.PSharp.Actors
             /// Constructor.
             /// </summary>
             /// <param name="proxyInstance">ProxyInstance</param>
-            /// <param name="primaryKey">Guid</param>
+            /// <param name="primaryKey">Primary key</param>
             /// <param name="classInstance">ClassInstance</param>
             /// <param name="actorType">Type</param>
-            public InitEvent(object proxyInstance, Guid primaryKey, object classInstance, Type actorType)
+            public InitEvent(object proxyInstance, object primaryKey, object classInstance, Type actorType)
             {
                 this.ProxyInstance = proxyInstance;
                 this.PrimaryKey = primaryKey;
@@ -118,7 +118,7 @@ namespace Microsoft.PSharp.Actors
         /// <summary>
         /// The primary key of the wrapped actor.
         /// </summary>
-        protected Guid PrimaryKey;
+        protected object PrimaryKey;
 
         /// <summary>
         /// The wrapped actor instance.

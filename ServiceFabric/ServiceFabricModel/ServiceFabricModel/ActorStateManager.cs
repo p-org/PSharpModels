@@ -13,6 +13,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,11 +24,11 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
 {
     public class ActorStateManager : IActorStateManager
     {
-        private Dictionary<string, object> store;
+        private ConcurrentDictionary<string, object> store;
 
         public ActorStateManager()
         {
-            store = new Dictionary<string, object>();
+            store = new ConcurrentDictionary<string, object>();
         }
 
         System.Threading.Tasks.Task<T> IActorStateManager.AddOrUpdateStateAsync<T>(string stateName, T addValue, Func<string, T, T> updateValueFactory, CancellationToken cancellationToken)
@@ -40,7 +41,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
             }
             else
             {
-                store.Add(stateName, addValue);
+                store.TryAdd(stateName, addValue);
             }
 
             return Task.FromResult(addValue);
@@ -48,7 +49,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
 
         Task IActorStateManager.AddStateAsync<T>(string stateName, T value, CancellationToken cancellationToken)
         {
-            store.Add(stateName, value);
+            store.TryAdd(stateName, value);
             return Task.FromResult(true);
         }
 
@@ -65,7 +66,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
             }
             else
             {
-                store.Add(stateName, value);
+                store.TryAdd(stateName, value);
                 return Task.FromResult(value);
             }
 
@@ -83,14 +84,15 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
 
         Task IActorStateManager.RemoveStateAsync(string stateName, CancellationToken cancellationToken)
         {
-            store.Remove(stateName);
+            object value;
+            store.TryRemove(stateName, out value);
             return Task.FromResult(true);
         }
 
         Task IActorStateManager.SetStateAsync<T>(string stateName, T value, CancellationToken cancellationToken)
         {
             if (!store.ContainsKey(stateName))
-                store.Add(stateName, value);
+                store.TryAdd(stateName, value);
             else
                 store[stateName] = value;
             return Task.FromResult(true);
@@ -98,7 +100,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
 
         System.Threading.Tasks.Task<bool> IActorStateManager.TryAddStateAsync<T>(string stateName, T value, CancellationToken cancellationToken)
         {
-            store.Add(stateName, value);
+            store.TryAdd(stateName, value);
             return Task.FromResult(true);
         }
 
@@ -118,7 +120,8 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         {
             if (store.ContainsKey(stateName))
             {
-                store.Remove(stateName);
+                object value;
+                store.TryRemove(stateName, out value);
                 return Task.FromResult(true);
             }
             else
