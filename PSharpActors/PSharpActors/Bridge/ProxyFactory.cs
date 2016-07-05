@@ -117,7 +117,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
 
             SyntaxTree syntaxTree = this.CreateProxySyntaxTree(interfaceType, actorType, actorMachineType);
-            Console.WriteLine(syntaxTree);
+            //Console.WriteLine(syntaxTree);
 
             var context = CompilationContext.Create().LoadSolution(syntaxTree.ToString(), references, "cs");
             var compilation = context.GetSolution().Projects.First().GetCompilationAsync().Result;
@@ -287,17 +287,6 @@ namespace Microsoft.PSharp.Actors.Bridge
         {
             ConstructorDeclarationSyntax constructor = SyntaxFactory.ConstructorDeclaration(
                 interfaceType.Name + "_PSharpProxy")
-                .WithParameterList(SyntaxFactory.ParameterList(
-                    SyntaxFactory.SeparatedList(
-                        new List<ParameterSyntax>
-                        {
-                            SyntaxFactory.Parameter(
-                                SyntaxFactory.List<AttributeListSyntax>(),
-                                SyntaxFactory.TokenList(),
-                                this.GetTypeSyntax(typeof(Action<object>)),
-                                SyntaxFactory.Identifier("registerActorCallback"),
-                                null)
-                        })))
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
 
             ExpressionStatementSyntax targetConstruction = SyntaxFactory.ExpressionStatement(
@@ -306,17 +295,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                 SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName("Target")),
                 SyntaxFactory.ObjectCreationExpression(SyntaxFactory.IdentifierName(actorType.FullName))
                 .WithArgumentList(SyntaxFactory.ArgumentList())));
-
-            ExpressionStatementSyntax callbackInvocation = SyntaxFactory.ExpressionStatement(
-                SyntaxFactory.InvocationExpression(
-                    SyntaxFactory.IdentifierName("registerActorCallback"),
-                    SyntaxFactory.ArgumentList(
-                        SyntaxFactory.SeparatedList(
-                            new List<ArgumentSyntax>
-                            {
-                                SyntaxFactory.Argument(SyntaxFactory.ThisExpression())
-                            }))));
-
+            
             LocalDeclarationStatementSyntax machineTypeDecl = SyntaxFactory.LocalDeclarationStatement(
                 SyntaxFactory.VariableDeclaration(
                     SyntaxFactory.IdentifierName(typeof(Type).FullName),
@@ -369,48 +348,8 @@ namespace Microsoft.PSharp.Actors.Bridge
                                 SyntaxFactory.Argument(SyntaxFactory.IdentifierName(eventName))
                             })))));
 
-            ExpressionStatementSyntax test = SyntaxFactory.ExpressionStatement(
-                SyntaxFactory.InvocationExpression(
-                    SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName("System"),
-                        SyntaxFactory.IdentifierName("Console")),
-                        SyntaxFactory.IdentifierName("WriteLine")),
-                    SyntaxFactory.ArgumentList(
-                        SyntaxFactory.SeparatedList(
-                            new List<ArgumentSyntax>
-                            {
-                                SyntaxFactory.Argument(
-                                    SyntaxFactory.LiteralExpression(
-                                        SyntaxKind.StringLiteralExpression,
-                                        SyntaxFactory.Literal("CONSTRUCTOR CALLED")))
-                            }))
-                    ));
-
-            ExpressionStatementSyntax test2 = SyntaxFactory.ExpressionStatement(
-                SyntaxFactory.InvocationExpression(
-                    SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName("System"),
-                        SyntaxFactory.IdentifierName("Console")),
-                        SyntaxFactory.IdentifierName("WriteLine")),
-                    SyntaxFactory.ArgumentList(
-                        SyntaxFactory.SeparatedList(
-                            new List<ArgumentSyntax>
-                            {
-                                SyntaxFactory.Argument(
-                                    SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                    SyntaxFactory.ThisExpression(),
-                                    SyntaxFactory.IdentifierName("MachineId")))
-                            }))
-                    ));
-
-            BlockSyntax body = SyntaxFactory.Block(targetConstruction, callbackInvocation,
-                machineTypeDecl, eventDecl, createMachine, test, test2);
+            BlockSyntax body = SyntaxFactory.Block(targetConstruction,
+                machineTypeDecl, eventDecl, createMachine);
             constructor = constructor.WithBody(body);
 
             return constructor;
@@ -598,71 +537,12 @@ namespace Microsoft.PSharp.Actors.Bridge
             LocalDeclarationStatementSyntax eventDecl = this.CreateEventDeclaration(
                 eventType, eventName, arguments);
 
-            ExpressionStatementSyntax test = SyntaxFactory.ExpressionStatement(
-                SyntaxFactory.InvocationExpression(
-                    SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName("System"),
-                        SyntaxFactory.IdentifierName("Console")),
-                        SyntaxFactory.IdentifierName("WriteLine")),
-                    SyntaxFactory.ArgumentList(
-                        SyntaxFactory.SeparatedList(
-                            new List<ArgumentSyntax>
-                            {
-                                SyntaxFactory.Argument(
-                                    SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                    SyntaxFactory.ThisExpression(),
-                                    SyntaxFactory.IdentifierName("MachineId")))
-                            }))
-                    ));
-
-            ExpressionStatementSyntax test3 = SyntaxFactory.ExpressionStatement(
-                SyntaxFactory.InvocationExpression(
-                    SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName("System"),
-                        SyntaxFactory.IdentifierName("Console")),
-                        SyntaxFactory.IdentifierName("WriteLine")),
-                    SyntaxFactory.ArgumentList(
-                        SyntaxFactory.SeparatedList(
-                            new List<ArgumentSyntax>
-                            {
-                                SyntaxFactory.Argument(
-                                    SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                    SyntaxFactory.ThisExpression(),
-                                    SyntaxFactory.IdentifierName("Target")))
-                            }))
-                    ));
-
-            ExpressionStatementSyntax test2 = SyntaxFactory.ExpressionStatement(
-                SyntaxFactory.InvocationExpression(
-                    SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName("System"),
-                        SyntaxFactory.IdentifierName("Console")),
-                        SyntaxFactory.IdentifierName("WriteLine")),
-                    SyntaxFactory.ArgumentList(
-                        SyntaxFactory.SeparatedList(
-                            new List<ArgumentSyntax>
-                            {
-                                SyntaxFactory.Argument(
-                                    SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression,
-                                    SyntaxFactory.Literal(method.Name)))
-                            }))
-                    ));
-
             ExpressionStatementSyntax sendExpr = this.CreateSendEventExpression("MachineId", eventName);
             ReturnStatementSyntax returnStmt = SyntaxFactory.ReturnStatement(
                 SyntaxFactory.IdentifierName("actorCompletionTask"));
 
             BlockSyntax body = SyntaxFactory.Block(payloadDecl, taskCompletionSource,
-                eventDecl, test2, test, test3, sendExpr, returnStmt);
+                eventDecl, sendExpr, returnStmt);
             methodDecl = methodDecl.WithBody(body).WithModifiers(
                 SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
 

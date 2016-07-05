@@ -99,11 +99,13 @@
     <Compile Include="Actor.cs" />
     <Compile Include="ActorBase.cs" />
     <Compile Include="ActorExtensions.cs" />
+    <Compile Include="Machines\ActorFactory.cs" />
     <Compile Include="ActorId.cs" />
+    <Compile Include="Machines\ActorFactoryWorker.cs" />
     <Compile Include="ActorReminder.cs" />
-    <Compile Include="ActorReminderMachine.cs" />
+    <Compile Include="Machines\ActorReminderMachine.cs" />
     <Compile Include="ActorTimer.cs" />
-    <Compile Include="FabricActorMachine.cs" />
+    <Compile Include="Machines\FabricActorMachine.cs" />
     <Compile Include="ActorProxy.cs" />
     <Compile Include="ActorStateManager.cs" />
     <Compile Include="ConditionalValue.cs" />

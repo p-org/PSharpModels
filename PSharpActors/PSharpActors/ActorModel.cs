@@ -106,17 +106,12 @@ namespace Microsoft.PSharp.Actors
                     "The P# runtime has not been initialized.");
             }
 
-            foreach (var cleanupAction in ActorModel.CleanUpActions)
-            {
-                cleanupAction();
-            }
-
             ActorModel.Runtime = runtime;
             ActorModel.ActorMachineMap.Clear();
             ActorModel.ReentrantActors.Clear();
 
             ActorModel.Runtime.CreateMachine(typeof(ActorRootMachine),
-                new ActorRootMachine.RunEvent(action));
+                new ActorRootMachine.Configure(action, CleanUpActions));
         }
 
         /// <summary>

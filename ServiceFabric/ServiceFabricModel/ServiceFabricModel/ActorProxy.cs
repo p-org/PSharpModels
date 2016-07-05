@@ -13,78 +13,59 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.IO;
 using System.Reflection;
 
 using Microsoft.PSharp;
 using Microsoft.PSharp.Actors;
-using Microsoft.PSharp.Actors.Bridge;
-using Microsoft.ServiceFabric.Actors.Runtime;
-
-using ServiceFabricModel;
 
 namespace Microsoft.ServiceFabric.Actors
 {
     public class ActorProxy
     {
-        private static ProxyFactory<Actor> ProxyFactory;
-        internal static ConcurrentBag<ActorId> ActorIds;
+        /// <summary>
+        /// The proxy factory machine.
+        /// </summary>
+        private static MachineId ProxyFactory;
 
         static ActorProxy()
         {
-            ActorProxy.ProxyFactory = new ProxyFactory<Actor>(
-                new HashSet<string> { "Microsoft.ServiceFabric.Actors" });
-            ActorProxy.ActorIds = new ConcurrentBag<ActorId>();
-
+            string assemblyPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+            ProxyFactory = ActorModel.Runtime.CreateMachine(typeof(ActorFactory),
+                new ActorFactory.InitEvent(assemblyPath));
+            
             ActorModel.RegisterCleanUpAction(() =>
             {
-                ActorProxy.ActorIds = new ConcurrentBag<ActorId>();
+                ProxyFactory = ActorModel.Runtime.CreateMachine(typeof(ActorFactory),
+                    new ActorFactory.InitEvent(assemblyPath));
             });
         }
 
         public static TActorInterface Create<TActorInterface>(ActorId actorId, string applicationName = null,
             string serviceName = null) where TActorInterface : IActor
         {
-            Console.WriteLine("Creating actor id of " + typeof(TActorInterface));
-            Console.WriteLine(actorId);
-
-            var id = ActorProxy.ActorIds.SingleOrDefault(val => val.Equals(actorId));
-            if (id != null)
-            {
-                ActorModel.Runtime.Log("<ActorModelLog> Found actor of type " +
-                    $"'{typeof(TActorInterface).FullName}' with id '{actorId.Id}'.");
-                return (TActorInterface)id.Actor;
-            }
-
-            Console.WriteLine("Not found");
-
             if (ActorModel.Runtime == null)
             {
                 throw new InvalidOperationException("The P# runtime has not been initialized.");
             }
-
-            ActorModel.Runtime.Log("<ActorModelLog> Creating actor proxy of type '{0}'.",
-                typeof(TActorInterface).FullName);
-
-            string assemblyPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
-            Type proxyType = ProxyFactory.GetProxyType(typeof(TActorInterface),
-                typeof(FabricActorMachine), assemblyPath);
-
-            Action<object> registerActorCallback = new Action<object>(proxy =>
-            {
-                actorId.Actor = proxy;
-                ActorProxy.ActorIds.Add(actorId);
-            });
-
-            var res = (TActorInterface)Activator.CreateInstance(proxyType, registerActorCallback);
-
-            ActorModel.Runtime.Log("<ActorModelLog> Created actor proxy of type '{0}'.",
-                typeof(TActorInterface).FullName);
             
-            return res;
+            MachineId mid = ActorModel.Runtime.GetCurrentMachine();
+
+            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' is " +
+                $"waiting to get or construct proxy with id '{actorId.Id}'.");
+
+            ActorModel.Runtime.SendEvent(ProxyFactory, new ActorFactory.CreateProxyEvent(
+                mid, actorId, typeof(TActorInterface)));
+
+            ActorFactory.ProxyConstructedEvent receivedEvent = ActorModel.Runtime.Receive(
+                typeof(ActorFactory.ProxyConstructedEvent)) as ActorFactory.ProxyConstructedEvent;
+            
+            TActorInterface proxy = (TActorInterface)receivedEvent.Proxy;
+
+            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' received " +
+                $"proxy with id '{actorId.Id}'.");
+
+            return proxy;
         }
     }
 }

@@ -52,7 +52,7 @@ namespace SmartHome.Actors
             var previousLocation = this.StateManager.GetStateAsync<Location>("CurrentLocation").Result;
             //var location = await this.House.GotoRoom();
             var location = ActorModel.GetResult(this.House.GotoRoom());
-
+            
             ActorModel.Log("[LOG] Thief tries to enter room {0}", location);
             bool canEnter = false;
             if (location == Location.Garden)

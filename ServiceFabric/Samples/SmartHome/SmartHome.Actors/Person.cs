@@ -29,7 +29,7 @@ namespace SmartHome.Actors
             {
                 this.StateManager.AddStateAsync("CurrentLocation", Location.Outside);
             }
-
+            
             this.House = ActorProxy.Create<IHouse>(new ActorId(100), "fabric:/FabricSmartHome");
             this.Garden = ActorProxy.Create<IGarden>(new ActorId(101), "fabric:/FabricSmartHome");
             this.Kitchen = ActorProxy.Create<IKitchen>(new ActorId(102), "fabric:/FabricSmartHome");
@@ -37,7 +37,7 @@ namespace SmartHome.Actors
 
             this.MovementTimer = this.RegisterTimer(HandleMovementTimeout, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
             this.ActionTimer = this.RegisterTimer(HandleActionTimeout, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1));
-
+            
             return base.OnActivateAsync();
         }
 
@@ -52,7 +52,7 @@ namespace SmartHome.Actors
             var previousLocation = this.StateManager.GetStateAsync<Location>("CurrentLocation").Result;
             //var location = await this.House.GotoRoom();
             var location = ActorModel.GetResult(this.House.GotoRoom());
-
+            
             ActorModel.Log("[LOG] Person entered room {0}", location);
             this.StateManager.SetStateAsync("CurrentLocation", location);
 

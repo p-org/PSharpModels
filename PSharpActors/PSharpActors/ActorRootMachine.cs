@@ -13,6 +13,9 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
 namespace Microsoft.PSharp.Actors
 {
@@ -26,17 +29,20 @@ namespace Microsoft.PSharp.Actors
         /// <summary>
         /// The actor root machine run event.
         /// </summary>
-        public class RunEvent : Event
+        public class Configure : Event
         {
-            public Action Action;
+            public Action EntryPoint;
+            public ISet<Action> CleanUpActions;
 
             /// <summary>
             /// Constructor.
             /// </summary>
-            /// <param name="action">Action</param>
-            public RunEvent(Action action)
+            /// <param name="entryPoint">Action</param>
+            /// <param name="cleanUpActions">Cleanup actions</param>
+            public Configure(Action entryPoint, ISet<Action> cleanUpActions)
             {
-                this.Action = action;
+                this.EntryPoint = entryPoint;
+                this.CleanUpActions = cleanUpActions;
             }
         }
         
@@ -54,7 +60,15 @@ namespace Microsoft.PSharp.Actors
 
         private void InitEntry()
         {
-            (this.ReceivedEvent as RunEvent).Action();
+            // Does the cleanup before a new testing iteration starts.
+            var cleanupActions = (this.ReceivedEvent as Configure).CleanUpActions;
+            foreach (var cleanupAction in cleanupActions)
+            {
+                cleanupAction();
+            }
+
+            // Invokes the entry point of the actor program.
+            (this.ReceivedEvent as Configure).EntryPoint();
         }
 
         #endregion
