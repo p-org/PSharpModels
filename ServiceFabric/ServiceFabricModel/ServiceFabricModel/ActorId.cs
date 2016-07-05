@@ -32,6 +32,11 @@ namespace Microsoft.ServiceFabric.Actors
         /// </summary>
         public readonly long Id;
 
+        /// <summary>
+        /// The actor.
+        /// </summary>
+        internal object Actor;
+
         #endregion
 
         #region constructors

@@ -47,29 +47,29 @@ namespace SmartHome.Actors
             return new Task(() => { });
         }
 
-        public Task HandleMovementTimeout(object args)
+        public /*async*/ Task HandleMovementTimeout(object args)
         {
             var previousLocation = this.StateManager.GetStateAsync<Location>("CurrentLocation").Result;
-            var taskLocation = this.House.GotoRoom();
-            var location = ActorModel.GetResult<Location>(taskLocation);
+            //var location = await this.House.GotoRoom();
+            var location = ActorModel.GetResult(this.House.GotoRoom());
 
             ActorModel.Log("[LOG] Thief tries to enter room {0}", location);
             bool canEnter = false;
             if (location == Location.Garden)
             {
-                var task = this.Bedroom.TryEnterRoom();
-                canEnter = ActorModel.GetResult<bool>(task);
+                //canEnter = await this.Bedroom.TryEnterRoom();
+                canEnter = ActorModel.GetResult(this.Bedroom.TryEnterRoom());
             }
             else if (location == Location.Kitchen)
             {
-                var task = this.Bedroom.TryEnterRoom();
-                canEnter = ActorModel.GetResult<bool>(task);
+                //canEnter = await this.Bedroom.TryEnterRoom();
+                canEnter = ActorModel.GetResult(this.Bedroom.TryEnterRoom());
             }
             else if (previousLocation == Location.Kitchen &&
                 location == Location.Bedroom)
             {
-                var task = this.Bedroom.TryEnterRoom();
-                canEnter = ActorModel.GetResult<bool>(task);
+                //canEnter = await this.Bedroom.TryEnterRoom();
+                canEnter = ActorModel.GetResult(this.Bedroom.TryEnterRoom());
             }
 
             if (canEnter)
@@ -78,7 +78,7 @@ namespace SmartHome.Actors
                 this.StateManager.SetStateAsync("CurrentLocation", location);
             }
 
-            return new Task(() => { });
+            return Task.FromResult(true);
         }
 
         public Task HandleActionTimeout(object args)

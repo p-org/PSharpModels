@@ -25,6 +25,8 @@ namespace FabricBuggyExample.Client
         [Microsoft.PSharp.Test]
         public static void Execute(PSharpRuntime runtime)
         {
+            ActorModel.Configure(Configuration.Create(false, false, false, false, false));
+
             ActorModel.Start(runtime, () =>
             {
                 var environment = ActorProxy.Create<IEnvironment>(new ActorId(0), "fabric:/FabricSmartHome");

@@ -100,7 +100,17 @@ namespace OrleansModel
             string assemblyPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
             Type proxyType = GrainClient.ProxyFactory.GetProxyType(typeof(TGrainInterface),
                 typeof(OrleansActorMachine), assemblyPath);
+
+            Action<object> registerActorCallback = new Action<object>(proxy =>
+            {
+                GrainId newId = new GrainId(primaryKey, (IGrain)proxy);
+                GrainClient.GrainIds.Add(newId);
+            });
+
             var grain = (TGrainInterface)Activator.CreateInstance(proxyType, primaryKey);
+
+            ActorModel.Runtime.Log("<ActorModelLog> Created grain proxy of type '{0}'.",
+                typeof(TGrainInterface).FullName);
 
             return grain;
         }

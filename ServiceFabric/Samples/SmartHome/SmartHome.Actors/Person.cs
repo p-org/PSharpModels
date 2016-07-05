@@ -47,11 +47,11 @@ namespace SmartHome.Actors
             return new Task(() => { });
         }
 
-        public Task HandleMovementTimeout(object args)
+        public /*async*/ Task HandleMovementTimeout(object args)
         {
             var previousLocation = this.StateManager.GetStateAsync<Location>("CurrentLocation").Result;
-            var taskLocation = this.House.GotoRoom();
-            var location = ActorModel.GetResult<Location>(taskLocation);
+            //var location = await this.House.GotoRoom();
+            var location = ActorModel.GetResult(this.House.GotoRoom());
 
             ActorModel.Log("[LOG] Person entered room {0}", location);
             this.StateManager.SetStateAsync("CurrentLocation", location);
@@ -82,7 +82,7 @@ namespace SmartHome.Actors
                 this.Bedroom.PersonEnters();
             }
 
-            return new Task(() => { });
+            return Task.FromResult(true);
         }
 
         public Task HandleActionTimeout(object args)

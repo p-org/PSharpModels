@@ -30,11 +30,6 @@ namespace OrleansModel
     {
         protected override void Initialize()
         {
-            GrainId newId = new GrainId((Guid)base.PrimaryKey, (IGrain)base.ProxyInstance);
-            if (GrainClient.GrainIds.Any(id => id.Equals(newId)))
-                throw new OperationCanceledException($"Grain with id '{newId.PrimaryKey}' already exists.");
-            GrainClient.GrainIds.Add(newId);
-
             var genericTypes = base.WrappedActorType.BaseType.GetGenericArguments();
             if (genericTypes.Length == 1)
             {

@@ -29,8 +29,6 @@ namespace ServiceFabricModel
     {
         protected override void Initialize()
         {
-            ActorProxy.IdMap.TryAdd((ActorId)base.PrimaryKey, base.ProxyInstance);
-
             ConstructorInfo sm = typeof(ActorStateManager).GetConstructors().Single();
             var stateManager = Activator.CreateInstance(typeof(ActorStateManager));
             PropertyInfo prop = base.WrappedActorType.GetProperty("StateManager",

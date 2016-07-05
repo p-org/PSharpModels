@@ -85,7 +85,7 @@ namespace SmartHome.Actors
             bool isSafeOpen = this.StateManager.GetStateAsync<bool>("IsSafeOpen").Result;
             ActorModel.Log("[LOG] Thief is searching for money. Room has {0} people", numOfPeople);
 
-            ActorModel.Assert(!isSafeOpen || numOfPeople > 0, "Thief stole the money.");
+            //ActorModel.Assert(!isSafeOpen || numOfPeople > 0, "Thief stole the money.");
 
             return new Task(() => { });
         }

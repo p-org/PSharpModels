@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Reflection;
 
@@ -30,27 +31,35 @@ namespace Microsoft.ServiceFabric.Actors
     public class ActorProxy
     {
         private static ProxyFactory<Actor> ProxyFactory;
-        internal static ConcurrentDictionary<ActorId, object> IdMap;
+        internal static ConcurrentBag<ActorId> ActorIds;
 
         static ActorProxy()
         {
             ActorProxy.ProxyFactory = new ProxyFactory<Actor>(
                 new HashSet<string> { "Microsoft.ServiceFabric.Actors" });
-            ActorProxy.IdMap = new ConcurrentDictionary<ActorId, object>();
+            ActorProxy.ActorIds = new ConcurrentBag<ActorId>();
 
             ActorModel.RegisterCleanUpAction(() =>
             {
-                ActorProxy.IdMap.Clear();
+                ActorProxy.ActorIds = new ConcurrentBag<ActorId>();
             });
         }
 
         public static TActorInterface Create<TActorInterface>(ActorId actorId, string applicationName = null,
             string serviceName = null) where TActorInterface : IActor
         {
-            if (IdMap.ContainsKey(actorId))
+            Console.WriteLine("Creating actor id of " + typeof(TActorInterface));
+            Console.WriteLine(actorId);
+
+            var id = ActorProxy.ActorIds.SingleOrDefault(val => val.Equals(actorId));
+            if (id != null)
             {
-                return (TActorInterface)IdMap[actorId];
+                ActorModel.Runtime.Log("<ActorModelLog> Found actor of type " +
+                    $"'{typeof(TActorInterface).FullName}' with id '{actorId.Id}'.");
+                return (TActorInterface)id.Actor;
             }
+
+            Console.WriteLine("Not found");
 
             if (ActorModel.Runtime == null)
             {
@@ -61,10 +70,16 @@ namespace Microsoft.ServiceFabric.Actors
                 typeof(TActorInterface).FullName);
 
             string assemblyPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
-
             Type proxyType = ProxyFactory.GetProxyType(typeof(TActorInterface),
                 typeof(FabricActorMachine), assemblyPath);
-            var res = (TActorInterface)Activator.CreateInstance(proxyType, actorId);
+
+            Action<object> registerActorCallback = new Action<object>(proxy =>
+            {
+                actorId.Actor = proxy;
+                ActorProxy.ActorIds.Add(actorId);
+            });
+
+            var res = (TActorInterface)Activator.CreateInstance(proxyType, registerActorCallback);
 
             ActorModel.Runtime.Log("<ActorModelLog> Created actor proxy of type '{0}'.",
                 typeof(TActorInterface).FullName);
