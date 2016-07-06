@@ -96,6 +96,8 @@
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bridge\ActorFactory.cs" />
+    <Compile Include="Bridge\ActorFactoryWorker.cs" />
     <Compile Include="IPSharpActor.cs" />
     <Compile Include="Timers\ReminderCancellationSource.cs" />
     <Compile Include="Timers\TimerCancellationSource.cs" />

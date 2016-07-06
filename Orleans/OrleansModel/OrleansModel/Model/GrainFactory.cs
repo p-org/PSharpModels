@@ -18,7 +18,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
+using Microsoft.PSharp;
 using Microsoft.PSharp.Actors;
+using Microsoft.PSharp.Actors.Bridge;
 
 using Orleans;
 using Orleans.Runtime;
@@ -78,41 +80,28 @@ namespace OrleansModel
         /// <returns>TGrainInterface</returns>
         private TGrainInterface GetOrCreateGrain<TGrainInterface>(Guid primaryKey)
         {
-            var id = GrainClient.GrainIds.SingleOrDefault(val => val.PrimaryKey.ToString().Equals(primaryKey.ToString()));
-            if (id != null)
-            {
-                ActorModel.Runtime.Log("<ActorModelLog> Found grain of type " +
-                    $"'{typeof(TGrainInterface).FullName}' with id '{id.PrimaryKey}'.");
-                return (TGrainInterface)id.Grain;
-            }
-
             if (ActorModel.Runtime == null)
             {
                 throw new InvalidOperationException("The P# runtime has not been initialized.");
             }
 
-            GrainClient.ProxyFactory.RegisterIgnoredInterfaceTypes(new HashSet<Type>
-            {
-                typeof(IAddressable),
-                typeof(IStatefulGrain)
-            });
+            MachineId mid = ActorModel.Runtime.GetCurrentMachine();
+            
+            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' is " +
+                $"waiting to get or construct proxy with id '{primaryKey}'.");
+            
+            ActorModel.Runtime.SendEvent(GrainClient.ProxyFactory, new ActorFactory.CreateProxyEvent(
+                mid, primaryKey, typeof(TGrainInterface)));
 
-            string assemblyPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
-            Type proxyType = GrainClient.ProxyFactory.GetProxyType(typeof(TGrainInterface),
-                typeof(OrleansActorMachine), assemblyPath);
+            ActorFactory.ProxyConstructedEvent receivedEvent = ActorModel.Runtime.Receive(
+                typeof(ActorFactory.ProxyConstructedEvent)) as ActorFactory.ProxyConstructedEvent;
 
-            Action<object> registerActorCallback = new Action<object>(proxy =>
-            {
-                GrainId newId = new GrainId(primaryKey, (IGrain)proxy);
-                GrainClient.GrainIds.Add(newId);
-            });
+            TGrainInterface proxy = (TGrainInterface)receivedEvent.Proxy;
 
-            var grain = (TGrainInterface)Activator.CreateInstance(proxyType, primaryKey);
+            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' received " +
+                $"proxy with id '{primaryKey}'.");
 
-            ActorModel.Runtime.Log("<ActorModelLog> Created grain proxy of type '{0}'.",
-                typeof(TGrainInterface).FullName);
-
-            return grain;
+            return proxy;
         }
 
         #endregion

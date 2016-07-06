@@ -41,11 +41,6 @@ namespace OrleansModel
         /// </summary>
         public string PrimaryKeyString { get; private set; }
 
-        /// <summary>
-        /// The grain.
-        /// </summary>
-        internal IGrain Grain;
-
         #endregion
 
         #region methods
@@ -54,11 +49,9 @@ namespace OrleansModel
         /// Constructor.
         /// </summary>
         /// <param name="primaryKey">PrimaryKey</param>
-        /// param name="grain">IGrain</param>
-        public GrainId(Guid primaryKey, IGrain grain)
+        internal GrainId(Guid primaryKey)
         {
             this.PrimaryKey = primaryKey;
-            this.Grain = grain;
         }
 
         /// <summary>
@@ -66,7 +59,7 @@ namespace OrleansModel
         /// </summary>
         /// <param name="value">Value</param>
         /// <returns>Guid</returns>
-        public static Guid CreateGuid(long value)
+        internal static Guid CreateGuid(long value)
         {
             byte[] bytes = new byte[16];
             BitConverter.GetBytes(value).CopyTo(bytes, 0);
@@ -78,7 +71,7 @@ namespace OrleansModel
         /// </summary>
         /// <param name="value">Value</param>
         /// <returns>Guid</returns>
-        public static Guid CreateGuid(string value)
+        internal static Guid CreateGuid(string value)
         {
             return new Guid(value);
         }

@@ -14,7 +14,10 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
+using Microsoft.PSharp;
 using Microsoft.PSharp.Actors;
 using Microsoft.PSharp.Actors.Bridge;
 
@@ -38,9 +41,9 @@ namespace Orleans
         internal static GrainRuntime Runtime;
 
         /// <summary>
-        /// The proxy factory.
+        /// The proxy factory machine.
         /// </summary>
-        internal static ProxyFactory<Grain> ProxyFactory;
+        internal static MachineId ProxyFactory;
 
         /// <summary>
         /// Set of grain ids.
@@ -63,12 +66,17 @@ namespace Orleans
         {
             GrainClient.GrainFactory = new GrainFactory();
             GrainClient.Runtime = new GrainRuntime(GrainClient.GrainFactory);
-            GrainClient.ProxyFactory = new ProxyFactory<Grain>(new HashSet<string> { });
             GrainClient.GrainIds = new ConcurrentBag<GrainId>();
+
+            string assemblyPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+            ProxyFactory = ActorModel.Runtime.CreateMachine(typeof(OrleansGrainFactory),
+                new ActorFactory.InitEvent(assemblyPath));
 
             ActorModel.RegisterCleanUpAction(() =>
             {
                 GrainClient.GrainIds = new ConcurrentBag<GrainId>();
+                ProxyFactory = ActorModel.Runtime.CreateMachine(typeof(OrleansGrainFactory),
+                    new ActorFactory.InitEvent(assemblyPath));
             });
         }
 

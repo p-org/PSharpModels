@@ -18,6 +18,9 @@ using System.Reflection;
 
 using Microsoft.PSharp;
 using Microsoft.PSharp.Actors;
+using Microsoft.PSharp.Actors.Bridge;
+
+using ServiceFabricModel;
 
 namespace Microsoft.ServiceFabric.Actors
 {
@@ -31,12 +34,12 @@ namespace Microsoft.ServiceFabric.Actors
         static ActorProxy()
         {
             string assemblyPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
-            ProxyFactory = ActorModel.Runtime.CreateMachine(typeof(ActorFactory),
+            ProxyFactory = ActorModel.Runtime.CreateMachine(typeof(FabricActorFactory),
                 new ActorFactory.InitEvent(assemblyPath));
             
             ActorModel.RegisterCleanUpAction(() =>
             {
-                ProxyFactory = ActorModel.Runtime.CreateMachine(typeof(ActorFactory),
+                ProxyFactory = ActorModel.Runtime.CreateMachine(typeof(FabricActorFactory),
                     new ActorFactory.InitEvent(assemblyPath));
             });
         }

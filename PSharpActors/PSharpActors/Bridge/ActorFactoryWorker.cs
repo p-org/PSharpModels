@@ -15,45 +15,33 @@
 using System;
 using System.Collections.Generic;
 
-using Microsoft.PSharp;
-using Microsoft.PSharp.Actors;
-using Microsoft.PSharp.Actors.Bridge;
-
-using Microsoft.ServiceFabric.Actors.Runtime;
-using ServiceFabricModel;
-
-namespace Microsoft.ServiceFabric.Actors
+namespace Microsoft.PSharp.Actors.Bridge
 {
     /// <summary>
     /// The P# actor factory worker machine.
     /// </summary>
-    internal class ActorFactoryWorker : Machine
+    internal abstract class ActorFactoryWorker : Machine
     {
         #region static fields
 
         /// <summary>
         /// Map from actor types to proxy types.
         /// </summary>
-        private static Dictionary<Type, Type> ProxyTypeCache;
+        protected static Dictionary<Type, Type> ProxyTypeCache;
 
         #endregion
 
         #region fields
 
         /// <summary>
-        /// The actor proxy factory.
-        /// </summary>
-        private ProxyFactory<Actor> ProxyFactory;
-
-        /// <summary>
         /// Map from actor ids to proxy objects.
         /// </summary>
-        private Dictionary<ActorId, object> ActorProxyMap;
+        private Dictionary<object, object> ActorProxyMap;
 
         /// <summary>
         /// The assembly path.
         /// </summary>
-        private string AssemblyPath;
+        protected string AssemblyPath;
 
         #endregion
 
@@ -84,24 +72,24 @@ namespace Microsoft.ServiceFabric.Actors
 
         private void InitOnEntry()
         {
-            this.ProxyFactory = new ProxyFactory<Actor>(
-                new HashSet<string> { "Microsoft.ServiceFabric.Actors" });
-            this.ActorProxyMap = new Dictionary<ActorId, object>();
+            this.ActorProxyMap = new Dictionary<object, object>();
             this.AssemblyPath = (this.ReceivedEvent as ActorFactory.InitEvent).AssemblyPath;
-            
+
+            this.Initialize();
+
             this.Goto(typeof(Active));
         }
 
         private void CreateProxy()
         {
             MachineId target = (this.ReceivedEvent as ActorFactory.CreateProxyEvent).Target;
-            ActorId actorId = (this.ReceivedEvent as ActorFactory.CreateProxyEvent).ActorId;
+            object actorId = (this.ReceivedEvent as ActorFactory.CreateProxyEvent).ActorId;
             Type actorType = (this.ReceivedEvent as ActorFactory.CreateProxyEvent).ActorType;
 
             if (this.ActorProxyMap.ContainsKey(actorId))
             {
                 ActorModel.Runtime.Log($"<ActorModelLog> Factory '{this.Id}' contains " +
-                    $"actor of type '{actorType.FullName}' with id '{actorId.Id}'. " +
+                    $"actor of type '{actorType.FullName}' with id '{actorId}'. " +
                     $"Requested by {target}.");
                 this.Send(target, new ActorFactory.ProxyConstructedEvent(this.ActorProxyMap[actorId]));
                 return;
@@ -124,8 +112,7 @@ namespace Microsoft.ServiceFabric.Actors
             }
             else
             {
-                proxyType = ProxyFactory.GetProxyType(actorType,
-                    typeof(FabricActorMachine), this.AssemblyPath);
+                proxyType = this.GetProxyType(actorType);
                 ProxyTypeCache.Add(actorType, proxyType);
             }
             
@@ -138,6 +125,14 @@ namespace Microsoft.ServiceFabric.Actors
 
             this.Send(target, new ActorFactory.ProxyConstructedEvent(proxy));
         }
+
+        #endregion
+
+        #region protected methods
+
+        protected abstract void Initialize();
+
+        protected abstract Type GetProxyType(Type actorType);
 
         #endregion
     }

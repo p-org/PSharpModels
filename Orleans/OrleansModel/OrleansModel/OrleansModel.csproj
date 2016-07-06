@@ -106,7 +106,9 @@
     <Compile Include="Core\Interfaces\IStorage.cs" />
     <Compile Include="Core\Interfaces\IStatefulGrain.cs" />
     <Compile Include="Model\InMemoryStorage.cs" />
-    <Compile Include="Model\OrleansActorMachine.cs" />
+    <Compile Include="Model\Machines\OrleansGrainFactory.cs" />
+    <Compile Include="Model\Machines\OrleansGrainFactoryWorker.cs" />
+    <Compile Include="Model\OrleansGrainMachine.cs" />
     <Compile Include="Core\Interfaces\IAddressable.cs" />
     <Compile Include="Model\GrainId.cs" />
     <Compile Include="Core\Interfaces\IGrain.cs" />

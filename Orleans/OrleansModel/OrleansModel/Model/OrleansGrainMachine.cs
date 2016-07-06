@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="OrleansActorMachine.cs">
+// <copyright file="OrleansGrainMachine.cs">
 //      Copyright (c) Microsoft Corporation. All rights reserved.
 // 
 //      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -24,9 +24,9 @@ using Orleans.Runtime;
 namespace OrleansModel
 {
     /// <summary>
-    /// An Orleans P# actor machine.
+    /// An Orleans P# grain machine.
     /// </summary>
-    public class OrleansActorMachine : ActorMachine
+    public class OrleansGrainMachine : ActorMachine
     {
         protected override void Initialize()
         {

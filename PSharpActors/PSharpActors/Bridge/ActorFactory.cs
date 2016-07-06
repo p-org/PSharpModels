@@ -15,15 +15,12 @@
 using System;
 using System.Collections.Generic;
 
-using Microsoft.PSharp;
-using Microsoft.PSharp.Actors;
-
-namespace Microsoft.ServiceFabric.Actors
+namespace Microsoft.PSharp.Actors.Bridge
 {
     /// <summary>
     /// The P# actor factory machine.
     /// </summary>
-    internal class ActorFactory : Machine
+    internal abstract class ActorFactory : Machine
     {
         #region events
 
@@ -50,16 +47,16 @@ namespace Microsoft.ServiceFabric.Actors
         public class CreateProxyEvent : Event
         {
             public MachineId Target;
-            public ActorId ActorId;
+            public object ActorId;
             public Type ActorType;
 
             /// <summary>
             /// Constructor.
             /// </summary>
             /// <param name="target">MachineId</param>
-            /// <param name="actorId">ActorId</param>
+            /// <param name="actorId">Actor id</param>
             /// <param name="actorType">Type</param>
-            public CreateProxyEvent(MachineId target, ActorId actorId, Type actorType)
+            public CreateProxyEvent(MachineId target, object actorId, Type actorType)
             {
                 this.Target = target;
                 this.ActorId = actorId;
@@ -123,19 +120,24 @@ namespace Microsoft.ServiceFabric.Actors
 
         private void CreateProxy()
         {
-            MachineId target = (this.ReceivedEvent as CreateProxyEvent).Target;
-            ActorId actorId = (this.ReceivedEvent as CreateProxyEvent).ActorId;
             Type actorType = (this.ReceivedEvent as CreateProxyEvent).ActorType;
 
             if (!this.ProxyFactoryWorkers.ContainsKey(actorType))
             {
-                MachineId worker = ActorModel.Runtime.CreateMachine(typeof(ActorFactoryWorker),
+                MachineId worker = ActorModel.Runtime.CreateMachine(
+                    this.GetActorFactoryWorkerType(),
                     new InitEvent(this.AssemblyPath));
                 this.ProxyFactoryWorkers.Add(actorType, worker);
             }
 
             this.Send(this.ProxyFactoryWorkers[actorType], this.ReceivedEvent);
         }
+
+        #endregion
+
+        #region protected methods
+
+        protected abstract Type GetActorFactoryWorkerType();
 
         #endregion
     }
