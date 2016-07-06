@@ -99,13 +99,6 @@ namespace Microsoft.PSharp.Actors.Bridge
                 $"actor proxy of type '{actorType.FullName}'.");
 
             Type proxyType = null;
-
-            Console.WriteLine($"ProxyTypeCache contains {ProxyTypeCache.Count} items.");
-            foreach (var x in ProxyTypeCache)
-            {
-                Console.WriteLine(x.Key + " :: " + x.Value);
-            }
-
             if (ProxyTypeCache.ContainsKey(actorType))
             {
                 proxyType = ProxyTypeCache[actorType];

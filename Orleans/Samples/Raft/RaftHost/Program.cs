@@ -37,8 +37,8 @@ namespace Raft
         [Microsoft.PSharp.Test]
         public static void Execute(PSharpRuntime runtime)
         {
-            Configuration conf = Configuration.Create(true, true, true, true, true);
-            ActorModel.Configure(conf);
+            //Configuration conf = Configuration.Create(true, true, true, true, true);
+            //ActorModel.Configure(conf);
             
             ActorModel.Start(runtime, () =>
             {

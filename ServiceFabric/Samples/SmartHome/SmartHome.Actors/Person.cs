@@ -47,42 +47,39 @@ namespace SmartHome.Actors
             return new Task(() => { });
         }
 
-        public /*async*/ Task HandleMovementTimeout(object args)
+        public async Task HandleMovementTimeout(object args)
         {
             var previousLocation = this.StateManager.GetStateAsync<Location>("CurrentLocation").Result;
-            //var location = await this.House.GotoRoom();
-            var location = ActorModel.GetResult(this.House.GotoRoom());
+            var location = await this.House.GotoRoom();
             
             ActorModel.Log("[LOG] Person entered room {0}", location);
-            this.StateManager.SetStateAsync("CurrentLocation", location);
+            await this.StateManager.SetStateAsync("CurrentLocation", location);
 
             if (previousLocation == Location.Garden)
             {
-                this.Garden.PersonExits();
+                await this.Garden.PersonExits();
             }
             else if (previousLocation == Location.Kitchen)
             {
-                this.Kitchen.PersonExits();
+                await this.Kitchen.PersonExits();
             }
             else if(previousLocation == Location.Bedroom)
             {
-                this.Bedroom.PersonExits();
+                await this.Bedroom.PersonExits();
             }
 
             if (location == Location.Garden)
             {
-                this.Garden.PersonEnters();
+                await this.Garden.PersonEnters();
             }
             else if (location == Location.Kitchen)
             {
-                this.Kitchen.PersonEnters();
+                await this.Kitchen.PersonEnters();
             }
             else if (location == Location.Bedroom)
             {
-                this.Bedroom.PersonEnters();
+                await this.Bedroom.PersonEnters();
             }
-
-            return Task.FromResult(true);
         }
 
         public Task HandleActionTimeout(object args)

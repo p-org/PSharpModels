@@ -66,14 +66,11 @@ namespace Raft
             {
                 Console.WriteLine($"<RaftLog> ClusterManager is configuring server {idx+2}.");
                 var serverTask = this.Servers[idx+2].Configure(idx+2, serverIds, 0);
-                //ActorModel.Wait(serverTask);
                 await serverTask;
             }
 
             var clientTask = this.Client.Configure(0);
             await clientTask;
-
-            //ActorModel.Wait(clientTask);
         }
 
         public Task NotifyLeaderUpdate(int leaderId, int term)

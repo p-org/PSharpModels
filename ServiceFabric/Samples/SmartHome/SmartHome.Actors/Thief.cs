@@ -47,38 +47,32 @@ namespace SmartHome.Actors
             return new Task(() => { });
         }
 
-        public /*async*/ Task HandleMovementTimeout(object args)
+        public async Task HandleMovementTimeout(object args)
         {
             var previousLocation = this.StateManager.GetStateAsync<Location>("CurrentLocation").Result;
-            //var location = await this.House.GotoRoom();
-            var location = ActorModel.GetResult(this.House.GotoRoom());
+            var location = await this.House.GotoRoom();
             
             ActorModel.Log("[LOG] Thief tries to enter room {0}", location);
             bool canEnter = false;
             if (location == Location.Garden)
             {
-                //canEnter = await this.Bedroom.TryEnterRoom();
-                canEnter = ActorModel.GetResult(this.Bedroom.TryEnterRoom());
+                canEnter = await this.Bedroom.TryEnterRoom();
             }
             else if (location == Location.Kitchen)
             {
-                //canEnter = await this.Bedroom.TryEnterRoom();
-                canEnter = ActorModel.GetResult(this.Bedroom.TryEnterRoom());
+                canEnter = await this.Bedroom.TryEnterRoom();
             }
             else if (previousLocation == Location.Kitchen &&
                 location == Location.Bedroom)
             {
-                //canEnter = await this.Bedroom.TryEnterRoom();
-                canEnter = ActorModel.GetResult(this.Bedroom.TryEnterRoom());
+                canEnter = await this.Bedroom.TryEnterRoom();
             }
 
             if (canEnter)
             {
                 ActorModel.Log("[LOG] Thief entered room {0}", location);
-                this.StateManager.SetStateAsync("CurrentLocation", location);
+                await this.StateManager.SetStateAsync("CurrentLocation", location);
             }
-
-            return Task.FromResult(true);
         }
 
         public Task HandleActionTimeout(object args)
