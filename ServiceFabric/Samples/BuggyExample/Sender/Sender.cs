@@ -36,7 +36,7 @@ namespace Sender
 
             int transmitted = await receiverProxy.GetCurrentCount();
             //int transmitted = ActorModel.GetResult<int>(receiverProxy.GetCurrentCount());
-            //ActorModel.Assert(transmitted <= numberOfItems, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
+            ActorModel.Assert(transmitted <= numberOfItems, "Items sent: " + numberOfItems + "; Transmitted: " + transmitted);
 
             //return Task.FromResult(true);
         }

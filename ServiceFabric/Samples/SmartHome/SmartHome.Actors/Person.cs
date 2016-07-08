@@ -13,7 +13,7 @@ using Microsoft.PSharp.Actors;
 
 namespace SmartHome.Actors
 {
-    public class Person : Actor, IPerson
+    public class Person : Actor, IPerson, IRemindable
     {
         private IHouse House;
         private IGarden Garden;
@@ -28,15 +28,15 @@ namespace SmartHome.Actors
             if (!(this.StateManager.ContainsStateAsync("CurrentLocation").Result))
             {
                 this.StateManager.AddStateAsync("CurrentLocation", Location.Outside);
-            }
-            
-            this.House = ActorProxy.Create<IHouse>(new ActorId(100), "fabric:/FabricSmartHome");
-            this.Garden = ActorProxy.Create<IGarden>(new ActorId(101), "fabric:/FabricSmartHome");
-            this.Kitchen = ActorProxy.Create<IKitchen>(new ActorId(102), "fabric:/FabricSmartHome");
-            this.Bedroom = ActorProxy.Create<IBedroom>(new ActorId(103), "fabric:/FabricSmartHome");
 
-            this.MovementTimer = this.RegisterTimer(HandleMovementTimeout, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
-            this.ActionTimer = this.RegisterTimer(HandleActionTimeout, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1));
+                this.House = ActorProxy.Create<IHouse>(new ActorId(100), "fabric:/FabricSmartHome");
+                this.Garden = ActorProxy.Create<IGarden>(new ActorId(101), "fabric:/FabricSmartHome");
+                this.Kitchen = ActorProxy.Create<IKitchen>(new ActorId(102), "fabric:/FabricSmartHome");
+                this.Bedroom = ActorProxy.Create<IBedroom>(new ActorId(103), "fabric:/FabricSmartHome");
+
+                this.RegisterReminderAsync("HandleMovementTimeout", null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
+                this.RegisterReminderAsync("HandleActionTimeout", null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
+            }
             
             return base.OnActivateAsync();
         }
@@ -47,65 +47,62 @@ namespace SmartHome.Actors
             return new Task(() => { });
         }
 
-        public async Task HandleMovementTimeout(object args)
+        public async Task ReceiveReminderAsync(string reminderName, byte[] context, TimeSpan dueTime, TimeSpan period)
         {
-            var previousLocation = this.StateManager.GetStateAsync<Location>("CurrentLocation").Result;
-            var location = await this.House.GotoRoom();
-            
-            ActorModel.Log("[LOG] Person entered room {0}", location);
-            await this.StateManager.SetStateAsync("CurrentLocation", location);
+            if (reminderName.Equals("HandleMovementTimeout"))
+            {
+                var previousLocation = await this.StateManager.GetStateAsync<Location>("CurrentLocation");
+                var location = await this.House.GotoRoom();
 
-            if (previousLocation == Location.Garden)
-            {
-                await this.Garden.PersonExits();
-            }
-            else if (previousLocation == Location.Kitchen)
-            {
-                await this.Kitchen.PersonExits();
-            }
-            else if(previousLocation == Location.Bedroom)
-            {
-                await this.Bedroom.PersonExits();
-            }
+                ActorModel.Log("[LOG] Person entered room {0}", location);
+                await this.StateManager.SetStateAsync("CurrentLocation", location);
 
-            if (location == Location.Garden)
-            {
-                await this.Garden.PersonEnters();
-            }
-            else if (location == Location.Kitchen)
-            {
-                await this.Kitchen.PersonEnters();
-            }
-            else if (location == Location.Bedroom)
-            {
-                await this.Bedroom.PersonEnters();
-            }
-        }
+                if (previousLocation == Location.Garden)
+                {
+                    await this.Garden.PersonExits();
+                }
+                else if (previousLocation == Location.Kitchen)
+                {
+                    await this.Kitchen.PersonExits();
+                }
+                else if (previousLocation == Location.Bedroom)
+                {
+                    await this.Bedroom.PersonExits();
+                }
 
-        public Task HandleActionTimeout(object args)
-        {
-            var location = this.StateManager.GetStateAsync<Location>("CurrentLocation").Result;
-            if (location == Location.Garden)
-            {
-
+                if (location == Location.Garden)
+                {
+                    await this.Garden.PersonEnters();
+                }
+                else if (location == Location.Kitchen)
+                {
+                    await this.Kitchen.PersonEnters();
+                }
+                else if (location == Location.Bedroom)
+                {
+                    await this.Bedroom.PersonEnters();
+                }
             }
-            else if (location == Location.Kitchen)
+            else if (reminderName.Equals("HandleActionTimeout"))
             {
+                var location = await this.StateManager.GetStateAsync<Location>("CurrentLocation");
+                if (location == Location.Garden)
+                {
 
-            }
-            else if (location == Location.Bedroom)
-            {
-                this.Bedroom.AccessSafe();
-            }
+                }
+                else if (location == Location.Kitchen)
+                {
 
-            return new Task(() => { });
+                }
+                else if (location == Location.Bedroom)
+                {
+                    await this.Bedroom.AccessSafe();
+                }
+            }
         }
 
         protected override Task OnDeactivateAsync()
         {
-            this.UnregisterTimer(this.MovementTimer);
-            this.UnregisterTimer(this.ActionTimer);
-
             return base.OnDeactivateAsync();
         }
     }

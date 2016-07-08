@@ -17,6 +17,7 @@ using System.Collections.Generic;
 
 using Microsoft.PSharp.Actors.Bridge;
 
+using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace ServiceFabricModel
@@ -24,7 +25,7 @@ namespace ServiceFabricModel
     /// <summary>
     /// The P# fabric actor factory worker machine.
     /// </summary>
-    internal class FabricActorFactoryWorker : ActorFactoryWorker
+    internal class FabricActorFactoryWorker : ActorFactoryWorker<ActorId>
     {
         #region fields
 

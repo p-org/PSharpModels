@@ -25,7 +25,7 @@ namespace OrleansModel
     /// <summary>
     /// The P# fabric actor factory worker machine.
     /// </summary>
-    internal class OrleansGrainFactoryWorker : ActorFactoryWorker
+    internal class OrleansGrainFactoryWorker : ActorFactoryWorker<Guid>
     {
         #region fields
 

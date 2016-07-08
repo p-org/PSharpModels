@@ -22,12 +22,11 @@ namespace BuggyExample
         public static void Execute(PSharpRuntime runtime)
         {
 
-            ActorModel.Start(runtime, async () =>
+            ActorModel.Start(runtime, () =>
             {
                 var senderProxy = ActorProxy.Create<ISender>(new ActorId(0), "SenderProxy");
                 Task t = senderProxy.DoSomething(10);
-                await t;
-                //ActorModel.Wait(t);
+                ActorModel.Wait(t);
             });
         }
     }

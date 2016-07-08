@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceFabricModel", "Servi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PSharpActors", "..\..\PSharpActors\PSharpActors\PSharpActors.csproj", "{444DA357-5911-45D5-9645-3C555A39EFD1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PSharpActorsCompilerExtensions", "..\..\PSharpActors\PSharpActorsCompilerExtensions\PSharpActorsCompilerExtensions.csproj", "{DDD2ECF8-6599-432C-8B2C-987BD080EBA7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PSharpActorsCompilerExtensions", "..\..\PSharpActors\PSharpActorsCompilerExtensions\PSharpActorsCompilerExtensions.csproj", "{94065FA9-C6CB-41BC-B3A8-FC003D4BD77C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{444DA357-5911-45D5-9645-3C555A39EFD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{444DA357-5911-45D5-9645-3C555A39EFD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{444DA357-5911-45D5-9645-3C555A39EFD1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DDD2ECF8-6599-432C-8B2C-987BD080EBA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DDD2ECF8-6599-432C-8B2C-987BD080EBA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DDD2ECF8-6599-432C-8B2C-987BD080EBA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DDD2ECF8-6599-432C-8B2C-987BD080EBA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94065FA9-C6CB-41BC-B3A8-FC003D4BD77C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94065FA9-C6CB-41BC-B3A8-FC003D4BD77C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94065FA9-C6CB-41BC-B3A8-FC003D4BD77C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94065FA9-C6CB-41BC-B3A8-FC003D4BD77C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

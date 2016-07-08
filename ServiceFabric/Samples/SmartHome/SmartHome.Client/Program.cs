@@ -25,7 +25,7 @@ namespace FabricBuggyExample.Client
         [Microsoft.PSharp.Test]
         public static void Execute(PSharpRuntime runtime)
         {
-            //ActorModel.Configure(Configuration.Create(false, false, false, false, false));
+            ActorModel.Configure(Configuration.Create(false, false, false, false, false));
 
             ActorModel.Start(runtime, () =>
             {
