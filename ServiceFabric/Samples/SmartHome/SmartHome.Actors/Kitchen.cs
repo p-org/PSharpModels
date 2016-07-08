@@ -15,48 +15,46 @@ namespace SmartHome.Actors
 {
     public class Kitchen : Actor, IKitchen
     {
-        protected override Task OnActivateAsync()
+        protected override async Task OnActivateAsync()
         {
-            if (!(this.StateManager.ContainsStateAsync("HasSafe").Result))
+            if (!(await this.StateManager.ContainsStateAsync("HasSafe")))
             {
-                this.StateManager.AddStateAsync("PeopleInside", 0);
-                this.StateManager.AddStateAsync("HasSafe", false);
+                await this.StateManager.AddStateAsync("PeopleInside", 0);
+                await this.StateManager.AddStateAsync("HasSafe", false);
             }
 
-            return base.OnActivateAsync();
+            await base.OnActivateAsync();
         }
 
-        public Task PersonEnters()
+        public async Task PersonEnters()
         {
-            int numOfPeople = this.StateManager.GetStateAsync<int>("PeopleInside").Result;
+            int numOfPeople = await this.StateManager.GetStateAsync<int>("PeopleInside");
             numOfPeople++;
 
-            this.StateManager.SetStateAsync("PeopleInside", numOfPeople);
-            return new Task(() => { });
+            await this.StateManager.SetStateAsync("PeopleInside", numOfPeople);
         }
 
-        public Task PersonExits()
+        public async Task PersonExits()
         {
-            int numOfPeople = this.StateManager.GetStateAsync<int>("PeopleInside").Result - 1;
+            int numOfPeople = await this.StateManager.GetStateAsync<int>("PeopleInside") - 1;
             if (numOfPeople < 0)
             {
                 numOfPeople = 0;
             }
 
-            this.StateManager.SetStateAsync("PeopleInside", numOfPeople);
-            return new Task(() => { });
+            await this.StateManager.SetStateAsync("PeopleInside", numOfPeople);
         }
 
-        public Task<bool> TryEnterRoom()
+        public async Task<bool> TryEnterRoom()
         {
-            int numOfPeople = this.StateManager.GetStateAsync<int>("PeopleInside").Result;
+            int numOfPeople = await this.StateManager.GetStateAsync<int>("PeopleInside");
             if (numOfPeople > 0)
             {
-                return Task.FromResult(false);
+                return false;
             }
             else
             {
-                return Task.FromResult(true);
+                return true;
             }
         }
     }

@@ -61,9 +61,14 @@ namespace SmartHome.Actors
 
         protected override async Task OnDeactivateAsync()
         {
-            this.UnregisterTimer(this.PersonTimer);
-            this.UnregisterTimer(this.ThiefTimer);
-
+            if(this.PersonTimer != null)
+            {
+                this.UnregisterTimer(this.PersonTimer);
+            }
+            if (this.ThiefTimer != null)
+            {
+                this.UnregisterTimer(this.ThiefTimer);
+            }
             await base.OnDeactivateAsync();
         }
     }

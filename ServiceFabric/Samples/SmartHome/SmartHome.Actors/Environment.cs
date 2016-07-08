@@ -45,28 +45,24 @@ namespace SmartHome.Actors
             return new Task(() => { });
         }
 
-        public Task HandlePersonTimeout(object args)
+        public async Task HandlePersonTimeout(object args)
         {
             this.UnregisterTimer(this.PersonTimer);
             ActorModel.Log("[LOG] People enter the house.");
             foreach (var person in this.People)
             {
-                person.Enter(Location.House);
+                await person.Enter(Location.House);
             }
-
-            return new Task(() => { });
         }
 
-        public Task HandleThiefTimeout(object args)
+        public async Task HandleThiefTimeout(object args)
         {
             this.UnregisterTimer(this.ThiefTimer);
             ActorModel.Log("[LOG] Thief enters the house.");
-            this.Thief.Enter(Location.House);
-
-            return new Task(() => { });
+            await this.Thief.Enter(Location.House);            
         }
 
-        protected override Task OnDeactivateAsync()
+        protected override async Task OnDeactivateAsync()
         {
             if (this.PersonTimer != null)
             {
@@ -78,7 +74,7 @@ namespace SmartHome.Actors
                 this.UnregisterTimer(this.ThiefTimer);
             }
 
-            return base.OnDeactivateAsync();
+            await base.OnDeactivateAsync();
         }
     }
 }

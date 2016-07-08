@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 using SmartHome.Interfaces;
 
-namespace FabricBuggyExample.Client
+namespace FabricSmartHome.Client
 {
     class Program
     {

@@ -15,13 +15,13 @@ namespace SmartHome.Actors
 {
     public class House : Actor, IHouse
     {
-        protected override Task OnActivateAsync()
+        protected override async Task OnActivateAsync()
         {
             ActorProxy.Create<IGarden>(new ActorId(101), "fabric:/FabricSmartHome");
             ActorProxy.Create<IKitchen>(new ActorId(102), "fabric:/FabricSmartHome");
             ActorProxy.Create<IBedroom>(new ActorId(103), "fabric:/FabricSmartHome");
 
-            return base.OnActivateAsync();
+            await base.OnActivateAsync();
         }
 
         public Task<Location> GotoRoom()

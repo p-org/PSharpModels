@@ -16,78 +16,73 @@ namespace SmartHome.Actors
 {
     public class Bedroom : Actor, IBedroom
     {
-        protected override Task OnActivateAsync()
+        protected override async Task OnActivateAsync()
         {
-            if (!this.StateManager.ContainsStateAsync("IsSafeOpen").Result)
+            if (!(await this.StateManager.ContainsStateAsync("IsSafeOpen")))
             {
-                this.StateManager.AddStateAsync("PeopleInside", 0);
-                this.StateManager.AddStateAsync("IsSafeOpen", false);
-                this.StateManager.AddStateAsync("Money", 1000);
+                await this.StateManager.AddStateAsync("PeopleInside", 0);
+                await this.StateManager.AddStateAsync("IsSafeOpen", false);
+                await this.StateManager.AddStateAsync("Money", 1000);
             }
 
-            return base.OnActivateAsync();
+            await base.OnActivateAsync();
         }
 
-        Task IBedroom.PersonEnters()
+        async Task IBedroom.PersonEnters()
         {
-            int numOfPeople = this.StateManager.GetStateAsync<int>("PeopleInside").Result;
+            int numOfPeople = await this.StateManager.GetStateAsync<int>("PeopleInside");
             numOfPeople++;
 
-            this.StateManager.SetStateAsync("PeopleInside", numOfPeople);
-            return new Task(() => { });
+            await this.StateManager.SetStateAsync("PeopleInside", numOfPeople);
         }
 
-        Task IBedroom.PersonExits()
+        async Task IBedroom.PersonExits()
         {
-            int numOfPeople = this.StateManager.GetStateAsync<int>("PeopleInside").Result - 1;
+            int numOfPeople = await this.StateManager.GetStateAsync<int>("PeopleInside") - 1;
             if (numOfPeople < 0)
             {
                 numOfPeople = 0;
             }
 
-            this.StateManager.SetStateAsync("PeopleInside", numOfPeople);
-            return new Task(() => { });
+            await this.StateManager.SetStateAsync("PeopleInside", numOfPeople);
         }
 
-        Task IBedroom.AccessSafe()
+        async Task IBedroom.AccessSafe()
         {
-            bool isSafeOpen = this.StateManager.GetStateAsync<bool>("IsSafeOpen").Result;
+            bool isSafeOpen = await this.StateManager.GetStateAsync<bool>("IsSafeOpen");
             if (isSafeOpen)
             {
                 ActorModel.Log("[LOG] The safe is closed.");
-                this.StateManager.SetStateAsync("IsSafeOpen", false);
+                await this.StateManager.SetStateAsync("IsSafeOpen", false);
             }
             else
             {
                 ActorModel.Log("[LOG] The safe is open.");
-                this.StateManager.SetStateAsync("IsSafeOpen", true);
+                await this.StateManager.SetStateAsync("IsSafeOpen", true);
             }
-
-            return new Task(() => { });
+            
         }
 
-        Task<bool> IBedroom.TryEnterRoom()
+        async Task<bool> IBedroom.TryEnterRoom()
         {
-            int numOfPeople = this.StateManager.GetStateAsync<int>("PeopleInside").Result;
+            int numOfPeople = await this.StateManager.GetStateAsync<int>("PeopleInside");
             if (numOfPeople > 0)
             {
-                return Task.FromResult(false);
+                return false;
             }
             else
             {
-                return Task.FromResult(true);
+                return true;
             }
         }
 
-        Task IBedroom.TryToStealMoney()
+        async Task IBedroom.TryToStealMoney()
         {
-            int numOfPeople = this.StateManager.GetStateAsync<int>("PeopleInside").Result;
-            bool isSafeOpen = this.StateManager.GetStateAsync<bool>("IsSafeOpen").Result;
+            int numOfPeople = await this.StateManager.GetStateAsync<int>("PeopleInside");
+            bool isSafeOpen = await this.StateManager.GetStateAsync<bool>("IsSafeOpen");
             ActorModel.Log("[LOG] Thief is searching for money. Room has {0} people", numOfPeople);
 
             ActorModel.Assert(!isSafeOpen || numOfPeople > 0, "Thief stole the money.");
-
-            return new Task(() => { });
         }
     }
 }
