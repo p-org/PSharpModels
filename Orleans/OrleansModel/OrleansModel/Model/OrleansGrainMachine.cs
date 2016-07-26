@@ -28,7 +28,7 @@ namespace OrleansModel
     /// </summary>
     public class OrleansGrainMachine : ActorMachine
     {
-        protected override void Initialize()
+        protected override void Initialize(InitEvent initEvent)
         {
             var genericTypes = base.WrappedActorType.BaseType.GetGenericArguments();
             if (genericTypes.Length == 1)
@@ -44,6 +44,8 @@ namespace OrleansModel
 
                 ((IStatefulGrain)base.WrappedActorInstance).SetStorage(new InMemoryStorage());
             }
+
+            ((Grain)base.WrappedActorInstance).PrimaryKey = (Guid)initEvent.PrimaryKey;
         }
 
         protected override void Activate()

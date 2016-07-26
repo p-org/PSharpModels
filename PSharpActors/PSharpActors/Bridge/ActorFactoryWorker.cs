@@ -109,7 +109,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                 ProxyTypeCache.Add(actorType, proxyType);
             }
             
-            object proxy = Activator.CreateInstance(proxyType);
+            object proxy = Activator.CreateInstance(proxyType, actorId);
             
             this.ActorProxyMap.Add(actorId, proxy);
 

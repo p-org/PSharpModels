@@ -46,6 +46,11 @@ namespace Orleans
         internal IGrainRuntime Runtime { get; private set; }
 
         /// <summary>
+        /// The primary key.
+        /// </summary>
+        internal Guid PrimaryKey;
+
+        /// <summary>
         /// The grain factory.
         /// </summary>
         protected IGrainFactory GrainFactory

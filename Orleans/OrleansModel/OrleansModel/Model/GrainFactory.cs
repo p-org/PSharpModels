@@ -30,7 +30,7 @@ namespace OrleansModel
     /// <summary>
     /// Model implementation of a grain factory.
     /// </summary>
-    internal class GrainFactory : IGrainFactory
+    public class GrainFactory : IGrainFactory
     {
         #region methods
 

@@ -27,7 +27,7 @@ namespace ServiceFabricModel
     /// </summary>
     public class FabricActorMachine : ActorMachine
     {
-        protected override void Initialize()
+        protected override void Initialize(InitEvent initEvent)
         {
             ConstructorInfo sm = typeof(ActorStateManager).GetConstructors().Single();
             var stateManager = Activator.CreateInstance(typeof(ActorStateManager));

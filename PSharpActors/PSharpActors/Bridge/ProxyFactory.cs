@@ -169,7 +169,32 @@ namespace Microsoft.PSharp.Actors.Bridge
                 }
             }
 
-            var actorTypes = types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface);
+            IEnumerable<Type> actorTypes = null;
+
+            if (interfaceType.IsGenericType)
+            {
+                if (interfaceType.FullName.Contains("IContainerGrain"))
+                {
+                    var tempTypes = types.Where(p => p.IsGenericType && !p.IsInterface);
+
+                    foreach(var i in tempTypes)
+                    {
+                        if (i.FullName.Contains("ContainerGrain"))
+                        {
+                            var ints = i.GetInterfaces();
+                            foreach (Type inter in ints)
+                            {
+                                if(inter == interfaceType)
+                                    Console.WriteLine(inter);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                actorTypes = types.Where(p => interfaceType.IsAssignableFrom(p) && !p.IsInterface);
+            }
             ActorModel.Assert(actorTypes.Any(), "No implementation found for actor " +
                 $"type '{interfaceType}'.");
 
@@ -287,6 +312,17 @@ namespace Microsoft.PSharp.Actors.Bridge
         {
             ConstructorDeclarationSyntax constructor = SyntaxFactory.ConstructorDeclaration(
                 interfaceType.Name + "_PSharpProxy")
+                .WithParameterList(SyntaxFactory.ParameterList(
+                    SyntaxFactory.SeparatedList(
+                        new List<ParameterSyntax>
+                        {
+                            SyntaxFactory.Parameter(
+                                SyntaxFactory.List<AttributeListSyntax>(),
+                                SyntaxFactory.TokenList(),
+                                this.GetTypeSyntax(typeof(object)),
+                                SyntaxFactory.Identifier("primaryKey"),
+                                null)
+                        })))
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
 
             ExpressionStatementSyntax targetConstruction = SyntaxFactory.ExpressionStatement(
@@ -316,6 +352,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                     new List<ArgumentSyntax>
                     {
                         SyntaxFactory.Argument(SyntaxFactory.ThisExpression()),
+                        SyntaxFactory.Argument(SyntaxFactory.IdentifierName("primaryKey")),
                         SyntaxFactory.Argument(SyntaxFactory.MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
                             SyntaxFactory.ThisExpression(),

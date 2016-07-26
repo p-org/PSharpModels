@@ -35,6 +35,7 @@ namespace Microsoft.PSharp.Actors
         public class InitEvent : Event
         {
             public object ProxyInstance;
+            public object PrimaryKey;
             public object ClassInstance;
             public Type ActorType;
 
@@ -42,11 +43,13 @@ namespace Microsoft.PSharp.Actors
             /// Constructor.
             /// </summary>
             /// <param name="proxyInstance">ProxyInstance</param>
+            /// <param name="primaryKey">PrimaryKey</param>
             /// <param name="classInstance">ClassInstance</param>
             /// <param name="actorType">Type</param>
-            public InitEvent(object proxyInstance, object classInstance, Type actorType)
+            public InitEvent(object proxyInstance, object primaryKey, object classInstance, Type actorType)
             {
                 this.ProxyInstance = proxyInstance;
+                this.PrimaryKey = primaryKey;
                 this.ClassInstance = classInstance;
                 this.ActorType = actorType;
             }
@@ -196,7 +199,7 @@ namespace Microsoft.PSharp.Actors
             
             try
             {
-                this.Initialize();
+                this.Initialize(initEvent);
                 if (this.IsReentrant())
                 {
                     ActorModel.ReentrantActors.Add(this.Id, true);
@@ -320,7 +323,7 @@ namespace Microsoft.PSharp.Actors
             this.Goto(typeof(Active));
         }
 
-        protected abstract void Initialize();
+        protected abstract void Initialize(InitEvent initEvent);
         
         protected abstract void Activate();
 

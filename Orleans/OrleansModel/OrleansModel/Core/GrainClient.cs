@@ -22,6 +22,7 @@ using Microsoft.PSharp.Actors;
 using Microsoft.PSharp.Actors.Bridge;
 
 using Orleans.Runtime.Configuration;
+using Orleans.Streams;
 using OrleansModel;
 
 namespace Orleans
@@ -46,11 +47,6 @@ namespace Orleans
         internal static MachineId ProxyFactory;
 
         /// <summary>
-        /// Set of grain ids.
-        /// </summary>
-        internal static ConcurrentBag<GrainId> GrainIds;
-
-        /// <summary>
         /// The client configuration.
         /// </summary>
         internal static ClientConfiguration Configuration { get; private set; }
@@ -66,7 +62,6 @@ namespace Orleans
         {
             GrainClient.GrainFactory = new GrainFactory();
             GrainClient.Runtime = new GrainRuntime(GrainClient.GrainFactory);
-            GrainClient.GrainIds = new ConcurrentBag<GrainId>();
 
             string assemblyPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
             ProxyFactory = ActorModel.Runtime.CreateMachine(typeof(OrleansGrainFactory),
@@ -74,7 +69,6 @@ namespace Orleans
 
             ActorModel.RegisterCleanUpAction(() =>
             {
-                GrainClient.GrainIds = new ConcurrentBag<GrainId>();
                 ProxyFactory = ActorModel.Runtime.CreateMachine(typeof(OrleansGrainFactory),
                     new ActorFactory.InitEvent(assemblyPath));
             });
@@ -95,6 +89,11 @@ namespace Orleans
             ActorModel.Runtime.Assert(config != null,
                 "ClientConfiguration object is null.");
             GrainClient.Configuration = config;
+        }
+
+        public static IStreamProvider GetStreamProvider(string name)
+        {
+            return new StreamProvider(name, false);
         }
 
         #endregion
