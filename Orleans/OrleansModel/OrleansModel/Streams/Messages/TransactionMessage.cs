@@ -23,16 +23,10 @@ namespace Orleans.Streams.Messages
     /// Holds information about a transaction within a stream.
     /// </summary>
     [Serializable]
-    public class TransactionMessage : Event, IEquatable<TransactionMessage>, IStreamMessage
+    public struct TransactionMessage : IEquatable<TransactionMessage>, IStreamMessage
     {
         public TransactionState State;
         public int TransactionId;
-
-        public TransactionMessage()
-            : base()
-        {
-
-        }
 
         public bool Equals(TransactionMessage other)
         {
@@ -50,7 +44,6 @@ namespace Orleans.Streams.Messages
     /// </summary>
     public enum TransactionState
     {
-        Start,
-        End
+        Start, End
     }
 }

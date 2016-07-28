@@ -21,14 +21,13 @@ using Microsoft.PSharp;
 namespace Orleans.Streams.Messages
 {
     [Serializable]
-    public class ItemMessage<T> : Event, IStreamMessage<T>
+    public class ItemMessage<T> : IStreamMessage<T>
     {
         public IEnumerable<T> Items { get; private set; }
 
         public ItemMessage(IEnumerable<T> items)
-            : base()
         {
-            this.Items = items;
+            Items = items;
         }
 
         public async Task Accept(IStreamMessageVisitor<T> visitor)

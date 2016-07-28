@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Microsoft.PSharp.Actors.Bridge
 {
@@ -108,8 +109,19 @@ namespace Microsoft.PSharp.Actors.Bridge
                 proxyType = this.GetProxyType(actorType);
                 ProxyTypeCache.Add(actorType, proxyType);
             }
-            
-            object proxy = Activator.CreateInstance(proxyType, actorId);
+
+            object proxy;
+            if (!proxyType.IsGenericType)
+            {
+                proxy = Activator.CreateInstance(proxyType, actorId);
+            }
+            else
+            {
+                Type newGenericType = proxyType.GetGenericTypeDefinition();
+                Type constructed = newGenericType.MakeGenericType(actorType.GetGenericArguments());
+                
+                proxy = Activator.CreateInstance(constructed, actorId);
+            }
             
             this.ActorProxyMap.Add(actorId, proxy);
 

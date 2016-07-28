@@ -84,10 +84,10 @@ namespace Microsoft.PSharp.Actors.Bridge
 
                 if (res == null)
                 {
+                    Console.WriteLine("creating proxy");
                     res = CreateProxyType(interfaceType, actorMachineType, assemblyPath);
                     this.ProxyTypes.Add(interfaceType, res);
                 }
-
                 return res;
             }
         }
@@ -107,7 +107,6 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
             
             var actorType = this.GetActorType(interfaceType, assemblyPath);
-
             var references = new HashSet<MetadataReference>();
             references.Add(MetadataReference.CreateFromFile(actorType.Assembly.Location));
             references.Add(MetadataReference.CreateFromFile(typeof(ActorMachine).Assembly.Location));
@@ -117,7 +116,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
 
             SyntaxTree syntaxTree = this.CreateProxySyntaxTree(interfaceType, actorType, actorMachineType);
-            //Console.WriteLine(syntaxTree);
+            Console.WriteLine(syntaxTree);
 
             var context = CompilationContext.Create().LoadSolution(syntaxTree.ToString(), references, "cs");
             var compilation = context.GetSolution().Projects.First().GetCompilationAsync().Result;
@@ -136,10 +135,28 @@ namespace Microsoft.PSharp.Actors.Bridge
                 false, false);
 
             Assembly proxyAssembly = Assembly.LoadFrom(proxyAssemblyPath);
-            
-            Type proxyType = proxyAssembly.GetType(typeSymbol.ContainingNamespace.ToString() +
-                    "." + typeSymbol.Name);
 
+            Type proxyType;
+
+            if (!interfaceType.IsGenericType)
+            {
+                proxyType = proxyAssembly.GetType(typeSymbol.ContainingNamespace.ToString() +
+                    "." + typeSymbol.MetadataName);
+            }
+            else
+            {
+                //string replacedGenericTypes = typeSymbol.MetadataName + "[" + interfaceType.GetGenericArguments().First();
+                //for(int i = 1; i < interfaceType.GetGenericArguments().Length; i++)
+                //{
+                //    replacedGenericTypes = replacedGenericTypes + "," + interfaceType.GetGenericArguments()[i].FullName;
+                //}
+                //replacedGenericTypes = replacedGenericTypes + "]";
+
+                proxyType = proxyAssembly.GetType(typeSymbol.ContainingNamespace.ToString() +
+                    "." + typeSymbol.MetadataName);
+                Console.WriteLine("returning proxy type: " + proxyType + " for " + " " + typeSymbol.MetadataName);
+            }
+            
             return proxyType;
         }
 
@@ -173,20 +190,15 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             if (interfaceType.IsGenericType)
             {
-                if (interfaceType.FullName.Contains("IContainerGrain"))
+                var potentialTypes = types.Where(p => !p.IsInterface);
+                foreach(var pType in potentialTypes)
                 {
-                    var tempTypes = types.Where(p => p.IsGenericType && !p.IsInterface);
 
-                    foreach(var i in tempTypes)
+                    foreach (var potentialInterfaceType in pType.GetInterfaces())
                     {
-                        if (i.FullName.Contains("ContainerGrain"))
+                        if(potentialInterfaceType.IsGenericType && potentialInterfaceType.GetGenericTypeDefinition() == interfaceType.GetGenericTypeDefinition())
                         {
-                            var ints = i.GetInterfaces();
-                            foreach (Type inter in ints)
-                            {
-                                if(inter == interfaceType)
-                                    Console.WriteLine(inter);
-                            }
+                            return pType;
                         }
                     }
                 }
@@ -249,9 +261,23 @@ namespace Microsoft.PSharp.Actors.Bridge
         private ClassDeclarationSyntax CreateProxyClassDeclaration(Type interfaceType,
             Type actorType, Type actorMachineType)
         {
-            ClassDeclarationSyntax classDecl = SyntaxFactory.ClassDeclaration(interfaceType.Name + "_PSharpProxy")
+            string interfaceTypeName;
+            if (interfaceType.IsGenericType)
+                interfaceTypeName = interfaceType.Name.Substring(0, interfaceType.Name.IndexOf("`"));
+            else
+                interfaceTypeName = interfaceType.Name;
+            ClassDeclarationSyntax classDecl = SyntaxFactory.ClassDeclaration(interfaceTypeName + "_PSharpProxy")
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
-            
+
+            List<TypeParameterSyntax> paramList = new List<TypeParameterSyntax>();
+            foreach(Type genericType in actorType.GetGenericArguments())
+            {
+                paramList.Add(SyntaxFactory.TypeParameter(SyntaxFactory.Identifier(genericType.ToString())));
+            }
+
+            if(paramList.Count > 0)
+                classDecl = classDecl.WithTypeParameterList(SyntaxFactory.TypeParameterList(SyntaxFactory.SeparatedList(paramList)));
+
             FieldDeclarationSyntax target = this.CreateProxyField(
                 interfaceType, "Target", SyntaxKind.PrivateKeyword);
             FieldDeclarationSyntax machineId = this.CreateProxyField(
@@ -279,7 +305,14 @@ namespace Microsoft.PSharp.Actors.Bridge
             foreach (var type in actorType.GetInterfaces().Where(
                 i => !this.IgnoredInterfaceTypes.Contains(i)))
             {
-                baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(type.FullName)));
+                if (type.IsGenericType)
+                {
+                    //baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.GenericName(SyntaxFactory.Identifier(type.GetGenericTypeDefinition().FullName),
+                    //    SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(genericTypes)))));
+                    baseTypes.Add(SyntaxFactory.SimpleBaseType(GetGenericName(type)));
+                }
+                else
+                    baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(type.FullName)));
                 foreach (var method in type.GetMethods())
                 {
                     methodDecls.Add(this.CreateProxyMethod(method, interfaceType, actorMachineType));
@@ -299,7 +332,11 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             return classDecl;
         }
+        
+        class temp<Tin, Tout>
+        {
 
+        }
         /// <summary>
         /// Creates the proxy constructor.
         /// </summary>
@@ -310,8 +347,13 @@ namespace Microsoft.PSharp.Actors.Bridge
         private ConstructorDeclarationSyntax CreateProxyConstructor(Type interfaceType,
             Type actorType, Type actorMachineType)
         {
+            string interfaceTypeName;
+            if (interfaceType.IsGenericType)
+                interfaceTypeName = interfaceType.Name.Substring(0, interfaceType.Name.IndexOf("`"));
+            else
+                interfaceTypeName = interfaceType.Name;
             ConstructorDeclarationSyntax constructor = SyntaxFactory.ConstructorDeclaration(
-                interfaceType.Name + "_PSharpProxy")
+                interfaceTypeName + "_PSharpProxy")
                 .WithParameterList(SyntaxFactory.ParameterList(
                     SyntaxFactory.SeparatedList(
                         new List<ParameterSyntax>
@@ -325,11 +367,21 @@ namespace Microsoft.PSharp.Actors.Bridge
                         })))
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
 
+            string actorTypeName;
+            if (actorType.IsGenericType)
+            {
+                actorTypeName = GetGenericTypeString(actorType, interfaceType.GetGenericArguments());
+            }
+            else
+            {
+                actorTypeName = actorType.FullName;
+            }
+
             ExpressionStatementSyntax targetConstruction = SyntaxFactory.ExpressionStatement(
                 SyntaxFactory.AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                 SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                 SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName("Target")),
-                SyntaxFactory.ObjectCreationExpression(SyntaxFactory.IdentifierName(actorType.FullName))
+                SyntaxFactory.ObjectCreationExpression(SyntaxFactory.IdentifierName(actorTypeName))
                 .WithArgumentList(SyntaxFactory.ArgumentList())));
             
             LocalDeclarationStatementSyntax machineTypeDecl = SyntaxFactory.LocalDeclarationStatement(
@@ -358,7 +410,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                             SyntaxFactory.ThisExpression(),
                             SyntaxFactory.IdentifierName("Target"))),
                         SyntaxFactory.Argument(SyntaxFactory.TypeOfExpression(
-                            SyntaxFactory.IdentifierName(actorType.FullName)))
+                            SyntaxFactory.IdentifierName(actorTypeName)))
                     }));
 
             LocalDeclarationStatementSyntax eventDecl = this.CreateEventDeclaration(
@@ -381,7 +433,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                                 SyntaxFactory.Argument(SyntaxFactory.IdentifierName("machineType")),
                                 SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(
                                     SyntaxKind.StringLiteralExpression,
-                                    SyntaxFactory.Literal(actorType.FullName))),
+                                    SyntaxFactory.Literal(actorTypeName))),
                                 SyntaxFactory.Argument(SyntaxFactory.IdentifierName(eventName))
                             })))));
 
@@ -551,12 +603,19 @@ namespace Microsoft.PSharp.Actors.Bridge
             string eventType = actorMachineType.FullName + "." + typeof(ActorMachine.ActorEvent).Name;
             string eventName = "actorEvent";
 
+            string interfaceTypeString;
+            if (!interfaceType.IsGenericType)
+                interfaceTypeString = interfaceType.FullName; 
+            else
+            {
+                interfaceTypeString = GetGenericTypeString(interfaceType);
+            }
             ArgumentListSyntax arguments = SyntaxFactory.ArgumentList(
                 SyntaxFactory.SeparatedList(
                     new List<ArgumentSyntax>
                     {
                         SyntaxFactory.Argument(SyntaxFactory.TypeOfExpression(
-                            SyntaxFactory.IdentifierName(interfaceType.FullName))),
+                            SyntaxFactory.IdentifierName(interfaceTypeString))),
                         SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(
                             SyntaxKind.StringLiteralExpression,
                             SyntaxFactory.Literal(method.Name))),
@@ -749,7 +808,12 @@ namespace Microsoft.PSharp.Actors.Bridge
                 List<TypeSyntax> genericTypes = new List<TypeSyntax>();
                 foreach (var genericType in type.GetGenericArguments())
                 {
-                    genericTypes.Add(SyntaxFactory.IdentifierName(genericType.FullName));
+                    if (genericType.IsGenericParameter)
+                        genericTypes.Add(SyntaxFactory.IdentifierName(genericType.ToString()));
+                    else if (genericType.IsGenericType)
+                        genericTypes.Add(GetTypeSyntax(genericType));
+                    else
+                        genericTypes.Add(SyntaxFactory.IdentifierName(genericType.FullName));
                 }
 
                 string genericTypeName = type.GetGenericTypeDefinition().FullName;
@@ -760,6 +824,8 @@ namespace Microsoft.PSharp.Actors.Bridge
                     SyntaxFactory.TypeArgumentList(
                         SyntaxFactory.SeparatedList(genericTypes)));
             }
+            else if(type.IsGenericParameter)
+                syntax = SyntaxFactory.IdentifierName(type.ToString());
             else
             {
                 syntax = SyntaxFactory.IdentifierName(type.FullName);
@@ -768,6 +834,51 @@ namespace Microsoft.PSharp.Actors.Bridge
             return syntax;
         }
 
+
+        /// <summary>
+        /// Returns the GenericName for generic types
+        /// </summary>
+        /// <param name="type">Type</param>
+        /// <returns>GenericNameSyntax</returns>
+        private GenericNameSyntax GetGenericName(Type type)
+        {
+            List<TypeSyntax> genericTypes = new List<TypeSyntax>();
+            foreach(Type genericType in type.GetGenericArguments())
+            {
+                if (genericType.IsGenericParameter)
+                    genericTypes.Add(SyntaxFactory.IdentifierName(genericType.ToString()));
+                else if (genericType.IsGenericType)
+                {
+                    genericTypes.Add(GetGenericName(genericType));
+                }
+                else
+                    genericTypes.Add(SyntaxFactory.IdentifierName(genericType.FullName));
+            }
+            return SyntaxFactory.GenericName(SyntaxFactory.Identifier(type.GetGenericTypeDefinition().FullName.Substring(0, type.GetGenericTypeDefinition().FullName.IndexOf("`"))),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(genericTypes)));
+        }
+
+        /// <summary>
+        /// Returns the name(string) for generic types
+        /// </summary>
+        /// <param name="type">Type</param>
+        /// <param name="arguments">Type[]</param>
+        /// <returns></returns>
+        string GetGenericTypeString(Type type, Type[] arguments = null)
+        {
+            string typeString = type.GetGenericTypeDefinition().FullName.Substring(0, type.GetGenericTypeDefinition().FullName.IndexOf("`")) + "<";
+            Type[] typeArguments;
+            if (arguments == null)
+                typeArguments = type.GetGenericArguments();
+            else
+                typeArguments = arguments;
+            foreach (Type genericParameter in typeArguments)
+            {
+                typeString = typeString + genericParameter.ToString();
+            }
+            typeString = typeString + ">";
+            return typeString;
+        }
         #endregion
     }
 }
