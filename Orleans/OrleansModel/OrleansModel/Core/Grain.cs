@@ -25,6 +25,7 @@ using Orleans.Runtime;
 
 using OrleansModel;
 using System.Collections.Generic;
+using Orleans.Streams;
 
 namespace Orleans
 {
@@ -228,9 +229,15 @@ namespace Orleans
                 new ActorCompletionMachine.SetResultRequest(reminders));
             return task;
         }
+
+        public IStreamProvider GetStreamProvider(string name)
+        {
+            throw new NotImplementedException();
+            //return new StreamProvider(name, false);
+        }
         #endregion
     }
-    
+
     /// <summary>
     /// The abstract base class for all grain classes
     /// with declared persistent state.

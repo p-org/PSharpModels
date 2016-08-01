@@ -22,7 +22,6 @@ using Microsoft.PSharp.Actors;
 using Microsoft.PSharp.Actors.Bridge;
 
 using Orleans.Runtime.Configuration;
-using Orleans.Streams;
 using OrleansModel;
 
 namespace Orleans
@@ -89,11 +88,6 @@ namespace Orleans
             ActorModel.Runtime.Assert(config != null,
                 "ClientConfiguration object is null.");
             GrainClient.Configuration = config;
-        }
-
-        public static IStreamProvider GetStreamProvider(string name)
-        {
-            return new StreamProvider(name, false);
         }
 
         #endregion
