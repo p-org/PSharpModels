@@ -32,9 +32,9 @@ namespace Microsoft.PSharp.Actors
 
         public void Dispose()
         {
-            ActorModel.Assert(ActorModel.Runtime.GetCurrentMachine().Equals(this.Actor),
+            ActorModel.Assert(ActorModel.Runtime.GetCurrentMachineId().Equals(this.Actor),
                 $"The timer can only be disposed by its owner, which is {this.Actor}." +
-                $"Instead, {ActorModel.Runtime.GetCurrentMachine()} called Dispose().");
+                $"Instead, {ActorModel.Runtime.GetCurrentMachineId()} called Dispose().");
 
             if (ActorModel.ActorMachineMap[this.Actor].RegisteredTimers.Contains(this.Timer))
             {

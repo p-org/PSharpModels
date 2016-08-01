@@ -85,7 +85,7 @@ namespace OrleansModel
                 throw new InvalidOperationException("The P# runtime has not been initialized.");
             }
 
-            MachineId mid = ActorModel.Runtime.GetCurrentMachine();
+            MachineId mid = ActorModel.Runtime.GetCurrentMachineId();
             
             ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' is " +
                 $"waiting to get or construct proxy with id '{primaryKey}'.");

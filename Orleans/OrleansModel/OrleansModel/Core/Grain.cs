@@ -137,9 +137,9 @@ namespace Orleans
         {
             MachineId timerMachine = ActorModel.Runtime.CreateMachine(typeof(TimerMachine),
                 asyncCallback.Method.Name,
-                new TimerMachine.InitEvent(ActorModel.Runtime.GetCurrentMachine(),
+                new TimerMachine.InitEvent(ActorModel.Runtime.GetCurrentMachineId(),
                 asyncCallback, state));
-            return new TimerCancellationSource(ActorModel.Runtime.GetCurrentMachine(), timerMachine);
+            return new TimerCancellationSource(ActorModel.Runtime.GetCurrentMachineId(), timerMachine);
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Orleans
         protected virtual Task<IGrainReminder> RegisterOrUpdateReminder(string reminderName,
             TimeSpan dueTime, TimeSpan period)
         {
-            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
+            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachineId());
             var reminder = reminders.SingleOrDefault(val => ((GrainReminder)val).ReminderName.Equals(reminderName));
 
             var task = new ActorCompletionTask<IGrainReminder>();
@@ -165,7 +165,7 @@ namespace Orleans
             else
             {
                 ActorModel.Runtime.CreateMachine(typeof(GrainReminderMachine), reminderName,
-                    new ReminderMachine.InitEvent(ActorModel.Runtime.GetCurrentMachine(),
+                    new ReminderMachine.InitEvent(ActorModel.Runtime.GetCurrentMachineId(),
                     actorCompletionMachine, reminderName, null));
             }
             
@@ -179,7 +179,7 @@ namespace Orleans
         /// <returns>Task</returns>
         protected virtual Task UnregisterReminder(IGrainReminder reminder)
         {
-            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
+            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachineId());
             var reminderToBeRemoved = reminders.SingleOrDefault(val
                 => ((GrainReminder)val).ReminderName.Equals(reminder.ReminderName));
             if (reminderToBeRemoved != null)
@@ -201,7 +201,7 @@ namespace Orleans
         /// <returns>Task<IGrainReminder></returns>
         protected virtual Task<IGrainReminder> GetReminder(string reminderName)
         {
-            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
+            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachineId());
             var reminder = reminders.SingleOrDefault(val => ((GrainReminder)val).ReminderName.Equals(reminderName));
 
             var task = new ActorCompletionTask<IGrainReminder>();
@@ -218,7 +218,7 @@ namespace Orleans
         protected virtual Task<List<IGrainReminder>> GetReminders()
         {
             var reminders = new List<IGrainReminder>();
-            foreach (var reminder in ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine()))
+            foreach (var reminder in ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachineId()))
             {
                 reminders.Add(reminder as IGrainReminder);
             }

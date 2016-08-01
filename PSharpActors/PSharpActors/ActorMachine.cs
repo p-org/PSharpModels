@@ -90,7 +90,7 @@ namespace Microsoft.PSharp.Actors
                 
                 if (senderMachineId == null)
                 {
-                    this.Sender = ActorModel.Runtime.GetCurrentMachine();
+                    this.Sender = ActorModel.Runtime.GetCurrentMachineId();
                 }
                 else
                 {
