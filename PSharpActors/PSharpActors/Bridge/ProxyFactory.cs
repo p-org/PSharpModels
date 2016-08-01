@@ -84,7 +84,6 @@ namespace Microsoft.PSharp.Actors.Bridge
 
                 if (res == null)
                 {
-                    Console.WriteLine("creating proxy");
                     res = CreateProxyType(interfaceType, actorMachineType, assemblyPath);
                     this.ProxyTypes.Add(interfaceType, res);
                 }
@@ -116,7 +115,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             }
 
             SyntaxTree syntaxTree = this.CreateProxySyntaxTree(interfaceType, actorType, actorMachineType);
-            Console.WriteLine(syntaxTree);
+            //Console.WriteLine(syntaxTree);
 
             var context = CompilationContext.Create().LoadSolution(syntaxTree.ToString(), references, "cs");
             var compilation = context.GetSolution().Projects.First().GetCompilationAsync().Result;
@@ -136,26 +135,8 @@ namespace Microsoft.PSharp.Actors.Bridge
 
             Assembly proxyAssembly = Assembly.LoadFrom(proxyAssemblyPath);
 
-            Type proxyType;
-
-            if (!interfaceType.IsGenericType)
-            {
-                proxyType = proxyAssembly.GetType(typeSymbol.ContainingNamespace.ToString() +
+            Type proxyType = proxyAssembly.GetType(typeSymbol.ContainingNamespace.ToString() +
                     "." + typeSymbol.MetadataName);
-            }
-            else
-            {
-                //string replacedGenericTypes = typeSymbol.MetadataName + "[" + interfaceType.GetGenericArguments().First();
-                //for(int i = 1; i < interfaceType.GetGenericArguments().Length; i++)
-                //{
-                //    replacedGenericTypes = replacedGenericTypes + "," + interfaceType.GetGenericArguments()[i].FullName;
-                //}
-                //replacedGenericTypes = replacedGenericTypes + "]";
-
-                proxyType = proxyAssembly.GetType(typeSymbol.ContainingNamespace.ToString() +
-                    "." + typeSymbol.MetadataName);
-                Console.WriteLine("returning proxy type: " + proxyType + " for " + " " + typeSymbol.MetadataName);
-            }
             
             return proxyType;
         }
