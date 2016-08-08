@@ -37,8 +37,8 @@ namespace Orleans.Streams.Endpoints
             _tearDownExecuted = false;
             var messageStream = _streamProvider.GetStream<IStreamMessage>(inputStream.StreamIdentifier.Item1, inputStream.StreamIdentifier.Item2);
 
-            _messageStreamSubscriptionHandle =
-                await messageStream.SubscribeAsync((message, token) => message.Accept(this), async () => await TearDown());
+            //_messageStreamSubscriptionHandle =
+            //    await messageStream.SubscribeAsync((message, token) => message.Accept(this), async () => await TearDown());
         }
 
         public virtual async Task TearDown()

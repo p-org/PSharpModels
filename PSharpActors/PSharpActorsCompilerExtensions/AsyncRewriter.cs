@@ -127,7 +127,7 @@ namespace Microsoft.PSharp.LanguageServices.Rewriting.CSharp
                         computeReplacementNode: (stmt, rewritten) =>
                         {
                             var expr = SyntaxFactory.ParseExpression("System.Threading.Tasks." +
-                                $"Task.FromResult({rewritten.Expression})");
+                                $"Task.FromResult(({namedTypeSymbol.TypeArguments.First()}){rewritten.Expression})");
                             expr = expr.WithTriviaFrom(rewritten.Expression);
                             return rewritten.WithExpression(expr);
                         });

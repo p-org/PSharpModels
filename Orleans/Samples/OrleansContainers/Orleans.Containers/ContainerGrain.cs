@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Orleans.Streams;
+using Orleans.Collections;
+using Orleans.Collections.Utilities;
 
 namespace Orleans.Collections
 {
@@ -33,13 +35,17 @@ namespace Orleans.Collections
 
         public async Task Clear()
         {
-            await Task.WhenAll(_containers.Select(async x => await x.Clear()).ToList());
+            //Modified: await split
+            var tasks = _containers.Select(async x => await x.Clear()).ToList();
+            await Task.WhenAll(tasks);
             _containers.Clear();
         }
 
         public async Task<bool> Contains(T item)
         {
-            var resultTask = Task.WhenAll(_containers.Select(async c => await c.Contains(item)));
+            //Modified: await split
+            var tasks = _containers.Select(async c => await c.Contains(item));
+            var resultTask = Task.WhenAll(tasks);
             var results = await resultTask;
 
             return results.Contains(true);
@@ -47,7 +53,9 @@ namespace Orleans.Collections
 
         public async Task<int> Count()
         {
-            var resultTask = await Task.WhenAll(_containers.Select(async container => await container.Count()));
+            //Modified: await split
+            var tasks = _containers.Select(async container => await container.Count());
+            var resultTask = await Task.WhenAll(tasks);
             return resultTask.Sum();
         }
 
@@ -83,83 +91,6 @@ namespace Orleans.Collections
             return transactionId;
         }
 
-        public Task<IList<object>> ExecuteAsync(Func<T, Task<object>> func)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<object> ExecuteAsync(Func<T, Task<object>> func, ContainerElementReference<T> reference)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IList<object>> ExecuteAsync(Func<T, object, Task<object>> func, object state)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ExecuteAsync(Func<T, Task> func, ContainerElementReference<T> reference = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<object> ExecuteAsync(Func<T, object, Task<object>> func, object state, ContainerElementReference<T> reference)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ExecuteAsync(Func<T, object, Task> func, object state, ContainerElementReference<T> reference = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IList<object>> ExecuteSync(Func<T, object> func)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<object> ExecuteSync(Func<T, object> func, ContainerElementReference<T> reference)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IList<object>> ExecuteSync(Func<T, object, object> func, object state)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ExecuteSync(Action<T> action, ContainerElementReference<T> reference = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<object> ExecuteSync(Func<T, object, object> func, object state, ContainerElementReference<T> reference)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ExecuteSync(Action<T, object> action, object state, ContainerElementReference<T> reference = null)
-        {
-            throw new NotImplementedException();
-        }
-
-       
-        public Task<IList<StreamIdentity<ContainerHostedElement<T>>>> GetStreamIdentities()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> IsTearedDown()
-        {
-            throw new NotImplementedException();
-        }
-
-        
-        public Task SetInput(IEnumerable<StreamIdentity<T>> streamIdentities)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task SetNumberOfNodes(int numContainer)
         {
             var containersToAdd = numContainer - _containers.Count;
@@ -169,178 +100,159 @@ namespace Orleans.Collections
             }
 
 
-            //var initTasks = new List<Task>();
+            var initTasks = new List<Task>();
             for (var i = 0; i < containersToAdd; i++)
             {
                 var containerNode = CreateContainerGrain();
-                ////initTasks.Add(await containerNode.Clear());
+                //initTasks.Add(await containerNode.Clear());
                 _containers.Add(containerNode);
             }
 
-            //await Task.WhenAll(initTasks);
-            await Task.FromResult(true);
-
+            await Task.WhenAll(initTasks);
         }
 
-        ////Remove this
-        //public IContainerGrain_PSharpProxy(object primaryKey)
-        //{
-        //    object target = new ContainerGrain<T>();
-        //}
-
-        public Task TearDown()
+        public async Task ExecuteAsync(Func<T, Task> func, ContainerElementReference<T> reference = null)
         {
-            throw new NotImplementedException();
+            if (reference != null)
+            {
+                var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
+                await container.ExecuteAsync(func, reference);
+            }
+            else
+            {
+                await Task.WhenAll(_containers.Select(c => c.ExecuteAsync(func)));
+            }
         }
 
-        public Task TransactionComplete(int transactionId)
+        public async Task ExecuteAsync(Func<T, object, Task> func, object state, ContainerElementReference<T> reference = null)
         {
-            throw new NotImplementedException();
+            if (reference != null)
+            {
+                var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
+                await container.ExecuteAsync(func, state, reference);
+            }
+            else
+            {
+                await Task.WhenAll(_containers.Select(c => c.ExecuteAsync(func, state)));
+            }
         }
 
-        //public async Task ExecuteAsync(Func<T, Task> func, ContainerElementReference<T> reference = null)
-        //{
-        //    if (reference != null)
-        //    {
-        //        var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
-        //        await container.ExecuteAsync(func, reference);
-        //    }
-        //    else
-        //    {
-        //        await Task.WhenAll(_containers.Select(c => c.ExecuteAsync(func)));
-        //    }
-        //}
+        public async Task<IList<object>> ExecuteAsync(Func<T, Task<object>> func)
+        {
+            var result = await Task.WhenAll(_containers.Select(c => c.ExecuteAsync(func)));
+            return new List<object>(result);
+        }
 
-        //public async Task ExecuteAsync(Func<T, object, Task> func, object state, ContainerElementReference<T> reference = null)
-        //{
-        //    if (reference != null)
-        //    {
-        //        var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
-        //        await container.ExecuteAsync(func, state, reference);
-        //    }
-        //    else
-        //    {
-        //        await Task.WhenAll(_containers.Select(c => c.ExecuteAsync(func, state)));
-        //    }
-        //}
+        public async Task<IList<object>> ExecuteAsync(Func<T, object, Task<object>> func, object state)
+        {
+            var result = await Task.WhenAll(_containers.Select(c => c.ExecuteAsync(func, state)));
+            return new List<object>(result);
+        }
 
-        //public async Task<IList<object>> ExecuteAsync(Func<T, Task<object>> func)
-        //{
-        //    var result = await Task.WhenAll(_containers.Select(c => c.ExecuteAsync(func)));
-        //    return new List<object>(result);
-        //}
+        public async Task<object> ExecuteAsync(Func<T, Task<object>> func, ContainerElementReference<T> reference)
+        {
+            var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
+            return await container.ExecuteAsync(func, reference);
+        }
 
-        //public async Task<IList<object>> ExecuteAsync(Func<T, object, Task<object>> func, object state)
-        //{
-        //    var result = await Task.WhenAll(_containers.Select(c => c.ExecuteAsync(func, state)));
-        //    return new List<object>(result);
-        //}
+        public async Task<object> ExecuteAsync(Func<T, object, Task<object>> func, object state, ContainerElementReference<T> reference)
+        {
+            var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
+            return await container.ExecuteAsync(func, state, reference);
+        }
 
-        //public async Task<object> ExecuteAsync(Func<T, Task<object>> func, ContainerElementReference<T> reference)
-        //{
-        //    var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
-        //    return await container.ExecuteAsync(func, reference);
-        //}
+        public async Task ExecuteSync(Action<T> action, ContainerElementReference<T> reference = null)
+        {
+            if (reference != null)
+            {
+                var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
+                await container.ExecuteSync(action, reference);
+            }
+            else
+            {
+                await Task.WhenAll(_containers.Select(c => c.ExecuteSync(action, null)));
+            }
+        }
 
-        //public async Task<object> ExecuteAsync(Func<T, object, Task<object>> func, object state, ContainerElementReference<T> reference)
-        //{
-        //    var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
-        //    return await container.ExecuteAsync(func, state, reference);
-        //}
+        public async Task ExecuteSync(Action<T, object> action, object state, ContainerElementReference<T> reference = null)
+        {
+            if (reference != null)
+            {
+                var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
+                await container.ExecuteSync(action, state, reference);
+            }
+            else
+            {
+                await Task.WhenAll(_containers.Select(c => c.ExecuteSync(action, state)));
+            }
+        }
 
-        //public async Task ExecuteSync(Action<T> action, ContainerElementReference<T> reference = null)
-        //{
-        //    if (reference != null)
-        //    {
-        //        var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
-        //        await container.ExecuteSync(action, reference);
-        //    }
-        //    else
-        //    {
-        //        await Task.WhenAll(_containers.Select(c => c.ExecuteSync(action, null)));
-        //    }
-        //}
+        public async Task<IList<object>> ExecuteSync(Func<T, object, object> func, object state)
+        {
+            var result = Task.WhenAll(_containers.Select(c => c.ExecuteSync(func, state)));
+            return await result;
+        }
 
-        //public async Task ExecuteSync(Action<T, object> action, object state, ContainerElementReference<T> reference = null)
-        //{
-        //    if (reference != null)
-        //    {
-        //        var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
-        //        await container.ExecuteSync(action, state, reference);
-        //    }
-        //    else
-        //    {
-        //        await Task.WhenAll(_containers.Select(c => c.ExecuteSync(action, state)));
-        //    }
-        //}
+        public async Task<IList<object>> ExecuteSync(Func<T, object> func)
+        {
+            var result = Task.WhenAll(_containers.Select(c => c.ExecuteSync(func)));
+            return await result;
+        }
 
-        //public async Task<IList<object>> ExecuteSync(Func<T, object, object> func, object state)
-        //{
-        //    var result = Task.WhenAll(_containers.Select(c => c.ExecuteSync(func, state)));
-        //    return await result;
-        //}
+        public async Task<object> ExecuteSync(Func<T, object, object> func, object state, ContainerElementReference<T> reference)
+        {
+            var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
+            return await container.ExecuteSync(func, state, reference);
+        }
 
-        //public async Task<IList<object>> ExecuteSync(Func<T, object> func)
-        //{
-        //    var result = Task.WhenAll(_containers.Select(c => c.ExecuteSync(func)));
-        //    return await result;
-        //}
+        public async Task<object> ExecuteSync(Func<T, object> func, ContainerElementReference<T> reference)
+        {
+            var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
+            return await container.ExecuteSync(func, reference);
+        }
 
-        //public async Task<object> ExecuteSync(Func<T, object, object> func, object state, ContainerElementReference<T> reference)
-        //{
-        //    var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
-        //    return await container.ExecuteSync(func, state, reference);
-        //}
+        public async Task SetInput(IEnumerable<StreamIdentity<T>> streamIdentities)
+        {
+            _tearDownExecuted = false;
+            if (streamIdentities.Count() != _containers.Count)
+            {
+                throw new ArgumentException();
+            }
 
-        //public async Task<object> ExecuteSync(Func<T, object> func, ContainerElementReference<T> reference)
-        //{
-        //    var container = _containers.First(c => c.GetPrimaryKey().Equals(reference.ContainerId));
-        //    return await container.ExecuteSync(func, reference);
-        //}
+            await
+                Task.WhenAll(_containers.Zip(streamIdentities,
+                    (grain, identity) => new Tuple<IContainerNodeGrain<T>, StreamIdentity<T>>(grain, identity))
+                    .Select(t => t.Item1.SetInput(t.Item2)));
+        }
 
-        //public async Task SetInput(IEnumerable<StreamIdentity<T>> streamIdentities)
-        //{
-        //    _tearDownExecuted = false;
-        //    if (streamIdentities.Count() != _containers.Count)
-        //    {
-        //        throw new ArgumentException();
-        //    }
+        public async Task TransactionComplete(int transactionId)
+        {
+            await Task.WhenAll(_containers.Select(c => c.TransactionComplete(transactionId)));
+        }
 
-        //    await
-        //        Task.WhenAll(_containers.Zip(streamIdentities,
-        //            (grain, identity) => new Tuple<IContainerNodeGrain<T>, StreamIdentity<T>>(grain, identity))
-        //            .Select(t => t.Item1.SetInput(t.Item2)));
-        //}
+        public async Task<IList<StreamIdentity<ContainerHostedElement<T>>>> GetStreamIdentities()
+        {
+            var streamTasks = await Task.WhenAll(_containers.Select(c => c.GetStreamIdentity()));
+            return new List<StreamIdentity<ContainerHostedElement<T>>>(streamTasks);
+        }
 
-        //public async Task TransactionComplete(int transactionId)
-        //{
-        //    await Task.WhenAll(_containers.Select(c => c.TransactionComplete(transactionId)));
-        //}
+        public Task<bool> IsTearedDown()
+        {
+            return Task.FromResult(_tearDownExecuted);
+        }
 
-        //public async Task<IList<StreamIdentity<ContainerHostedElement<T>>>> GetStreamIdentities()
-        //{
-        //    var streamTasks = await Task.WhenAll(_containers.Select(c => c.GetStreamIdentity()));
+        public async Task TearDown()
+        {
+            await Task.WhenAll(_containers.Select(c => c.TearDown()));
+        }
 
-        //    return new List<StreamIdentity<ContainerHostedElement<T>>>(streamTasks);
-        //}
-
-        //public Task<bool> IsTearedDown()
-        //{
-        //    return Task.FromResult(_tearDownExecuted);
-        //}
-
-        //public async Task TearDown()
-        //{
-        //    await Task.WhenAll(_containers.Select(c => c.TearDown()));
-        //}
-
-        //public override async Task OnActivateAsync()
-        //{
-        //    _containers = new List<IContainerNodeGrain<T>>();
-        //    _lastTransactionId = -1;
-        //    await SetNumberOfNodes(NumberContainersStart);
-        //    await base.OnActivateAsync();
-        //}
+        public override async Task OnActivateAsync()
+        {
+            _containers = new List<IContainerNodeGrain<T>>();
+            _lastTransactionId = -1;
+            await SetNumberOfNodes(NumberContainersStart);
+            await base.OnActivateAsync();
+        }
 
         internal virtual IContainerNodeGrain<T> CreateContainerGrain()
         {

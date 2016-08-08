@@ -133,6 +133,8 @@
     <Compile Include="Runtime\SiloHost.cs" />
     <Compile Include="Storage\MemoryStorage.cs" />
     <Compile Include="Storage\IStorageProvider.cs" />
+    <Compile Include="Streams\Core\AsyncObservableExtensions.cs" />
+    <Compile Include="Streams\Core\AsyncStream.cs" />
     <Compile Include="Streams\Core\StreamSubscriptionHandle.cs" />
     <Compile Include="Streams\Core\StreamSequenceToken.cs" />
     <Compile Include="Streams\Core\IAsyncObserver.cs" />
@@ -140,6 +142,7 @@
     <Compile Include="Streams\Core\IStreamIdentity.cs" />
     <Compile Include="Streams\Core\IAsyncStream.cs" />
     <Compile Include="Streams\Providers\IStreamProvider.cs" />
+    <Compile Include="Streams\Providers\StreamProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\PSharpActors\PSharpActors\PSharpActors.csproj">

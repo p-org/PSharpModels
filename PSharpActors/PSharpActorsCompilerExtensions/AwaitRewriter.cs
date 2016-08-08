@@ -78,18 +78,18 @@ namespace Microsoft.PSharp.LanguageServices.Rewriting.CSharp
             AwaitExpressionSyntax awaitExpression = node as AwaitExpressionSyntax;
             ExpressionSyntax rewrittenNode = node;
 
-            ITypeSymbol typeSymbol = model.GetTypeInfo(awaitExpression.Expression).Type;
+            ITypeSymbol typeSymbol = model.GetTypeInfo(awaitExpression.Expression).Type;        
             if (typeSymbol is INamedTypeSymbol)
             {
                 string text = null;
                 INamedTypeSymbol namedTypeSymbol = typeSymbol as INamedTypeSymbol;
                 if (namedTypeSymbol.IsGenericType && namedTypeSymbol.TypeArguments.Count() == 1)
                 {
-                    text = $"ActorModel.GetResult<{namedTypeSymbol.TypeArguments[0]}>({awaitExpression.Expression})";
+                    text = $"Microsoft.PSharp.Actors.ActorModel.GetResult<{namedTypeSymbol.TypeArguments[0]}>({awaitExpression.Expression})";
                 }
                 else
                 {
-                    text = $"ActorModel.Wait({awaitExpression.Expression})";
+                    text = $"Microsoft.PSharp.Actors.ActorModel.Wait({awaitExpression.Expression})";
                 }
 
                 var waitExpression = SyntaxFactory.ParseExpression(text);

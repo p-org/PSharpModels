@@ -45,7 +45,9 @@ namespace Orleans.Collections.Utilities
             {
                 if (availableReceivers.Count == 0)
                 {
+                    Console.WriteLine("calling Task.WhenAny");
                     var finishedTask = await Task.WhenAny(currentWriteTasks.Keys);
+                    Console.WriteLine("Task.WhenAny returned");
                     var finishedTuple = currentWriteTasks[finishedTask];
                     var taskResult = await finishedTask;
                     int i = 0;
@@ -77,10 +79,8 @@ namespace Orleans.Collections.Utilities
                 availableReceivers.Add(finishedTuple.Item1);
                 currentWriteTasks.Remove(finishedTask);
             }
-
             return elementReferences;
         }
-
 
         /// <summary>
         /// Chunk a collection of elements into parts of a defined size.

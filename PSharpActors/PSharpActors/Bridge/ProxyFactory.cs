@@ -296,7 +296,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                     baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.IdentifierName(type.FullName)));
                 foreach (var method in type.GetMethods())
                 {
-                    methodDecls.Add(this.CreateProxyMethod(method, interfaceType, actorMachineType));
+                    methodDecls.Add(this.CreateProxyMethod(method, actorType, actorMachineType));
                 }
             }
 
@@ -525,7 +525,7 @@ namespace Microsoft.PSharp.Actors.Bridge
         /// <param name="actorMachineType">Actor machine type</param>
         /// <returns>MethodDeclarationSyntax</returns>
         private MethodDeclarationSyntax CreateProxyMethod(MethodInfo method,
-            Type interfaceType, Type actorMachineType)
+            Type actorType, Type actorMachineType)
         {
             List<ParameterSyntax> parameters = new List<ParameterSyntax>();
             List<ArgumentSyntax> payloadArguments = new List<ArgumentSyntax>();
@@ -585,11 +585,11 @@ namespace Microsoft.PSharp.Actors.Bridge
             string eventName = "actorEvent";
 
             string interfaceTypeString;
-            if (!interfaceType.IsGenericType)
-                interfaceTypeString = interfaceType.FullName; 
+            if (!actorType.IsGenericType)
+                interfaceTypeString = actorType.FullName; 
             else
             {
-                interfaceTypeString = GetGenericTypeString(interfaceType);
+                interfaceTypeString = GetGenericTypeString(actorType);
             }
             ArgumentListSyntax arguments = SyntaxFactory.ArgumentList(
                 SyntaxFactory.SeparatedList(

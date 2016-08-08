@@ -250,7 +250,6 @@ namespace Microsoft.PSharp.Actors
                 $"{machine.Name} is not reentrant.");
             return ActorModel.ActorMachineMap[machine].ReentrantActionHandler;
         }
-
         #endregion
     }
 }

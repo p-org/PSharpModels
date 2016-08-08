@@ -12,6 +12,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using Orleans.Runtime;
 using System;
 
 namespace Orleans
@@ -24,6 +25,16 @@ namespace Orleans
         public static Guid GetPrimaryKey(this IGrain grain)
         {
             return ((Grain)grain).PrimaryKey;
+        }
+
+        public static TGrainInterface AsReference<TGrainInterface>(this IAddressable grain)
+        {
+            if (grain == null)
+            {
+                throw new ArgumentNullException("grain", "Cannot pass null as an argument to AsReference");
+            }
+
+            return (TGrainInterface)grain;
         }
     }
 }

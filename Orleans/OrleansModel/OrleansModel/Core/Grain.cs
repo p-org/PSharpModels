@@ -26,6 +26,7 @@ using Orleans.Runtime;
 using OrleansModel;
 using System.Collections.Generic;
 using Orleans.Streams;
+using Orleans.Streams.Providers;
 
 namespace Orleans
 {
@@ -67,6 +68,7 @@ namespace Orleans
             get { return Runtime.ServiceProvider; }
         }
 
+        private static MachineId StreamProviderDictionaryMachineId;
         #endregion
 
         #region constructors
@@ -79,7 +81,11 @@ namespace Orleans
         /// </summary>
         protected Grain()
         {
-
+            if(StreamProviderDictionaryMachineId == null)
+            {
+                StreamProviderDictionaryMachineId = ActorModel.Runtime.CreateMachine(
+                    typeof(StreamProviderDictionaryMachine), "StreamProviderDictionaryMachine");
+            }               
         }
 
         /// <summary>
@@ -95,6 +101,11 @@ namespace Orleans
         {
             this.Identity = identity;
             this.Runtime = runtime;
+            if (StreamProviderDictionaryMachineId == null)
+            {
+                StreamProviderDictionaryMachineId = ActorModel.Runtime.CreateMachine(
+                    typeof(StreamProviderDictionaryMachine), "StreamProviderDictionaryMachine");
+            }
         }
 
         #endregion
@@ -230,10 +241,12 @@ namespace Orleans
             return task;
         }
 
-        public IStreamProvider GetStreamProvider(string name)
+        protected virtual IStreamProvider GetStreamProvider(string name)
         {
-            throw new NotImplementedException();
-            //return new StreamProvider(name, false);
+            ActorModel.Runtime.SendEvent(StreamProviderDictionaryMachineId, 
+                new StreamProviderDictionaryMachine.EGetStreamProvider(name, ActorModel.Runtime.GetCurrentMachineId()));
+            Event resultEvent = ActorModel.Runtime.Receive(typeof(StreamProviderDictionaryMachine.EStreamProvider));
+            return ((StreamProviderDictionaryMachine.EStreamProvider)resultEvent).streamProvider;
         }
         #endregion
     }
@@ -346,5 +359,68 @@ namespace Orleans
         {
             return this.Storage.ReadStateAsync();
         }
+    }
+
+    /// <summary>
+    /// Machine that that provides access to StreamProviderDictionary(stream provider name -> IStreamProvider).
+    /// Required to handle concurrent accesses to this dictionary.
+    /// </summary>
+    class StreamProviderDictionaryMachine : Machine
+    {
+        #region events
+        public class EGetStreamProvider : Event
+        {
+            public string Name;
+            public MachineId Target;
+            public EGetStreamProvider(string name, MachineId target)
+            {
+                this.Name = name;
+                this.Target = target;
+            }
+        }
+
+        public class EStreamProvider : Event
+        {
+            public IStreamProvider streamProvider;
+
+            public EStreamProvider(IStreamProvider streamProvider)
+            {
+                this.streamProvider = streamProvider;
+            }
+        }
+        #endregion
+
+        #region fields
+        private IDictionary<string, IStreamProvider> StreamProviderDictionary;
+        #endregion
+
+        #region states
+        [Start]
+        [OnEntry(nameof(OnInit))]
+        [OnEventDoAction(typeof(EGetStreamProvider), nameof(OnGetStreamProvider))]
+        class Init : MachineState { }
+        #endregion
+
+        #region actions
+        void OnInit()
+        {
+            StreamProviderDictionary = new Dictionary<string, IStreamProvider>();
+        }
+
+        void OnGetStreamProvider()
+        {
+            var e = ReceivedEvent as EGetStreamProvider;
+            if (StreamProviderDictionary.ContainsKey(e.Name))
+            {
+                Send(e.Target, new EStreamProvider(StreamProviderDictionary[e.Name]));
+            }
+            else
+            {
+                IStreamProvider streamProvider = new StreamProvider(e.Name, false);
+                StreamProviderDictionary.Add(e.Name, streamProvider);
+                Send(e.Target, new EStreamProvider(streamProvider));
+            }
+        }
+        #endregion
     }
 }
