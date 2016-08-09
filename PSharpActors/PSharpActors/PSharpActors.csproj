@@ -112,6 +112,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Bridge\ProxyFactory.cs" />
     <Compile Include="Utilities\Serialization.cs" />
+    <Compile Include="WaitMachine.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

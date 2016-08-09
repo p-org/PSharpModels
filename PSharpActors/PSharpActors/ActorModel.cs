@@ -208,6 +208,34 @@ namespace Microsoft.PSharp.Actors
         }
 
         /// <summary>
+        /// Waits for one of the tasks in the input list of tasks to complete.
+        /// </summary>
+        /// <typeparam name="TResult">TResult</typeparam>
+        /// <param name="tasks">IEnumerable</param>
+        /// <returns>Task</returns>
+        public static Task<Task<TResult>> WhenAny<TResult>(IEnumerable<Task<TResult>> tasks)
+        {
+            Console.WriteLine("current machine ID: " + Runtime.GetCurrentMachineId());
+            List<Task<TResult>> taskList = new List<Task<TResult>>(tasks);
+            if(taskList[0] is ActorCompletionTask<TResult>)
+            {
+                foreach(var task in taskList)
+                {
+                    MachineId mc = Runtime.CreateMachine(typeof(WaitMachine<TResult>), new WaitMachine<TResult>.CompleteTask(
+                        (ActorCompletionTask<TResult>)task, Runtime.GetCurrentMachineId()));
+                }
+                Console.WriteLine("Waiting... " + taskList.Count);
+                var receivedEvent = Runtime.Receive(typeof(WaitMachine<TResult>.TaskCompleted));
+                Console.WriteLine("Received!!!");
+                return Task.FromResult(((WaitMachine<TResult>.TaskCompleted)receivedEvent).ResultTask);
+            }
+            else
+            {
+                return Task.WhenAny(tasks);
+            }
+        }
+
+        /// <summary>
         /// Sends a message to halt the P# actor. Only used
         /// during testing with P#.
         /// </summary>

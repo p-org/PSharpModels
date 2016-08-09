@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.PSharp.Actors;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,17 +46,15 @@ namespace Orleans.Collections.Utilities
             {
                 if (availableReceivers.Count == 0)
                 {
-                    Console.WriteLine("calling Task.WhenAny");
-                    var finishedTask = await Task.WhenAny(currentWriteTasks.Keys);
-                    Console.WriteLine("Task.WhenAny returned");
+                    var finishedTask = await ActorModel.WhenAny(currentWriteTasks.Keys);
                     var finishedTuple = currentWriteTasks[finishedTask];
-                    var taskResult = await finishedTask;
-                    int i = 0;
-                    foreach (var result in taskResult)
-                    {
-                        elementReferences[finishedTuple.Item2 + i] = result;
-                        i++;
-                    }
+                    //var taskResult = await finishedTask;
+                    //int i = 0;
+                    //foreach (var result in taskResult)
+                    //{
+                    //    elementReferences[finishedTuple.Item2 + i] = result;
+                    //    i++;
+                    //}
                     availableReceivers.Add(finishedTuple.Item1);
                     currentWriteTasks.Remove(finishedTask);
                 }
@@ -65,21 +64,21 @@ namespace Orleans.Collections.Utilities
                 availableReceivers.Remove(chosenReader);
             }
 
-            while (currentWriteTasks.Count > 0)
-            {
-                var finishedTask = await Task.WhenAny(currentWriteTasks.Keys);
-                var finishedTuple = currentWriteTasks[finishedTask];
-                var taskResult = await finishedTask;
-                int i = 0;
-                foreach (var result in taskResult)
-                {
-                    elementReferences[finishedTuple.Item2 + i] = result;
-                    i++;
-                };
-                availableReceivers.Add(finishedTuple.Item1);
-                currentWriteTasks.Remove(finishedTask);
-            }
-            return elementReferences;
+            //while (currentWriteTasks.Count > 0)
+            //{
+            //    var finishedTask = await ActorModel.WhenAny(currentWriteTasks.Keys);
+            //    var finishedTuple = currentWriteTasks[finishedTask];
+            //    var taskResult = await finishedTask;
+            //    int i = 0;
+            //    foreach (var result in taskResult)
+            //    {
+            //        elementReferences[finishedTuple.Item2 + i] = result;
+            //        i++;
+            //    };
+            //    availableReceivers.Add(finishedTuple.Item1);
+            //    currentWriteTasks.Remove(finishedTask);
+            //}
+                return elementReferences;
         }
 
         /// <summary>
