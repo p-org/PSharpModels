@@ -93,7 +93,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             if (this.Target != null)
             {
                 this.Send(this.Target, new GetResultResponse(this.Id, this.Result));
-                //this.Raise(new Halt());
+                this.Raise(new Halt());
             }
         }
 
@@ -106,7 +106,7 @@ namespace Microsoft.PSharp.Actors.Bridge
             if (this.Result != null)
             {
                 this.Send(this.Target, new GetResultResponse(this.Id, this.Result));
-                //this.Raise(new Halt());
+                this.Raise(new Halt());
             }
         }
     }
