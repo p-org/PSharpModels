@@ -102,7 +102,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         /// <returns>IActorReminder</returns>
         protected Task<IActorReminder> RegisterReminderAsync(string reminderName, byte[] state, TimeSpan dueTime, TimeSpan period)
         {
-            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
+            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachineId());
             var reminder = reminders.SingleOrDefault(val => ((ActorReminder)val).Name.Equals(reminderName));
 
             var task = new ActorCompletionTask<IActorReminder>();
@@ -115,7 +115,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
             else
             {
                 ActorModel.Runtime.CreateMachine(typeof(ActorReminderMachine), reminderName,
-                    new ReminderMachine.InitEvent(ActorModel.Runtime.GetCurrentMachine(),
+                    new ReminderMachine.InitEvent(ActorModel.Runtime.GetCurrentMachineId(),
                     actorCompletionMachine, reminderName, null));
             }
 
@@ -134,9 +134,9 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
             object state, TimeSpan dueTime, TimeSpan period)
         {
             MachineId timer = ActorModel.Runtime.CreateMachine(typeof(TimerMachine),
-                new TimerMachine.InitEvent(ActorModel.Runtime.GetCurrentMachine(),
+                new TimerMachine.InitEvent(ActorModel.Runtime.GetCurrentMachineId(),
                 asyncCallback, state));
-            return new ActorTimer(dueTime, period, ActorModel.Runtime.GetCurrentMachine(), timer);
+            return new ActorTimer(dueTime, period, ActorModel.Runtime.GetCurrentMachineId(), timer);
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         /// <returns>IActorReminder</returns>
         protected IActorReminder GetReminder(string reminderName)
         {
-            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
+            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachineId());
             var reminder = reminders.SingleOrDefault(val => ((ActorReminder)val).Name.Equals(reminderName));
 
             return (IActorReminder)reminder;
@@ -160,7 +160,7 @@ namespace Microsoft.ServiceFabric.Actors.Runtime
         protected Task UnregisterReminderAsync(IActorReminder reminder)
         {
             ActorModel.Assert(reminder != null, "Cannot unregister a 'null' reminder.");
-            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachine());
+            var reminders = ActorModel.GetReminders(ActorModel.Runtime.GetCurrentMachineId());
             var reminderToBeRemoved = reminders.SingleOrDefault(val
                 => ((ActorReminder)val).Name.Equals(reminder.Name));
             if (reminderToBeRemoved != null)
