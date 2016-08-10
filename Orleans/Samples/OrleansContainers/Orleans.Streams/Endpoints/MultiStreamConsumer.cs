@@ -50,7 +50,9 @@ namespace Orleans.Streams.Endpoints
                 StreamTransactionReceivedFunc = transaction =>
                 {
                     streamTransactionReceivedAction(transaction);
-                    return TaskDone.Done;
+                    //Modified
+                    //return TaskDone.Done;
+                    return Task.FromResult(true);
                 };
             }
 

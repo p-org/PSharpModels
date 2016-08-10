@@ -34,7 +34,10 @@ namespace Orleans.Collections
         public Task Clear()
         {
             Collection.Clear();
-            return TaskDone.Done;
+
+            //Modified
+            //return TaskDone.Done;
+            return Task.FromResult(true);
         }
 
         public Task<bool> Contains(T item)
@@ -173,7 +176,9 @@ namespace Orleans.Collections
                 }
             }
 
-            return TaskDone.Done;
+            //Modified
+            //return TaskDone.Done;
+            return Task.FromResult(true);
         }
 
         public Task<IList<object>> ExecuteSync(Func<T, object> func)
@@ -264,7 +269,9 @@ namespace Orleans.Collections
 
         public Task Visit(TransactionMessage transactionMessage)
         {
-            return TaskDone.Done;
+            //Modified
+            //return TaskDone.Done;
+            return Task.FromResult(true);
         }
     }
 }

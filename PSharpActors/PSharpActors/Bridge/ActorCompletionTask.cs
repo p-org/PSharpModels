@@ -63,9 +63,19 @@ namespace Microsoft.PSharp.Actors.Bridge
             this.WaitOnEvent();
         }
 
-        private Event WaitOnEvent()
+        public void WaitForCompletion(MachineId target)
+        {
+            this.WaitOnEvent(target);
+        }
+
+        private Event WaitOnEvent(MachineId target = null)
         {
             MachineId mid = ActorModel.Runtime.GetCurrentMachineId();
+            Console.WriteLine("Inside WaitOnEvent: " + mid);
+            //if (target == null)
+            //    mid = ActorModel.Runtime.GetCurrentMachineId();
+            //else
+            //    mid = target;
 
             ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' is " +
                 "waiting to receive a result.");
@@ -77,36 +87,6 @@ namespace Microsoft.PSharp.Actors.Bridge
             bool receivedResult = false;
             while (!receivedResult)
             {
-                //resultEvent = ActorModel.Runtime.Receive(
-                //    Tuple.Create<Type, Func<Event, bool>, Action<Event>>(typeof(ActorCompletionMachine.GetResultResponse), (Event e) =>
-                //    {
-                //        if ((e as ActorCompletionMachine.GetResultResponse).Source.Equals(this.ActorCompletionMachine))
-                //        {
-                //            return true;
-                //        }
-
-                //        return false;
-                //    },
-                //    (Event e) => { receivedResult = true; }),
-                //    Tuple.Create<Type, Func<Event, bool>, Action<Event>>(typeof(ActorMachine.ActorEvent), (Event e) =>
-                //    {
-                //        if (ActorModel.Configuration.AllowReentrantCalls &&
-                //            ActorModel.ReentrantActors.ContainsKey(mid) &&
-                //            ActorModel.ReentrantActors[mid])
-                //        {
-                //            return true;
-                //        }
-
-                //        ActorModel.Assert(!(e as ActorMachine.ActorEvent).ExecutionContext.Contains(mid),
-                //            $"Deadlock detected. {mid.Name} is not reentrant.");
-
-                //        return false;
-                //    },
-                //    (Event e) => {
-                //            var handler = ActorModel.GetReentrantActionHandler(mid);
-                //            handler(e as ActorMachine.ActorEvent);
-                //    }));
-
                 resultEvent = ActorModel.Runtime.Receive(
                         Tuple.Create<Type, Func<Event, bool>>(typeof(ActorCompletionMachine.GetResultResponse), (Event e) =>
                         {
@@ -142,7 +122,7 @@ namespace Microsoft.PSharp.Actors.Bridge
                     handler(resultEvent as ActorMachine.ActorEvent);
                 }
             }
-
+            Console.WriteLine("WaitOnEvent returns");
             return resultEvent;
         }
     }

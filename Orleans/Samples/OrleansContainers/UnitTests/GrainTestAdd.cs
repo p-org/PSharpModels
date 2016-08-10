@@ -25,11 +25,11 @@ namespace UnitTests
 
             var references = await distributedCollection.BatchAdd(l);
 
-            //ActorModel.Assert(!(references.Any(item => item == null)), "Batch add failed!!");
+            ActorModel.Assert(!(references.Any(item => item == null)), "Batch add failed!!");
 
-            //var consumer = new MultiStreamListConsumer<ContainerHostedElement<int>>(_provider);
+            var consumer = new MultiStreamListConsumer<ContainerHostedElement<int>>(_provider);
 
-            ////Modified: split a statement with 2 awaits (AwaitRewriter must be fixed)
+            //Modified: split a statement with 2 awaits (AwaitRewriter must be fixed)
             //var getStrIds = await distributedCollection.GetStreamIdentities();
             //await consumer.SetInput(getStrIds);
 

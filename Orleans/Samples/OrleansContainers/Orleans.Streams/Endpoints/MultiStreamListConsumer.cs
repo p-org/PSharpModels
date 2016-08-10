@@ -22,7 +22,9 @@ namespace Orleans.Streams.Endpoints
             StreamItemBatchReceivedFunc = enumerable =>
             {
                 Items.AddRange(enumerable);
-                return TaskDone.Done;
+                //Modified
+                //return TaskDone.Done;
+                return Task.FromResult(true);
             };
         }
     }

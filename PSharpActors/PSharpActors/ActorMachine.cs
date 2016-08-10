@@ -164,6 +164,7 @@ namespace Microsoft.PSharp.Actors
         [Start]
         [OnEntry(nameof(InitOnEntry))]
         [DeferEvents(typeof(TimerMachine.TimeoutEvent), typeof(ReminderMachine.RemindEvent))]
+        [IgnoreEvents(typeof(WaitMachine<>.TaskCompleted))]
         private class Init : MachineState { }
 
         [OnEntry(nameof(ActiveOnEntry))]
@@ -171,12 +172,13 @@ namespace Microsoft.PSharp.Actors
         [OnEventDoAction(typeof(TimerMachine.TimeoutEvent), nameof(HandleTimeout))]
         [OnEventDoAction(typeof(ReminderMachine.RemindEvent), nameof(HandleReminder))]
         [OnEventDoAction(typeof(Default), nameof(HandleDefaultAction))]
+        [IgnoreEvents(typeof(WaitMachine<>.TaskCompleted))]
         private class Active : MachineState { }
 
         [OnEntry(nameof(InactiveOnEntry))]
         [OnEventDoAction(typeof(ActorEvent), nameof(BufferEventAndActivate))]
         [OnEventDoAction(typeof(ReminderMachine.RemindEvent), nameof(BufferEventAndActivate))]
-        [IgnoreEvents(typeof(TimerMachine.TimeoutEvent))]
+        [IgnoreEvents(typeof(TimerMachine.TimeoutEvent), typeof(WaitMachine<>.TaskCompleted))]
         private class Inactive : MachineState { }
 
         #endregion

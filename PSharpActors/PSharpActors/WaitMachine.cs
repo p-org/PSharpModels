@@ -10,21 +10,25 @@ namespace Microsoft.PSharp.Actors.Bridge
         {
             public ActorCompletionTask<TResult> InputTask;
             public MachineId Target;
+            public int Timestamp;
 
-            public CompleteTask(ActorCompletionTask<TResult> inputTask, MachineId target)
+            public CompleteTask(ActorCompletionTask<TResult> inputTask, MachineId target, int timestamp)
             {
                 this.InputTask = inputTask;
                 this.Target = target;
+                this.Timestamp = timestamp;
             }
         }
 
         public class TaskCompleted : Event
         {
             public Task<TResult> ResultTask;
+            public int Timestamp;
 
-            public TaskCompleted(ActorCompletionTask<TResult> resultTask)
+            public TaskCompleted(ActorCompletionTask<TResult> resultTask, int timestamp)
             {
                 this.ResultTask = resultTask;
+                this.Timestamp = timestamp;
             }
         }
         #endregion
@@ -40,7 +44,7 @@ namespace Microsoft.PSharp.Actors.Bridge
         {
             var e = ReceivedEvent as CompleteTask;
             (e.InputTask).Wait();
-            Send(e.Target, new TaskCompleted(e.InputTask));
+            Send(e.Target, new TaskCompleted(e.InputTask, e.Timestamp));
         }
         #endregion
     }

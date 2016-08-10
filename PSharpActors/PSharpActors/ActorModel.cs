@@ -208,6 +208,11 @@ namespace Microsoft.PSharp.Actors
         }
 
         /// <summary>
+        /// Timestamp used with WhenAny
+        /// </summary>
+        public static int timestamp = 0;
+
+        /// <summary>
         /// Waits for one of the tasks in the input list of tasks to complete.
         /// </summary>
         /// <typeparam name="TResult">TResult</typeparam>
@@ -215,23 +220,96 @@ namespace Microsoft.PSharp.Actors
         /// <returns>Task</returns>
         public static Task<Task<TResult>> WhenAny<TResult>(IEnumerable<Task<TResult>> tasks)
         {
-            Console.WriteLine("current machine ID: " + Runtime.GetCurrentMachineId());
             List<Task<TResult>> taskList = new List<Task<TResult>>(tasks);
+
             if(taskList[0] is ActorCompletionTask<TResult>)
             {
                 foreach(var task in taskList)
                 {
                     MachineId mc = Runtime.CreateMachine(typeof(WaitMachine<TResult>), new WaitMachine<TResult>.CompleteTask(
-                        (ActorCompletionTask<TResult>)task, Runtime.GetCurrentMachineId()));
+                        (ActorCompletionTask<TResult>)task, Runtime.GetCurrentMachineId(), timestamp));
                 }
                 Console.WriteLine("Waiting... " + taskList.Count);
-                var receivedEvent = Runtime.Receive(typeof(WaitMachine<TResult>.TaskCompleted));
+                var receivedEvent = Runtime.Receive(typeof(WaitMachine<TResult>.TaskCompleted), new Func<Event, bool>(
+                    e => ((WaitMachine<TResult>.TaskCompleted)e).Timestamp == timestamp));
+                timestamp++;
                 Console.WriteLine("Received!!!");
                 return Task.FromResult(((WaitMachine<TResult>.TaskCompleted)receivedEvent).ResultTask);
             }
             else
             {
                 return Task.WhenAny(tasks);
+            }
+        }
+
+        /// <summary>
+        /// Waits for all the input tasks to complete
+        /// </summary>
+        /// <typeparam name="TResult">TResult</typeparam>
+        /// <param name="tasks">IEnumerable</param>
+        /// <returns>Task</returns>
+        public static Task<TResult[]> WhenAll<TResult>(IEnumerable<Task<TResult>> tasks)
+        {
+            List<Task<TResult>> taskList = new List<Task<TResult>>(tasks);
+            List<TResult> resultList = new List<TResult>();
+
+            if (taskList[0] is ActorCompletionTask<TResult>)
+            {
+                foreach (var task in taskList)
+                {
+                    resultList.Add(((ActorCompletionTask<TResult>)task).Result);
+                }
+                return Task.FromResult(resultList.ToArray());
+            }
+            else
+            {
+                return Task.WhenAll(tasks);
+            }
+        }
+
+        /// <summary>
+        /// Waits for all the input tasks to complete
+        /// </summary>
+        /// <param name="tasks">IEnumerable</param>
+        /// <returns>Task</returns>
+        public static Task WhenAll(IEnumerable<Task> tasks)
+        {
+            List<Task> taskList = new List<Task>(tasks);
+
+            if (taskList[0] is ActorCompletionTask<object>)
+            {
+                foreach (var task in taskList)
+                {
+                    ((ActorCompletionTask<object>)task).Wait();
+                }
+                return Task.FromResult(true);
+            }
+            else
+            {
+                return Task.WhenAll(tasks);
+            }
+        }
+
+        /// <summary>
+        /// Waits for all the input tasks to complete
+        /// </summary>
+        /// <typeparam name="TResult">TResult</typeparam>
+        /// <param name="tasks">params Task<TResult>[]</param>
+        /// <returns>Task</returns>
+        public static Task<TResult[]> WhenAll<TResult>(params Task<TResult>[] tasks)
+        {
+            List<TResult> resultList = new List<TResult>();
+            if (tasks[0] is ActorCompletionTask<TResult>)
+            {
+                foreach (var task in tasks)
+                {
+                    resultList.Add(((ActorCompletionTask<TResult>)task).Result);
+                }
+                return Task.FromResult(resultList.ToArray());
+            }
+            else
+            {
+                return Task.WhenAll(tasks);
             }
         }
 
