@@ -47,45 +47,45 @@ namespace SmartHome.Actors
             return new Task(() => { });
         }
 
-        public async Task ReceiveReminderAsync(string reminderName, byte[] context, TimeSpan dueTime, TimeSpan period)
+        public Task ReceiveReminderAsync(string reminderName, byte[] context, TimeSpan dueTime, TimeSpan period)
         {
             if (reminderName.Equals("HandleMovementTimeout"))
             {
-                var previousLocation = await this.StateManager.GetStateAsync<Location>("CurrentLocation");
-                var location = await this.House.GotoRoom();
+                var previousLocation = ActorModel.GetResult(this.StateManager.GetStateAsync<Location>("CurrentLocation"));
+                var location = ActorModel.GetResult(this.House.GotoRoom());
 
                 ActorModel.Log("[LOG] Person entered room {0}", location);
-                await this.StateManager.SetStateAsync("CurrentLocation", location);
+                ActorModel.Wait(this.StateManager.SetStateAsync("CurrentLocation", location));
 
                 if (previousLocation == Location.Garden)
                 {
-                    await this.Garden.PersonExits();
+                    ActorModel.Wait(this.Garden.PersonExits());
                 }
                 else if (previousLocation == Location.Kitchen)
                 {
-                    await this.Kitchen.PersonExits();
+                    ActorModel.Wait(this.Kitchen.PersonExits());
                 }
                 else if (previousLocation == Location.Bedroom)
                 {
-                    await this.Bedroom.PersonExits();
+                    ActorModel.Wait(this.Bedroom.PersonExits());
                 }
 
                 if (location == Location.Garden)
                 {
-                    await this.Garden.PersonEnters();
+                    ActorModel.Wait(this.Garden.PersonEnters());
                 }
                 else if (location == Location.Kitchen)
                 {
-                    await this.Kitchen.PersonEnters();
+                    ActorModel.Wait(this.Kitchen.PersonEnters());
                 }
                 else if (location == Location.Bedroom)
                 {
-                    await this.Bedroom.PersonEnters();
+                    ActorModel.Wait(this.Bedroom.PersonEnters());
                 }
             }
             else if (reminderName.Equals("HandleActionTimeout"))
             {
-                var location = await this.StateManager.GetStateAsync<Location>("CurrentLocation");
+                var location = ActorModel.GetResult(this.StateManager.GetStateAsync<Location>("CurrentLocation"));
                 if (location == Location.Garden)
                 {
 
@@ -96,9 +96,10 @@ namespace SmartHome.Actors
                 }
                 else if (location == Location.Bedroom)
                 {
-                    await this.Bedroom.AccessSafe();
+                    ActorModel.Wait(this.Bedroom.AccessSafe());
                 }
             }
+            return Task.FromResult(true);
         }
 
         protected override Task OnDeactivateAsync()

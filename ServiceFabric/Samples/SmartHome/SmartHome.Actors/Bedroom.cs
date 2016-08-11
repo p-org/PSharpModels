@@ -28,7 +28,7 @@ namespace SmartHome.Actors
             await base.OnActivateAsync();
         }
 
-        async Task IBedroom.PersonEnters()
+        public async Task PersonEnters()
         {
             int numOfPeople = await this.StateManager.GetStateAsync<int>("PeopleInside");
             numOfPeople++;
@@ -36,7 +36,7 @@ namespace SmartHome.Actors
             await this.StateManager.SetStateAsync("PeopleInside", numOfPeople);
         }
 
-        async Task IBedroom.PersonExits()
+        public async Task PersonExits()
         {
             int numOfPeople = await this.StateManager.GetStateAsync<int>("PeopleInside") - 1;
             if (numOfPeople < 0)
@@ -47,7 +47,7 @@ namespace SmartHome.Actors
             await this.StateManager.SetStateAsync("PeopleInside", numOfPeople);
         }
 
-        async Task IBedroom.AccessSafe()
+        public async Task AccessSafe()
         {
             bool isSafeOpen = await this.StateManager.GetStateAsync<bool>("IsSafeOpen");
             if (isSafeOpen)
@@ -63,7 +63,7 @@ namespace SmartHome.Actors
             
         }
 
-        async Task<bool> IBedroom.TryEnterRoom()
+        public async Task<bool> TryEnterRoom()
         {
             int numOfPeople = await this.StateManager.GetStateAsync<int>("PeopleInside");
             if (numOfPeople > 0)
@@ -76,7 +76,7 @@ namespace SmartHome.Actors
             }
         }
 
-        async Task IBedroom.TryToStealMoney()
+        public async Task TryToStealMoney()
         {
             int numOfPeople = await this.StateManager.GetStateAsync<int>("PeopleInside");
             bool isSafeOpen = await this.StateManager.GetStateAsync<bool>("IsSafeOpen");

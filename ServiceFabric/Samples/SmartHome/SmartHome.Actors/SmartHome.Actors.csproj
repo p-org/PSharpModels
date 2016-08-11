@@ -38,10 +38,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\PSharpActors\Binaries\Microsoft.PSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.PSharp.Actors">
+    <Reference Include="Microsoft.PSharp.Actors, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5ab419457034fcfb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\PSharpActors\Binaries\Microsoft.PSharp.Actors.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceFabricModel">
+    <Reference Include="ServiceFabricModel, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5ab419457034fcfb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Binaries\ServiceFabricModel.dll</HintPath>
     </Reference>
     <Reference Include="System" />

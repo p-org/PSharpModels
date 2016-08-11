@@ -10,13 +10,14 @@ using Microsoft.ServiceFabric.Actors.Client;
 using SmartHome.Interfaces;
 
 using Microsoft.PSharp.Actors;
+using Microsoft.PSharp.Actors.Bridge;
 
 namespace SmartHome.Actors
 {
     public class Thief : Actor, IThief, IRemindable
     {
         private IHouse House;
-        private IGarden Garden;
+        private IGarden Garden;    
         private IKitchen Kitchen;
         private IBedroom Bedroom;
 
@@ -43,6 +44,58 @@ namespace SmartHome.Actors
             this.StateManager.SetStateAsync("CurrentLocation", location);
             return new Task(() => { });
         }
+
+        //public Task ReceiveReminderAsync(string reminderName, byte[] context, TimeSpan dueTime, TimeSpan period)
+        //{
+        //    ActorModel.Log("[LOG] Thief reminder {0}", reminderName);
+        //    if (reminderName.Equals("HandleMovementTimeout"))
+        //    {
+        //        var previousLocation = ActorModel.GetResult(this.StateManager.GetStateAsync<Location>("CurrentLocation"));
+        //        Console.WriteLine("here 1");
+        //        var location = ActorModel.GetResult(this.House.GotoRoom());
+        //        Console.WriteLine("here 2");
+
+        //        ActorModel.Log("[LOG] Thief tries to enter room {0}", location);
+        //        bool canEnter = false;
+        //        if (location == Location.Garden)
+        //        {
+        //            canEnter = ActorModel.GetResult(this.Bedroom.TryEnterRoom());
+        //        }
+        //        else if (location == Location.Kitchen)
+        //        {
+        //            canEnter = ActorModel.GetResult(this.Bedroom.TryEnterRoom());
+        //        }
+        //        else if (previousLocation == Location.Kitchen &&
+        //            location == Location.Bedroom)
+        //        {
+        //            canEnter = ActorModel.GetResult(this.Bedroom.TryEnterRoom());
+        //        }
+
+        //        if (canEnter)
+        //        {
+        //            ActorModel.Log("[LOG] Thief entered room {0}", location);
+        //            ActorModel.Wait(this.StateManager.SetStateAsync("CurrentLocation", location));
+        //        }
+        //    }
+        //    else if (reminderName.Equals("HandleActionTimeout"))
+        //    {
+        //        Console.WriteLine("Thief is handling action timeout");
+        //        var location = ActorModel.GetResult(this.StateManager.GetStateAsync<Location>("CurrentLocation"));
+        //        if (location == Location.Garden)
+        //        {
+
+        //        }
+        //        else if (location == Location.Kitchen)
+        //        {
+
+        //        }
+        //        else if (location == Location.Bedroom)
+        //        {
+        //            ActorModel.Wait(this.Bedroom.TryToStealMoney());
+        //        }
+        //    }
+        //    return Task.FromResult(true);
+        //}
 
         public async Task ReceiveReminderAsync(string reminderName, byte[] context, TimeSpan dueTime, TimeSpan period)
         {
@@ -76,6 +129,7 @@ namespace SmartHome.Actors
             }
             else if (reminderName.Equals("HandleActionTimeout"))
             {
+                Console.WriteLine("Thief is handling action timeout");
                 var location = await this.StateManager.GetStateAsync<Location>("CurrentLocation");
                 if (location == Location.Garden)
                 {
