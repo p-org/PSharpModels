@@ -20,9 +20,6 @@ namespace SmartHome.Actors
         private IKitchen Kitchen;
         private IBedroom Bedroom;
 
-        private IActorTimer MovementTimer;
-        private IActorTimer ActionTimer;
-
         protected override Task OnActivateAsync()
         {
             if (!(this.StateManager.ContainsStateAsync("CurrentLocation").Result))
