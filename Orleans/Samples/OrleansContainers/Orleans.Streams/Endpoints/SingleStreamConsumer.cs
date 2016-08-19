@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Orleans.Streams.Messages;
+using Orleans.Streams;
 
 namespace Orleans.Streams.Endpoints
 {
@@ -37,8 +38,10 @@ namespace Orleans.Streams.Endpoints
             _tearDownExecuted = false;
             var messageStream = _streamProvider.GetStream<IStreamMessage>(inputStream.StreamIdentifier.Item1, inputStream.StreamIdentifier.Item2);
 
-            //_messageStreamSubscriptionHandle =
-            //    await messageStream.SubscribeAsync((message, token) => message.Accept(this), async () => await TearDown());
+            //Modified: Await split
+            Func<Task> onCompleted = new Func<Task>(async () => await TearDown());
+            _messageStreamSubscriptionHandle =
+                await messageStream.SubscribeAsync((message, token) => message.Accept(this), onCompleted);
         }
 
         public virtual async Task TearDown()

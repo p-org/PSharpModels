@@ -27,6 +27,11 @@ namespace Orleans.Streams.Providers
             {
                 StreamDictionaryMachineID = ActorModel.Runtime.CreateMachine(typeof(StreamDictionaryMachine));
             }
+
+            ActorModel.RegisterCleanUpAction(() => 
+            {
+                StreamDictionaryMachineID = null;
+            });
         }
 
         public bool IsRewindable
@@ -60,7 +65,7 @@ namespace Orleans.Streams.Providers
                 object streamToAdd = new AsyncStream<T>();
                 ActorModel.Runtime.SendEvent(StreamDictionaryMachineID, 
                     new StreamDictionaryMachine.EAddStream(streamId, streamNamespace, streamToAdd, ActorModel.Runtime.GetCurrentMachineId()));
-                ActorModel.Runtime.Receive(typeof(StreamDictionaryMachine.EStream));
+                resultEvent = ActorModel.Runtime.Receive(typeof(StreamDictionaryMachine.EStream));
                 object addedStream = ((StreamDictionaryMachine.EStream)resultEvent).stream;
                 return (IAsyncStream<T>)addedStream;
             }
@@ -68,7 +73,7 @@ namespace Orleans.Streams.Providers
     }
 
     /// <summary>
-    /// Machine that that provides access to StreamDictionary(<ID, name> -> IAsyncStream).
+    /// Machine that provides access to StreamDictionary(<ID, name> -> IAsyncStream).
     /// Part of StreamProvider. Required to handle concurrent accesses to StreamDictionary.
     /// </summary>
     class StreamDictionaryMachine : Machine

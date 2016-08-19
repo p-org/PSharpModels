@@ -6,6 +6,7 @@ using Orleans.Collections.Utilities;
 using Orleans.Streams;
 using Orleans.Streams.Endpoints;
 using Orleans.Streams.Messages;
+using Microsoft.PSharp.Actors;
 
 namespace Orleans.Collections
 {
@@ -34,10 +35,7 @@ namespace Orleans.Collections
         public Task Clear()
         {
             Collection.Clear();
-
-            //Modified
-            //return TaskDone.Done;
-            return Task.FromResult(true);
+            return TaskDone.Done;
         }
 
         public Task<bool> Contains(T item)
@@ -147,7 +145,7 @@ namespace Orleans.Collections
 
         public async Task<bool> IsTearedDown()
         {
-            var tearDownStates = await Task.WhenAll(_streamConsumer.IsTearedDown(), StreamProvider.IsTearedDown());
+            var tearDownStates = await ActorModel.WhenAll(_streamConsumer.IsTearedDown(), StreamProvider.IsTearedDown());
 
             return tearDownStates[0] && tearDownStates[1];
         }
@@ -175,10 +173,7 @@ namespace Orleans.Collections
                     action(item, state);
                 }
             }
-
-            //Modified
-            //return TaskDone.Done;
-            return Task.FromResult(true);
+            return TaskDone.Done;
         }
 
         public Task<IList<object>> ExecuteSync(Func<T, object> func)
@@ -242,7 +237,7 @@ namespace Orleans.Collections
         public async Task<IList<object>> ExecuteAsync(Func<T, object, Task<object>> func, object state)
         {
             var results = Collection.Select(item => func(item, state)).ToList();
-            var resultSet = await Task.WhenAll(results);
+            var resultSet = await ActorModel.WhenAll(results);
             return new List<object>(resultSet);
         }
 
@@ -269,9 +264,7 @@ namespace Orleans.Collections
 
         public Task Visit(TransactionMessage transactionMessage)
         {
-            //Modified
-            //return TaskDone.Done;
-            return Task.FromResult(true);
+            return TaskDone.Done;
         }
     }
 }

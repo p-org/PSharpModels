@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Orleans.Streams.Endpoints
 {
-    /// <summary>
+    /// <summary>   
     /// Consumes items from multiple streams and places them in a list.
     /// </summary>
     /// <typeparam name="T"></typeparam>
@@ -22,9 +22,7 @@ namespace Orleans.Streams.Endpoints
             StreamItemBatchReceivedFunc = enumerable =>
             {
                 Items.AddRange(enumerable);
-                //Modified
-                //return TaskDone.Done;
-                return Task.FromResult(true);
+                return TaskDone.Done;
             };
         }
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Orleans.Streams.Messages;
+using Microsoft.PSharp.Actors;
 
 namespace Orleans.Streams.Endpoints
 {
@@ -50,9 +51,7 @@ namespace Orleans.Streams.Endpoints
                 StreamTransactionReceivedFunc = transaction =>
                 {
                     streamTransactionReceivedAction(transaction);
-                    //Modified
-                    //return TaskDone.Done;
-                    return Task.FromResult(true);
+                    return TaskDone.Done;
                 };
             }
 
@@ -87,7 +86,7 @@ namespace Orleans.Streams.Endpoints
         /// <returns></returns>
         public async Task TransactionComplete(int transactionId)
         {
-            await Task.WhenAll(Consumers.Select(c => c.TransactionComplete(transactionId)));
+            await ActorModel.WhenAll(Consumers.Select(c => c.TransactionComplete(transactionId)));
         }
 
         /// <summary>
@@ -101,7 +100,7 @@ namespace Orleans.Streams.Endpoints
 
         public virtual async Task TearDown()
         {
-            await Task.WhenAll(Consumers.Select(c => c.TearDown()));
+            await ActorModel.WhenAll(Consumers.Select(c => c.TearDown()));
             _tearDownExecuted = true;
         }
 

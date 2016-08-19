@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Orleans.Streams;
 using Orleans.Collections;
 using Orleans.Collections.Utilities;
+using Microsoft.PSharp.Actors;
 
 namespace Orleans.Collections
 {
@@ -30,14 +31,14 @@ namespace Orleans.Collections
             }
 
             var tasks = _containers.Select(c => c.EnumerateItems(consumers)).ToList();
-            await Task.WhenAll(tasks);
+            await ActorModel.WhenAll(tasks);
         }
 
         public async Task Clear()
         {
             //Modified: await split
             var tasks = _containers.Select(async x => await x.Clear()).ToList();
-            await Task.WhenAll(tasks);
+            await ActorModel.WhenAll(tasks);
             _containers.Clear();
         }
 
@@ -45,7 +46,7 @@ namespace Orleans.Collections
         {
             //Modified: await split
             var tasks = _containers.Select(async c => await c.Contains(item));
-            var resultTask = Task.WhenAll(tasks);
+            var resultTask = ActorModel.WhenAll(tasks);
             var results = await resultTask;
 
             return results.Contains(true);
@@ -55,7 +56,7 @@ namespace Orleans.Collections
         {
             //Modified: await split
             var tasks = _containers.Select(async container => await container.Count());
-            var resultTask = await Task.WhenAll(tasks);
+            var resultTask = await ActorModel.WhenAll(tasks);
             return resultTask.Sum();
         }
 
@@ -86,7 +87,7 @@ namespace Orleans.Collections
         public async Task<int> EnumerateToStream(int batchSize)
         {
             var transactionId = ++_lastTransactionId;
-            await Task.WhenAll(_containers.Select(c => c.EnumerateToStream(transactionId)));
+            await ActorModel.WhenAll(_containers.Select(c => c.EnumerateToStream(transactionId)));
 
             return transactionId;
         }
@@ -108,7 +109,7 @@ namespace Orleans.Collections
                 _containers.Add(containerNode);
             }
 
-            await Task.WhenAll(initTasks);
+            await ActorModel.WhenAll(initTasks);
         }
 
         public async Task ExecuteAsync(Func<T, Task> func, ContainerElementReference<T> reference = null)
@@ -120,7 +121,7 @@ namespace Orleans.Collections
             }
             else
             {
-                await Task.WhenAll(_containers.Select(c => c.ExecuteAsync(func)));
+                await ActorModel.WhenAll(_containers.Select(c => c.ExecuteAsync(func)));
             }
         }
 
@@ -133,19 +134,19 @@ namespace Orleans.Collections
             }
             else
             {
-                await Task.WhenAll(_containers.Select(c => c.ExecuteAsync(func, state)));
+                await ActorModel.WhenAll(_containers.Select(c => c.ExecuteAsync(func, state)));
             }
         }
 
         public async Task<IList<object>> ExecuteAsync(Func<T, Task<object>> func)
         {
-            var result = await Task.WhenAll(_containers.Select(c => c.ExecuteAsync(func)));
+            var result = await ActorModel.WhenAll(_containers.Select(c => c.ExecuteAsync(func)));
             return new List<object>(result);
         }
 
         public async Task<IList<object>> ExecuteAsync(Func<T, object, Task<object>> func, object state)
         {
-            var result = await Task.WhenAll(_containers.Select(c => c.ExecuteAsync(func, state)));
+            var result = await ActorModel.WhenAll(_containers.Select(c => c.ExecuteAsync(func, state)));
             return new List<object>(result);
         }
 
@@ -170,7 +171,7 @@ namespace Orleans.Collections
             }
             else
             {
-                await Task.WhenAll(_containers.Select(c => c.ExecuteSync(action, null)));
+                await ActorModel.WhenAll(_containers.Select(c => c.ExecuteSync(action, null)));
             }
         }
 
@@ -183,19 +184,19 @@ namespace Orleans.Collections
             }
             else
             {
-                await Task.WhenAll(_containers.Select(c => c.ExecuteSync(action, state)));
+                await ActorModel.WhenAll(_containers.Select(c => c.ExecuteSync(action, state)));
             }
         }
 
         public async Task<IList<object>> ExecuteSync(Func<T, object, object> func, object state)
         {
-            var result = Task.WhenAll(_containers.Select(c => c.ExecuteSync(func, state)));
+            var result = ActorModel.WhenAll(_containers.Select(c => c.ExecuteSync(func, state)));
             return await result;
         }
 
         public async Task<IList<object>> ExecuteSync(Func<T, object> func)
         {
-            var result = Task.WhenAll(_containers.Select(c => c.ExecuteSync(func)));
+            var result = ActorModel.WhenAll(_containers.Select(c => c.ExecuteSync(func)));
             return await result;
         }
 
@@ -220,19 +221,19 @@ namespace Orleans.Collections
             }
 
             await
-                Task.WhenAll(_containers.Zip(streamIdentities,
+                ActorModel.WhenAll(_containers.Zip(streamIdentities,
                     (grain, identity) => new Tuple<IContainerNodeGrain<T>, StreamIdentity<T>>(grain, identity))
                     .Select(t => t.Item1.SetInput(t.Item2)));
         }
 
         public async Task TransactionComplete(int transactionId)
         {
-            await Task.WhenAll(_containers.Select(c => c.TransactionComplete(transactionId)));
+            await ActorModel.WhenAll(_containers.Select(c => c.TransactionComplete(transactionId)));
         }
 
         public async Task<IList<StreamIdentity<ContainerHostedElement<T>>>> GetStreamIdentities()
         {
-            var streamTasks = await Task.WhenAll(_containers.Select(c => c.GetStreamIdentity()));
+            var streamTasks = await ActorModel.WhenAll(_containers.Select(c => c.GetStreamIdentity()));
             return new List<StreamIdentity<ContainerHostedElement<T>>>(streamTasks);
         }
 
@@ -243,7 +244,7 @@ namespace Orleans.Collections
 
         public async Task TearDown()
         {
-            await Task.WhenAll(_containers.Select(c => c.TearDown()));
+            await ActorModel.WhenAll(_containers.Select(c => c.TearDown()));
         }
 
         public override async Task OnActivateAsync()

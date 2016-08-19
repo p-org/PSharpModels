@@ -222,19 +222,27 @@ namespace Microsoft.PSharp.Actors
         {
             List<Task<TResult>> taskList = new List<Task<TResult>>(tasks);
 
-            if(taskList[0] is ActorCompletionTask<TResult>)
+            if (taskList.Count == 0)
             {
-                foreach(var task in taskList)
+                var resultTask = new ActorCompletionTask<Task<TResult>>();
+                Runtime.SendEvent(resultTask.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(
+                    new ActorCompletionTask<TResult>()));
+                return resultTask;
+            }
+            if (taskList[0] is ActorCompletionTask<TResult>)
+            {
+                foreach (var task in taskList)
                 {
                     MachineId mc = Runtime.CreateMachine(typeof(WaitMachine<TResult>), new WaitMachine<TResult>.CompleteTask(
                         (ActorCompletionTask<TResult>)task, Runtime.GetCurrentMachineId(), timestamp));
                 }
-                Console.WriteLine("Waiting... " + taskList.Count);
                 var receivedEvent = Runtime.Receive(typeof(WaitMachine<TResult>.TaskCompleted), new Func<Event, bool>(
                     e => ((WaitMachine<TResult>.TaskCompleted)e).Timestamp == timestamp));
                 timestamp++;
-                Console.WriteLine("Received!!!");
-                return Task.FromResult(((WaitMachine<TResult>.TaskCompleted)receivedEvent).ResultTask);
+                var resultTask = new ActorCompletionTask<Task<TResult>>();
+                Runtime.SendEvent(resultTask.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(
+                    ((WaitMachine<TResult>.TaskCompleted)receivedEvent).ResultTask));
+                return resultTask;
             }
             else
             {
@@ -253,16 +261,25 @@ namespace Microsoft.PSharp.Actors
             List<Task<TResult>> taskList = new List<Task<TResult>>(tasks);
             List<TResult> resultList = new List<TResult>();
 
+            if (taskList.Count == 0)
+            {
+                var resultTask = new ActorCompletionTask<TResult[]>();
+                Runtime.SendEvent(resultTask.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(resultList.ToArray()));
+                return resultTask;
+            }
             if (taskList[0] is ActorCompletionTask<TResult>)
             {
                 foreach (var task in taskList)
                 {
                     resultList.Add(((ActorCompletionTask<TResult>)task).Result);
                 }
-                return Task.FromResult(resultList.ToArray());
+                var resultTask = new ActorCompletionTask<TResult[]>();
+                Runtime.SendEvent(resultTask.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(resultList.ToArray()));
+                return resultTask;
             }
             else
             {
+                Console.WriteLine("CAUGHT!!!!!!!!");
                 return Task.WhenAll(tasks);
             }
         }
@@ -276,13 +293,22 @@ namespace Microsoft.PSharp.Actors
         {
             List<Task> taskList = new List<Task>(tasks);
 
+            if(taskList.Count == 0)
+            {
+                var resultTask = new ActorCompletionTask<object>();
+                Runtime.SendEvent(resultTask.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(true));
+                return resultTask;
+            }
+
             if (taskList[0] is ActorCompletionTask<object>)
             {
                 foreach (var task in taskList)
                 {
                     ((ActorCompletionTask<object>)task).Wait();
                 }
-                return Task.FromResult(true);
+                var resultTask = new ActorCompletionTask<object>();
+                Runtime.SendEvent(resultTask.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(true));
+                return resultTask;
             }
             else
             {
@@ -299,13 +325,53 @@ namespace Microsoft.PSharp.Actors
         public static Task<TResult[]> WhenAll<TResult>(params Task<TResult>[] tasks)
         {
             List<TResult> resultList = new List<TResult>();
+
+            if (tasks.Length == 0)
+            {
+                var resultTask = new ActorCompletionTask<TResult[]>();
+                Runtime.SendEvent(resultTask.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(resultList.ToArray()));
+                return resultTask;
+            }
+
             if (tasks[0] is ActorCompletionTask<TResult>)
             {
                 foreach (var task in tasks)
                 {
                     resultList.Add(((ActorCompletionTask<TResult>)task).Result);
                 }
-                return Task.FromResult(resultList.ToArray());
+                var resultTask = new ActorCompletionTask<TResult[]>();
+                Runtime.SendEvent(resultTask.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(resultList.ToArray()));
+                return resultTask;
+            }
+            else
+            {
+                return Task.WhenAll(tasks);
+            }
+        }
+
+        /// <summary>
+        /// Waits for all the input tasks to complete
+        /// </summary>
+        /// <param name="tasks">Task[]</param>
+        /// <returns>Task</returns>
+        public static Task WhenAll(params Task[] tasks)
+        {
+            if (tasks.Length == 0)
+            {
+                var resultTask = new ActorCompletionTask<object>();
+                Runtime.SendEvent(resultTask.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(true));
+                return resultTask;
+            }
+
+            if (tasks[0] is ActorCompletionTask<object>)
+            {
+                foreach (var task in tasks)
+                {
+                    ((ActorCompletionTask<object>)task).Wait();
+                }
+                var resultTask = new ActorCompletionTask<object>();
+                Runtime.SendEvent(resultTask.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(true));
+                return resultTask;
             }
             else
             {

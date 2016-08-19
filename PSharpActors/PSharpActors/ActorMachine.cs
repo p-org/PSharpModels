@@ -276,7 +276,6 @@ namespace Microsoft.PSharp.Actors
 
             ActorModel.Runtime.Log($"<ActorModelLog> Machine '{base.Id.Name}' is invoking '{actorEvent.MethodName}'.");
             MethodInfo mi = actorEvent.MethodClass.GetMethod(actorEvent.MethodName);
-            Console.WriteLine(">>>>>" + actorEvent.MethodClass + " " + actorEvent.MethodName);
             object result = mi.Invoke(actorEvent.ClassInstance, actorEvent.Parameters);
 
             this.Send(actorEvent.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(result));

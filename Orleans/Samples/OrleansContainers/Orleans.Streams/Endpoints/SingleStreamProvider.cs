@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Orleans.Streams.Messages;
+using Microsoft.PSharp.Actors;
 
 namespace Orleans.Streams.Endpoints
 {
@@ -50,7 +51,7 @@ namespace Orleans.Streams.Endpoints
                 await StartTransaction(curTransactionId);
             }
             var message = new ItemMessage<T>(items);
-            await Task.WhenAll(_messageStream.OnNextAsync(message));
+            await ActorModel.WhenAll(_messageStream.OnNextAsync(message));
             if (useTransaction)
             {
                 await EndTransaction(curTransactionId);

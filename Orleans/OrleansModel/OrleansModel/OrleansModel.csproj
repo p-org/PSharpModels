@@ -57,7 +57,8 @@
       <HintPath>..\packages\Microsoft.CodeAnalysis.Workspaces.Common.1.2.2\lib\net45\Microsoft.CodeAnalysis.Workspaces.Desktop.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.PSharp">
+    <Reference Include="Microsoft.PSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c4566cf0a7f74012, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\PSharp\Binaries\Microsoft.PSharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.PSharp.LanguageServices">
@@ -134,6 +135,7 @@
     <Compile Include="Storage\MemoryStorage.cs" />
     <Compile Include="Storage\IStorageProvider.cs" />
     <Compile Include="Streams\Core\AsyncObservableExtensions.cs" />
+    <Compile Include="Streams\Core\AsyncObserver.cs" />
     <Compile Include="Streams\Core\AsyncStream.cs" />
     <Compile Include="Streams\Core\StreamSubscriptionHandle.cs" />
     <Compile Include="Streams\Core\StreamSequenceToken.cs" />

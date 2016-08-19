@@ -63,19 +63,10 @@ namespace Microsoft.PSharp.Actors.Bridge
             this.WaitOnEvent();
         }
 
-        public void WaitForCompletion(MachineId target)
-        {
-            this.WaitOnEvent(target);
-        }
-
-        private Event WaitOnEvent(MachineId target = null)
+        private Event WaitOnEvent()
         {
             MachineId mid = ActorModel.Runtime.GetCurrentMachineId();
             Console.WriteLine("Inside WaitOnEvent: " + mid);
-            //if (target == null)
-            //    mid = ActorModel.Runtime.GetCurrentMachineId();
-            //else
-            //    mid = target;
 
             ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' is " +
                 "waiting to receive a result.");
@@ -122,7 +113,6 @@ namespace Microsoft.PSharp.Actors.Bridge
                     handler(resultEvent as ActorMachine.ActorEvent);
                 }
             }
-            Console.WriteLine("WaitOnEvent returns");
             return resultEvent;
         }
     }

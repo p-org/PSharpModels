@@ -30,8 +30,8 @@ namespace UnitTests
             var consumer = new MultiStreamListConsumer<ContainerHostedElement<int>>(_provider);
 
             //Modified: split a statement with 2 awaits (AwaitRewriter must be fixed)
-            //var getStrIds = await distributedCollection.GetStreamIdentities();
-            //await consumer.SetInput(getStrIds);
+            var getStrIds = await distributedCollection.GetStreamIdentities();
+            await consumer.SetInput(getStrIds);
 
             //var tid = await distributedCollection.EnumerateToStream();
             //await consumer.TransactionComplete(tid);

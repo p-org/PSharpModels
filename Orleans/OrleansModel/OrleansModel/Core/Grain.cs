@@ -85,7 +85,12 @@ namespace Orleans
             {
                 StreamProviderDictionaryMachineId = ActorModel.Runtime.CreateMachine(
                     typeof(StreamProviderDictionaryMachine), "StreamProviderDictionaryMachine");
-            }               
+            }
+
+            ActorModel.RegisterCleanUpAction(() =>
+            {
+                StreamProviderDictionaryMachineId = null;
+            });
         }
 
         /// <summary>
@@ -106,6 +111,11 @@ namespace Orleans
                 StreamProviderDictionaryMachineId = ActorModel.Runtime.CreateMachine(
                     typeof(StreamProviderDictionaryMachine), "StreamProviderDictionaryMachine");
             }
+
+            ActorModel.RegisterCleanUpAction(() =>
+            {
+                StreamProviderDictionaryMachineId = null;
+            });
         }
 
         #endregion

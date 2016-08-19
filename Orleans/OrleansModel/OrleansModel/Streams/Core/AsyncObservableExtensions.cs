@@ -34,8 +34,8 @@ namespace Orleans.Streams
         //     for as long as it is not explicitely unsubscribed.
         public static Task<StreamSubscriptionHandle<T>> SubscribeAsync<T>(this IAsyncObservable<T> obs, Func<T, StreamSequenceToken, Task> onNextAsync, Func<Task> onCompletedAsync)
         {
-            Console.WriteLine("????????????????????????????????????????????????");
-            throw new NotImplementedException();
+            AsyncObserver<T> observer = new AsyncObserver<T>(onNextAsync, new Func<Exception, Task>(_ => TaskDone.Done), onCompletedAsync);
+            return obs.SubscribeAsync(observer);
         }
     }
 }
