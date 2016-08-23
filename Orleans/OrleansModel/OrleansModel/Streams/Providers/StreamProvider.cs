@@ -62,7 +62,7 @@ namespace Orleans.Streams.Providers
             }
             else
             {
-                object streamToAdd = new AsyncStream<T>();
+                object streamToAdd = new AsyncStream<T>(streamId, streamNamespace);
                 ActorModel.Runtime.SendEvent(StreamDictionaryMachineID, 
                     new StreamDictionaryMachine.EAddStream(streamId, streamNamespace, streamToAdd, ActorModel.Runtime.GetCurrentMachineId()));
                 resultEvent = ActorModel.Runtime.Receive(typeof(StreamDictionaryMachine.EStream));
