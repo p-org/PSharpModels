@@ -33,7 +33,7 @@ namespace UnitTests
             var getStrIds = await distributedCollection.GetStreamIdentities();
             await consumer.SetInput(getStrIds);
 
-            //var tid = await distributedCollection.EnumerateToStream();
+            var tid = await distributedCollection.EnumerateToStream();
             //await consumer.TransactionComplete(tid);
 
             //////CollectionAssert.AreEquivalent(l, consumer.Items.Select(x => x.Item).ToList());

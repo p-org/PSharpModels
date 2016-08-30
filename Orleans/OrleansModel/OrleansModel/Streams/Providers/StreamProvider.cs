@@ -67,6 +67,9 @@ namespace Orleans.Streams.Providers
                     new StreamDictionaryMachine.EAddStream(streamId, streamNamespace, streamToAdd, ActorModel.Runtime.GetCurrentMachineId()));
                 resultEvent = ActorModel.Runtime.Receive(typeof(StreamDictionaryMachine.EStream));
                 object addedStream = ((StreamDictionaryMachine.EStream)resultEvent).stream;
+
+                Console.WriteLine("Created new stream for: " + streamId.ToString() + " " + streamNamespace);
+
                 return (IAsyncStream<T>)addedStream;
             }
         }

@@ -20,6 +20,9 @@ using Microsoft.PSharp.Actors;
 
 using Orleans;
 using Orleans.Runtime;
+using Microsoft.PSharp;
+using Orleans.Streams;
+using Orleans.Streams.Messages;
 
 namespace OrleansModel
 {
@@ -71,6 +74,13 @@ namespace OrleansModel
         {
             var type = WrappedActorInstance.GetType();
             return type.GetCustomAttributes(typeof(ReentrantAttribute), true).Length > 0;
+        }
+
+        protected override void HandleStreamEvent(StreamEvent streamEvent)
+        {
+            Console.WriteLine(streamEvent.Item.GetType() + "; " + streamEvent.Item.GetType().IsGenericType);
+            ((IAsyncStream<IStreamMessage>)(streamEvent.Observer)).OnNextAsync((IStreamMessage)streamEvent.Item);
+            throw new NotImplementedException();
         }
     }
 }

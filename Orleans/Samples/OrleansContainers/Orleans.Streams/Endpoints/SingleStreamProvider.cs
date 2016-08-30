@@ -22,6 +22,7 @@ namespace Orleans.Streams.Endpoints
         {
             guid = guid == default(Guid) ? Guid.NewGuid() : guid;
             _streamIdentity = new StreamIdentity<T>(StreamNamespacePrefix, guid);
+            Console.WriteLine("<< SingleStreamProvider GetStream: " + _streamIdentity.StreamIdentifier.Item1 + " " + _streamIdentity.StreamIdentifier.Item2);
             _messageStream = provider.GetStream<IStreamMessage>(_streamIdentity.StreamIdentifier.Item1,
                 _streamIdentity.StreamIdentifier.Item2);
             _tearDownExecuted = false;

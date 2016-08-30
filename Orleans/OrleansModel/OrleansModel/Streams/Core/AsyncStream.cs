@@ -25,7 +25,7 @@ namespace Orleans.Streams.Core
             this.StreamGuid = streamGuid;
             this.StreamNamespace = streamNamespace;
             this.streamIsRewindable = false;
-            StreamMachineId = ActorModel.Runtime.CreateMachine(typeof(StreamMachine<T>));
+            StreamMachineId = ActorModel.Runtime.CreateMachine(typeof(StreamMachine));
         }
         public Guid Guid
         {
@@ -86,7 +86,7 @@ namespace Orleans.Streams.Core
 
         public Task OnNextAsync(T item, StreamSequenceToken token = null)
         {
-            ActorModel.Runtime.SendEvent(StreamMachineId, new StreamMachine<T>.PushToSubscribers<T>(item));
+            ActorModel.Runtime.SendEvent(StreamMachineId, new StreamMachine.PushToSubscribers(item));
             return Task.FromResult(true);
         }
 
@@ -97,7 +97,7 @@ namespace Orleans.Streams.Core
 
         public Task<StreamSubscriptionHandle<T>> SubscribeAsync(IAsyncObserver<T> observer)
         {
-            ActorModel.Runtime.SendEvent(StreamMachineId, new StreamMachine<T>.Subscribe<T>(ActorModel.Runtime.GetCurrentMachineId(), observer));
+            ActorModel.Runtime.SendEvent(StreamMachineId, new StreamMachine.Subscribe(ActorModel.Runtime.GetCurrentMachineId(), observer));
             ActorCompletionTask<StreamSubscriptionHandle<T>> returnTask = new ActorCompletionTask<StreamSubscriptionHandle<T>>();
             ActorModel.Runtime.SendEvent(returnTask.ActorCompletionMachine, new ActorCompletionMachine.SetResultRequest(
                 new StreamSubscriptionHandleImpl<T>(new StreamIdentity(StreamGuid, StreamNamespace))));
@@ -108,10 +108,10 @@ namespace Orleans.Streams.Core
     /// <summary>
     /// P# machine to handle stream events.
     /// </summary>
-    class StreamMachine<T> : Machine
+    class StreamMachine : Machine
     {
         #region events
-        public class PushToSubscribers<T> : Event
+        public class PushToSubscribers : Event
         {
             public object Item;
             public PushToSubscribers(object item)
@@ -120,7 +120,7 @@ namespace Orleans.Streams.Core
             }
         }
 
-        public class Subscribe<T> : Event
+        public class Subscribe : Event
         {
             public MachineId TargetGrain;
             public object Observer;
@@ -141,8 +141,8 @@ namespace Orleans.Streams.Core
         #region states
         [Start]
         [OnEntry(nameof(OnInit))]
-        [OnEventDoAction(typeof(PushToSubscribers<>), nameof(OnPushToSubscribers))]
-        [OnEventDoAction(typeof(Subscribe<>), nameof(OnSubscribe))]
+        [OnEventDoAction(typeof(PushToSubscribers), nameof(OnPushToSubscribers))]
+        [OnEventDoAction(typeof(Subscribe), nameof(OnSubscribe))]
         class Init : MachineState { }
         #endregion
 
@@ -155,19 +155,21 @@ namespace Orleans.Streams.Core
 
         void OnPushToSubscribers()
         {
-            var receivedEvent = ReceivedEvent as PushToSubscribers<T>;
+            var receivedEvent = ReceivedEvent as PushToSubscribers;
             itemQueue.Enqueue(receivedEvent.Item);
+            Console.WriteLine("Pushing to subscribers !!!! " + grainToObserverMap.Count);
 
-            foreach(var key in grainToObserverMap.Keys)
+            foreach (var key in grainToObserverMap.Keys)
             {
-                Send(key, new ActorMachine.StreamEvent<T>(grainToObserverMap[key]));
+                Send(key, new ActorMachine.StreamEvent(grainToObserverMap[key], receivedEvent.Item));
             }
         }
 
         void OnSubscribe()
         {
-            var receivedEvent = ReceivedEvent as Subscribe<T>;
+            var receivedEvent = ReceivedEvent as Subscribe;
             grainToObserverMap.Add(receivedEvent.TargetGrain, receivedEvent.Observer);
+            Console.WriteLine(">> Subscribed " + grainToObserverMap.Count);
         }
         #endregion
     }

@@ -106,6 +106,17 @@ namespace Microsoft.PSharp.Actors
             }
         }
 
+        public class StreamEvent : Event
+        {
+            public object Observer;
+            public object Item;
+
+            public StreamEvent(object observer, object item)
+            {
+                this.Observer = observer;
+                this.Item = item;
+            }
+        }
         #endregion
 
         #region fields
@@ -172,6 +183,7 @@ namespace Microsoft.PSharp.Actors
         [OnEventDoAction(typeof(TimerMachine.TimeoutEvent), nameof(HandleTimeout))]
         [OnEventDoAction(typeof(ReminderMachine.RemindEvent), nameof(HandleReminder))]
         [OnEventDoAction(typeof(Default), nameof(HandleDefaultAction))]
+        [OnEventDoAction(typeof(StreamEvent), nameof(OnStreamEvent))]
         [IgnoreEvents(typeof(WaitMachine<>.TaskCompleted))]
         private class Active : MachineState { }
 
@@ -324,6 +336,11 @@ namespace Microsoft.PSharp.Actors
             this.Goto(typeof(Active));
         }
 
+        private void OnStreamEvent()
+        {
+            this.HandleStreamEvent(ReceivedEvent as StreamEvent);
+        }
+
         protected abstract void Initialize(InitEvent initEvent);
         
         protected abstract void Activate();
@@ -334,6 +351,7 @@ namespace Microsoft.PSharp.Actors
 
         protected abstract bool IsReentrant();
 
+        protected abstract void HandleStreamEvent(StreamEvent streamEvent);
         #endregion
     }
 }

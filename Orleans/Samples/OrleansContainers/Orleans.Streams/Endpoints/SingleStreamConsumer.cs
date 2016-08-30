@@ -36,6 +36,7 @@ namespace Orleans.Streams.Endpoints
         public async Task SetInput(StreamIdentity<TIn> inputStream)
         {
             _tearDownExecuted = false;
+            Console.WriteLine(">>> SetInput GetStream: " + inputStream.StreamIdentifier.Item1 + " " + inputStream.StreamIdentifier.Item2);
             var messageStream = _streamProvider.GetStream<IStreamMessage>(inputStream.StreamIdentifier.Item1, inputStream.StreamIdentifier.Item2);
 
             //Modified: Await split
