@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Orleans.Streams.Messages;
-using Orleans.Streams;
 
 namespace Orleans.Streams.Endpoints
 {
@@ -36,8 +35,8 @@ namespace Orleans.Streams.Endpoints
         public async Task SetInput(StreamIdentity<TIn> inputStream)
         {
             _tearDownExecuted = false;
-            Console.WriteLine(">>> SetInput GetStream: " + inputStream.StreamIdentifier.Item1 + " " + inputStream.StreamIdentifier.Item2);
-            var messageStream = _streamProvider.GetStream<IStreamMessage>(inputStream.StreamIdentifier.Item1, inputStream.StreamIdentifier.Item2);
+            Console.WriteLine(">>> SetInput GetStream: " + inputStream.StreamIdentifier);
+            var messageStream = _streamProvider.GetStream<IStreamMessage>(inputStream.StreamIdentifier.Guid, inputStream.StreamIdentifier.Namespace);
 
             //Modified: Await split
             Func<Task> onCompleted = new Func<Task>(async () => await TearDown());

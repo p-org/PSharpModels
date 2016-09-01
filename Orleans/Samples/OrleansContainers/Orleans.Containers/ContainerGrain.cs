@@ -102,10 +102,12 @@ namespace Orleans.Collections
 
 
             var initTasks = new List<Task>();
+            Console.WriteLine("==== SetNumberOfNodes: " + containersToAdd);
             for (var i = 0; i < containersToAdd; i++)
             {
                 var containerNode = CreateContainerGrain();
                 //initTasks.Add(await containerNode.Clear());
+                Console.WriteLine("==== Adding to containerNode");
                 _containers.Add(containerNode);
             }
 
@@ -233,6 +235,7 @@ namespace Orleans.Collections
 
         public async Task<IList<StreamIdentity<ContainerHostedElement<T>>>> GetStreamIdentities()
         {
+            Console.WriteLine("==== containers count: " + _containers.Count);
             var streamTasks = await ActorModel.WhenAll(_containers.Select(c => c.GetStreamIdentity()));
             return new List<StreamIdentity<ContainerHostedElement<T>>>(streamTasks);
         }

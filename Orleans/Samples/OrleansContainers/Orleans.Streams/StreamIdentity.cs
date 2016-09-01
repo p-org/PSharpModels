@@ -11,12 +11,12 @@ namespace Orleans.Streams
     {
         private const string NamespacePostfix = "MessageStream";
 
-        public Tuple<Guid, string> StreamIdentifier { get; private set; }
+        public Orleans.Streams.Core.StreamIdentity StreamIdentifier { get; private set; }
 
 
         public StreamIdentity(string namespacePrefix, Guid streamIdentifier)
         {
-            StreamIdentifier = new Tuple<Guid, string>(streamIdentifier, namespacePrefix + NamespacePostfix);
+            StreamIdentifier = new Core.StreamIdentity(streamIdentifier, namespacePrefix + NamespacePostfix);
         }
     }
 }

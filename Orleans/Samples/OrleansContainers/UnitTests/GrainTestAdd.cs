@@ -31,9 +31,10 @@ namespace UnitTests
 
             //Modified: split a statement with 2 awaits (AwaitRewriter must be fixed)
             var getStrIds = await distributedCollection.GetStreamIdentities();
-            await consumer.SetInput(getStrIds);
+            Console.WriteLine(" ====== COUNT: " + getStrIds.Count);
+            //await consumer.SetInput(getStrIds);
 
-            var tid = await distributedCollection.EnumerateToStream();
+            //var tid = await distributedCollection.EnumerateToStream();
             //await consumer.TransactionComplete(tid);
 
             //////CollectionAssert.AreEquivalent(l, consumer.Items.Select(x => x.Item).ToList());
