@@ -351,7 +351,10 @@ namespace Microsoft.PSharp.Actors
 
         protected abstract bool IsReentrant();
 
-        protected abstract void HandleStreamEvent(StreamEvent streamEvent);
+        protected virtual void HandleStreamEvent(StreamEvent streamEvent)
+        {
+
+        }
         #endregion
     }
 }

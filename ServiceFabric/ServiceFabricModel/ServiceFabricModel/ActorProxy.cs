@@ -70,5 +70,31 @@ namespace Microsoft.ServiceFabric.Actors
 
             return proxy;
         }
+
+        public static TActorInterface Create<TActorInterface>(ActorId actorId, Uri applicationName = null) where TActorInterface : IActor
+        {
+            if (ActorModel.Runtime == null)
+            {
+                throw new InvalidOperationException("The P# runtime has not been initialized.");
+            }
+
+            MachineId mid = ActorModel.Runtime.GetCurrentMachineId();
+
+            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' is " +
+                $"waiting to get or construct proxy with id '{actorId.Id}'.");
+
+            ActorModel.Runtime.SendEvent(ProxyFactory, new ActorFactory.CreateProxyEvent(
+                mid, actorId, typeof(TActorInterface)));
+
+            ActorFactory.ProxyConstructedEvent receivedEvent = ActorModel.Runtime.Receive(
+                typeof(ActorFactory.ProxyConstructedEvent)) as ActorFactory.ProxyConstructedEvent;
+
+            TActorInterface proxy = (TActorInterface)receivedEvent.Proxy;
+
+            ActorModel.Runtime.Log($"<ActorModelLog> Machine '{mid.Name}' received " +
+                $"proxy with id '{actorId.Id}'.");
+
+            return proxy;
+        }
     }
 }

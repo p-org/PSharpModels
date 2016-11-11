@@ -32,6 +32,21 @@ namespace Microsoft.ServiceFabric.Actors
         /// </summary>
         public readonly long Id;
 
+        /// <summary>
+        /// The unique id of the actor specified as a Guid.
+        /// </summary>
+        public readonly Guid guId;
+
+        /// <summary>
+        /// The unique id of the actor specified as a String.
+        /// </summary>
+        public readonly String strId;
+        /// <summary>
+        /// true when ActorId constructed with Guid.
+        /// </summary>
+        private bool isGuid;
+        private bool isString;
+
         #endregion
 
         #region constructors
@@ -54,8 +69,23 @@ namespace Microsoft.ServiceFabric.Actors
         public ActorId(long id)
         {
             this.Id = id;
+            isGuid = false;
+            isString = false;
         }
 
+        public ActorId(Guid guid)
+        {
+            this.guId = guid;
+            isGuid = true;
+            isString = false;
+        }
+
+        public ActorId(String strId)
+        {
+            this.strId = strId;
+            isGuid = false;
+            isString = true;
+        }
         #endregion
 
         #region methods
@@ -81,12 +111,20 @@ namespace Microsoft.ServiceFabric.Actors
 
         public bool Equals(ActorId other)
         {
-            return (this.Id == other.Id);
+            if (!isGuid && !isString)
+                return (this.Id == other.Id);
+            else 
+                return (this.guId.Equals(other.guId));
         }
 
         public override int GetHashCode()
         {
-            return this.Id.GetHashCode();
+            if (this.isGuid)
+                return this.guId.GetHashCode();
+            else if (this.isString)
+                return this.strId.GetHashCode();
+            else
+                return this.Id.GetHashCode();
         }
 
         public override string ToString()
